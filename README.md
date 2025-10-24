@@ -24,10 +24,15 @@ The system connects **students, employers, and administrators** through a smart 
 
 ###  Repository Structure
 software_docs/ → All software documentation and diagrams
+
 nlp_docs/ → NLP workflow, datasets, and models
+
 ui_ux_design/ → Figma designs for all dashboards
+
 frontend/ → Vue.js frontend application
+
 backend/ → Express.js + MongoDB backend
+
 reports/ → Final reports and presentations
 
 yaml
