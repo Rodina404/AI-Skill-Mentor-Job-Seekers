@@ -1,12 +1,12 @@
-# 🧠 AI Skill Mentor for Job Seekers
+#  AI Skill Mentor for Job Seekers
 
-### 🚀 Project Overview
+###  Project Overview
 **AI Skill Mentor** is an intelligent career platform that analyzes user CVs, detects skill gaps, and recommends personalized learning paths using AI and NLP techniques.  
 The system connects **students, employers, and administrators** through a smart dashboard and supports **job readiness evaluation** and **career growth tracking**.
 
 ---
 
-### 🏗️ System Components
+###  System Components
 - **Frontend:** Vue.js  
 - **Backend:** Express.js (Node.js)  
 - **Database:** MongoDB  
@@ -15,14 +15,14 @@ The system connects **students, employers, and administrators** through a smart 
 
 ---
 
-### 👥 User Roles
+###  User Roles
 - **Students:** Upload CVs, receive skill analysis & personalized course recommendations.  
 - **Employers:** Post job requirements and view AI-matched candidates.  
 - **Admin:** Manage users, monitor system activity, and maintain data integrity.  
 
 ---
 
-### 📚 Repository Structure
+###  Repository Structure
 software_docs/ → All software documentation and diagrams
 nlp_docs/ → NLP workflow, datasets, and models
 ui_ux_design/ → Figma designs for all dashboards
@@ -35,7 +35,7 @@ Copy code
 
 ---
 
-### 🧰 Tools & Technologies
+###  Tools & Technologies
 | Category | Tool/Framework |
 |-----------|----------------|
 | Frontend | Vue.js |
@@ -48,7 +48,7 @@ Copy code
 
 ---
 
-### 🗓️ Project Timeline
+###  Project Timeline
 | Phase | Deliverable | Deadline |
 |-------|--------------|-----------|
 | Software Description & Requirements | ✅  | Oct 25 |
@@ -58,7 +58,7 @@ Copy code
 
 ---
 
-### 👩‍💻 Team Members
+###  Team Members
 | Name | Role | Main Tasks |
 |------|------|------------|
 | **Rodina Mohamed** | Project Lead Assist | Documentation, ERD, DFD, Requirements, Figma (Login/Signup) |
@@ -69,7 +69,7 @@ Copy code
 
 ---
 
-### 🧠 References
+###  References
 - BART Model: [https://huggingface.co/facebook/bart-large-cnn](https://huggingface.co/facebook/bart-large-cnn)
 - Vue.js Documentation: [https://vuejs.org](https://vuejs.org)
 - Express.js Docs: [https://expressjs.com](https://expressjs.com)
@@ -77,7 +77,7 @@ Copy code
 
 ---
 
-### 🪪 License
+###  License
 This project is licensed under the [MIT License](LICENSE).
 
 ---
