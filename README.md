@@ -66,11 +66,11 @@ Copy code
 ###  Team Members
 | Name | Role | Main Tasks |
 |------|------|------------|
-| **Rodina Mohamed** | Project Lead Assist | Documentation, ERD, DFD, Requirements, Figma (Login/Signup) |
-| **Aya** | AI/NLP & Project Lead | NLP Workflow Diagram, Sequence Diagram, Figma (Student Dashboard) |
-| **Mariam** | UI/UX Specialist | System Architecture, Figma (Employer Dashboard) |
-| **Farah** | AI Developer  | Use Cases, UI Flow, Figma (Admin Dashboard) |
-| **Mark** | Developer | Class Diagram, UI Flow, Figma (User Profile) |
+| **Rodina Mohamed** | Project Lead Assist | Documentation, ERD, DFD, Requirements, Figma, Backend |
+| **Aya** | AI/NLP & Project Lead | NLP Workflow Diagram, Sequence Diagram, Figma , Frontend |
+| **Mariam** | UI/UX Specialist | System Architecture, Figma, AI models |
+| **Farah** | AI Developer  | Use Cases, UI Flow, Research paper |
+| **Marc** | Developer | Class Diagram, UI Flow, AI models |
 
 ---
 
