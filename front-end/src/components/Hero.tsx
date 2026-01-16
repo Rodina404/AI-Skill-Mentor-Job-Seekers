@@ -1,4 +1,4 @@
-import { ArrowRight, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 
 export function Hero() {
   return (
@@ -20,16 +20,6 @@ export function Hero() {
               and receive personalized recommendations that boost your employability. Perfect for 
               job seekers, recruiters, and HR professionals.
             </p>
-
-            <div className="flex flex-col sm:flex-row gap-4">
-              <button className="px-8 py-4 bg-gradient-to-r from-green-700 to-green-600 text-white rounded-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 group">
-                Start Your Journey
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </button>
-              <button className="px-8 py-4 border-2 border-green-700 text-green-700 rounded-lg hover:bg-green-50 transition-all">
-                Watch Demo
-              </button>
-            </div>
 
             <div className="flex gap-8 pt-4">
               <div>

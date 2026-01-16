@@ -74,9 +74,6 @@ export function AICapabilities() {
                 gap detection, and course suggestion comes with clear reasoning, ensuring you understand 
                 the path to your career goals.
               </p>
-              <button className="px-6 py-3 bg-white text-green-700 rounded-lg hover:shadow-lg transition-all">
-                Learn About Our AI
-              </button>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 border border-white/20">
