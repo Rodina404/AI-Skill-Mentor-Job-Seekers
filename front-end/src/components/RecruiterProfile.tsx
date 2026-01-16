@@ -5,6 +5,30 @@ interface RecruiterProfileProps {
 }
 
 export function RecruiterProfile({ onNavigate }: RecruiterProfileProps) {
+  const handleEditProfile = () => {
+    alert('Edit Company Profile - Update your company information, logo, and contact details.');
+  };
+
+  const handleViewApplicants = (jobTitle: string, applicants: number) => {
+    alert(`Viewing ${applicants} applicants for: ${jobTitle}\n\nThis would show:\n- Candidate profiles\n- Match scores\n- Skill assessments\n- Application status`);
+  };
+
+  const handleManageJob = (jobTitle: string) => {
+    alert(`Managing job posting: ${jobTitle}\n\nYou can:\n- Edit job description\n- Change requirements\n- Update status\n- Close or repost`);
+  };
+
+  const handleViewCandidate = (name: string) => {
+    alert(`Viewing candidate profile: ${name}\n\nThis would show:\n- Complete resume\n- Skill assessments\n- Career history\n- Recommendation score`);
+  };
+
+  const handleContactCandidate = (name: string) => {
+    alert(`Contact ${name} - Send a message or schedule an interview.`);
+  };
+
+  const handleSearchCandidates = () => {
+    alert('Search Candidates - Find candidates by skills, experience, location, and availability.');
+  };
+
   const activeJobs = [
     { title: 'Senior Software Engineer', applicants: 45, posted: '2025-01-10', status: 'Active' },
     { title: 'Product Manager', applicants: 32, posted: '2025-01-08', status: 'Active' },
@@ -35,7 +59,10 @@ export function RecruiterProfile({ onNavigate }: RecruiterProfileProps) {
                   <h2 className="text-3xl text-gray-900 mb-2">TechCorp Inc.</h2>
                   <p className="text-gray-600 mb-4">Leading Technology Company</p>
                 </div>
-                <button className="px-4 py-2 border-2 border-green-600 text-green-700 rounded-lg hover:bg-green-50 transition-all">
+                <button
+                  onClick={handleEditProfile}
+                  className="px-4 py-2 border-2 border-green-600 text-green-700 rounded-lg hover:bg-green-50 transition-all"
+                >
                   Edit Profile
                 </button>
               </div>
@@ -98,10 +125,16 @@ export function RecruiterProfile({ onNavigate }: RecruiterProfileProps) {
                       <span className="text-gray-500">Posted {job.posted}</span>
                     </div>
                     <div className="mt-3 flex gap-2">
-                      <button className="flex-1 px-4 py-2 border-2 border-green-600 text-green-700 rounded-lg hover:bg-green-50 transition-all text-sm">
+                      <button
+                        onClick={() => handleViewApplicants(job.title, job.applicants)}
+                        className="flex-1 px-4 py-2 border-2 border-green-600 text-green-700 rounded-lg hover:bg-green-50 transition-all text-sm"
+                      >
                         View Applicants
                       </button>
-                      <button className="px-4 py-2 bg-gradient-to-r from-green-700 to-green-600 text-white rounded-lg hover:shadow-lg transition-all text-sm">
+                      <button
+                        onClick={() => handleManageJob(job.title)}
+                        className="px-4 py-2 bg-gradient-to-r from-green-700 to-green-600 text-white rounded-lg hover:shadow-lg transition-all text-sm"
+                      >
                         Manage
                       </button>
                     </div>
@@ -139,10 +172,16 @@ export function RecruiterProfile({ onNavigate }: RecruiterProfileProps) {
                       </div>
                     </div>
                     <div className="flex gap-2">
-                      <button className="flex-1 px-4 py-2 border-2 border-green-600 text-green-700 rounded-lg hover:bg-green-50 transition-all text-sm">
+                      <button
+                        onClick={() => handleViewCandidate(candidate.name)}
+                        className="flex-1 px-4 py-2 border-2 border-green-600 text-green-700 rounded-lg hover:bg-green-50 transition-all text-sm"
+                      >
                         View Profile
                       </button>
-                      <button className="px-4 py-2 bg-gradient-to-r from-green-700 to-green-600 text-white rounded-lg hover:shadow-lg transition-all text-sm">
+                      <button
+                        onClick={() => handleContactCandidate(candidate.name)}
+                        className="px-4 py-2 bg-gradient-to-r from-green-700 to-green-600 text-white rounded-lg hover:shadow-lg transition-all text-sm"
+                      >
                         Contact
                       </button>
                     </div>
@@ -209,7 +248,10 @@ export function RecruiterProfile({ onNavigate }: RecruiterProfileProps) {
                 >
                   Manage Jobs
                 </button>
-                <button className="w-full px-4 py-3 border-2 border-green-600 text-green-700 rounded-lg hover:bg-green-50 transition-all">
+                <button
+                  onClick={handleSearchCandidates}
+                  className="w-full px-4 py-3 border-2 border-green-600 text-green-700 rounded-lg hover:bg-green-50 transition-all"
+                >
                   Search Candidates
                 </button>
               </div>
@@ -222,9 +264,6 @@ export function RecruiterProfile({ onNavigate }: RecruiterProfileProps) {
               <p className="text-white/90 text-sm mb-4">
                 Your job postings received 45% more views this week!
               </p>
-              <button className="px-4 py-2 bg-white text-green-700 rounded-lg hover:shadow-lg transition-all text-sm">
-                View Analytics
-              </button>
             </div>
           </div>
         </div>

@@ -1,4 +1,4 @@
-import { ArrowRight, CheckCircle2 } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
 
 interface CTAProps {
   onNavigate: (page: string) => void;
@@ -36,24 +36,8 @@ export function CTA({ onNavigate }: CTAProps) {
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button
-                onClick={() => onNavigate('signup')}
-                className="px-8 py-4 bg-white text-green-700 rounded-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 group"
-              >
-                Get Started Free
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </button>
-              <button
-                onClick={() => onNavigate('analysis')}
-                className="px-8 py-4 border-2 border-white text-white rounded-lg hover:bg-white/10 transition-all"
-              >
-                Try Demo
-              </button>
-            </div>
-
             <p className="text-white/80 text-sm mt-6">
-              No credit card • No subscription • Always free
+              Join thousands of professionals advancing their careers with AI
             </p>
           </div>
         </div>

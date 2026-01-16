@@ -1,10 +1,35 @@
 import { Mail, MapPin, Briefcase, Calendar, Target, Award, TrendingUp, Edit, FileText, Clock } from 'lucide-react';
+import { useState } from 'react';
 
 interface UserProfileProps {
   onNavigate: (page: string) => void;
 }
 
 export function UserProfile({ onNavigate }: UserProfileProps) {
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [isEditingSkills, setIsEditingSkills] = useState(false);
+  const [isEditingGoals, setIsEditingGoals] = useState(false);
+
+  const handleEditProfile = () => {
+    alert('Profile editing feature - Coming soon! You will be able to update your name, job title, location, and contact information.');
+  };
+
+  const handleAddSkill = () => {
+    alert('Add new skill feature - You can add a new skill with proficiency level.');
+  };
+
+  const handleViewAnalysis = (title: string) => {
+    alert(`Viewing detailed analysis for: ${title}\n\nThis would show:\n- Complete skill breakdown\n- Detailed gap analysis\n- Personalized recommendations\n- Improvement strategies`);
+  };
+
+  const handleViewJobDetails = (title: string, company: string) => {
+    alert(`Job Details: ${title} at ${company}\n\nThis would show:\n- Full job description\n- Required qualifications\n- Your match score breakdown\n- Application status`);
+  };
+
+  const handleUpdateGoals = () => {
+    alert('Update career goals - You can add, edit, or remove career goals to track your progress.');
+  };
+
   const skills = [
     { name: 'JavaScript', level: 92, category: 'Programming' },
     { name: 'Python', level: 85, category: 'Programming' },
@@ -93,7 +118,7 @@ export function UserProfile({ onNavigate }: UserProfileProps) {
                   <h2 className="text-3xl text-gray-900 mb-2">John Doe</h2>
                   <p className="text-gray-600 mb-4">Full Stack Developer</p>
                 </div>
-                <button className="px-4 py-2 border-2 border-green-600 text-green-700 rounded-lg hover:bg-green-50 transition-all flex items-center gap-2">
+                <button onClick={handleEditProfile} className="px-4 py-2 border-2 border-green-600 text-green-700 rounded-lg hover:bg-green-50 transition-all flex items-center gap-2">
                   <Edit className="w-4 h-4" />
                   Edit Profile
                 </button>
@@ -162,7 +187,10 @@ export function UserProfile({ onNavigate }: UserProfileProps) {
                 ))}
               </div>
 
-              <button className="mt-6 w-full px-4 py-2 border-2 border-green-600 text-green-700 rounded-lg hover:bg-green-50 transition-all">
+              <button
+                onClick={handleAddSkill}
+                className="mt-6 w-full px-4 py-2 border-2 border-green-600 text-green-700 rounded-lg hover:bg-green-50 transition-all"
+              >
                 Add New Skill
               </button>
             </div>
@@ -200,7 +228,10 @@ export function UserProfile({ onNavigate }: UserProfileProps) {
                         <span className="ml-1 text-orange-700">{analysis.gapsFound}</span>
                       </div>
                     </div>
-                    <button className="w-full px-4 py-2 bg-gradient-to-r from-green-700 to-green-600 text-white rounded-lg hover:shadow-lg transition-all text-sm">
+                    <button
+                      onClick={() => handleViewAnalysis(analysis.title)}
+                      className="w-full px-4 py-2 bg-gradient-to-r from-green-700 to-green-600 text-white rounded-lg hover:shadow-lg transition-all text-sm"
+                    >
                       View Full Analysis
                     </button>
                   </div>
@@ -230,16 +261,23 @@ export function UserProfile({ onNavigate }: UserProfileProps) {
                       <div className="text-right">
                         <div className="text-2xl text-green-700">{job.matchScore}%</div>
                         <p className="text-xs text-gray-500 mb-2">Match</p>
-                        <span className={`text-xs px-2 py-1 rounded ${
-                          job.status === 'Under Review' ? 'bg-yellow-100 text-yellow-700' :
-                          job.status === 'Applied' ? 'bg-blue-100 text-blue-700' :
-                          'bg-gray-100 text-gray-700'
-                        }`}>
+                        <span
+                          className={`text-xs px-2 py-1 rounded ${
+                            job.status === 'Under Review'
+                              ? 'bg-yellow-100 text-yellow-700'
+                              : job.status === 'Applied'
+                              ? 'bg-blue-100 text-blue-700'
+                              : 'bg-gray-100 text-gray-700'
+                          }`}
+                        >
                           {job.status}
                         </span>
                       </div>
                     </div>
-                    <button className="w-full px-4 py-2 border-2 border-green-600 text-green-700 rounded-lg hover:bg-green-50 transition-all text-sm">
+                    <button
+                      onClick={() => handleViewJobDetails(job.title, job.company)}
+                      className="w-full px-4 py-2 border-2 border-green-600 text-green-700 rounded-lg hover:bg-green-50 transition-all text-sm"
+                    >
                       View Job Details
                     </button>
                   </div>
@@ -265,7 +303,10 @@ export function UserProfile({ onNavigate }: UserProfileProps) {
                 ))}
               </div>
 
-              <button className="mt-6 w-full px-4 py-2 border-2 border-green-600 text-green-700 rounded-lg hover:bg-green-50 transition-all">
+              <button
+                onClick={handleUpdateGoals}
+                className="mt-6 w-full px-4 py-2 border-2 border-green-600 text-green-700 rounded-lg hover:bg-green-50 transition-all"
+              >
                 Update Goals
               </button>
             </div>

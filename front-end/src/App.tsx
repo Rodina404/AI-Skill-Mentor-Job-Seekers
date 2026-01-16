@@ -18,6 +18,7 @@ import { RecruiterProfile } from "./components/RecruiterProfile";
 import { JobPosting } from "./components/JobPosting";
 import { JobsListing } from "./components/JobsListing";
 import { ChatHistorySidebar } from "./components/ChatHistorySidebar";
+import { AuthProvider } from "./contexts/AuthContext";
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState("home");
@@ -86,18 +87,20 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      <Navigation
-        onNavigate={handleNavigate}
-        currentPage={currentPage}
-        onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
-      />
-      <ChatHistorySidebar
-        isOpen={isSidebarOpen}
-        onClose={() => setIsSidebarOpen(false)}
-        onSelectItem={handleSelectHistoryItem}
-      />
-      {renderPage()}
-    </div>
+    <AuthProvider>
+      <div className="min-h-screen bg-white">
+        <Navigation
+          onNavigate={handleNavigate}
+          currentPage={currentPage}
+          onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+        />
+        <ChatHistorySidebar
+          isOpen={isSidebarOpen}
+          onClose={() => setIsSidebarOpen(false)}
+          onSelectItem={handleSelectHistoryItem}
+        />
+        {renderPage()}
+      </div>
+    </AuthProvider>
   );
 }

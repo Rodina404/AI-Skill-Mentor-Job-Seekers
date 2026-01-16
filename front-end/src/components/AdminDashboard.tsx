@@ -3,6 +3,47 @@ import { useState } from 'react';
 
 export function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
+  const [approvedJobs, setApprovedJobs] = useState<string[]>(['Senior Software Engineer', 'Data Scientist']); // Track approved jobs
+
+  const handleAddUser = () => {
+    alert('Add New User - Create a new user account with role assignment (User, Recruiter, or Admin).');
+  };
+
+  const handleEditUser = (userName: string) => {
+    alert(`Edit User: ${userName}\n\nYou can:\n- Update user information\n- Change user role\n- Manage permissions\n- Deactivate account`);
+  };
+
+  const handleViewJob = (jobTitle: string) => {
+    alert(`Viewing job: ${jobTitle}\n\nThis would show:\n- Full job details\n- Company information\n- Current applicants\n- Status and metrics`);
+  };
+
+  const handleApproveJob = (jobTitle: string) => {
+    // Prevent re-approving already approved jobs
+    if (approvedJobs.includes(jobTitle)) {
+      alert(`Job "${jobTitle}" is already approved and active!`);
+      return;
+    }
+    
+    // Add to approved jobs
+    setApprovedJobs([...approvedJobs, jobTitle]);
+    alert(`Job "${jobTitle}" has been approved and is now live!`);
+  };
+  
+  const handleAddCourse = () => {
+    alert('Add New Course - Add a course from learning platforms to the recommendation system.');
+  };
+
+  const handleConfigureAI = () => {
+    alert('AI Configuration - Adjust skill extraction algorithms, matching weights, and recommendation parameters.');
+  };
+
+  const handleViewAuditLog = () => {
+    alert('Ethical AI Audit Log - Review AI decisions, bias detection reports, and fairness monitoring data.');
+  };
+
+  const handleReviewJobs = () => {
+    alert('Job Review Queue - View and approve pending job postings from recruiters.');
+  };
 
   const stats = [
     { label: 'Total Users', value: '10,234', change: '+12%', icon: Users, color: 'green' },
@@ -23,6 +64,11 @@ export function AdminDashboard() {
     { title: 'Data Scientist', company: 'DataInc', posted: '2025-01-14', applicants: 32, status: 'Active' },
     { title: 'Product Manager', company: 'StartupXYZ', posted: '2025-01-13', applicants: 28, status: 'Under Review' },
   ];
+  
+  // Check if job is already approved
+  const isJobApproved = (jobTitle: string) => {
+    return approvedJobs.includes(jobTitle) || recentJobs.find(j => j.title === jobTitle)?.status === 'Active';
+  };
 
   return (
     <div className="min-h-screen pt-20 pb-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-green-50 to-lime-50">
@@ -186,7 +232,7 @@ export function AdminDashboard() {
               <div>
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-gray-900">User Management</h3>
-                  <button className="px-4 py-2 bg-gradient-to-r from-green-700 to-green-600 text-white rounded-lg hover:shadow-lg transition-all">
+                  <button className="px-4 py-2 bg-gradient-to-r from-green-700 to-green-600 text-white rounded-lg hover:shadow-lg transition-all" onClick={handleAddUser}>
                     Add User
                   </button>
                 </div>
@@ -217,7 +263,7 @@ export function AdminDashboard() {
                             </span>
                           </td>
                           <td className="py-3 px-4">
-                            <button className="text-green-700 hover:text-green-600 text-sm">Edit</button>
+                            <button className="text-green-700 hover:text-green-600 text-sm" onClick={() => handleEditUser(user.name)}>Edit</button>
                           </td>
                         </tr>
                       ))}
@@ -231,30 +277,41 @@ export function AdminDashboard() {
               <div>
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-gray-900">Job Management</h3>
-                  <button className="px-4 py-2 bg-gradient-to-r from-green-700 to-green-600 text-white rounded-lg hover:shadow-lg transition-all">
+                  <button className="px-4 py-2 bg-gradient-to-r from-green-700 to-green-600 text-white rounded-lg hover:shadow-lg transition-all" onClick={handleReviewJobs}>
                     Review Jobs
                   </button>
                 </div>
                 <div className="space-y-4">
-                  {recentJobs.map((job, index) => (
-                    <div key={index} className="p-4 bg-green-50 rounded-lg border border-green-200">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h4 className="text-gray-900 mb-1">{job.title}</h4>
-                          <p className="text-sm text-gray-600">{job.company} • Posted {job.posted}</p>
-                          <p className="text-sm text-gray-500 mt-1">{job.applicants} applicants • Status: {job.status}</p>
-                        </div>
-                        <div className="flex gap-2">
-                          <button className="px-4 py-2 border-2 border-green-600 text-green-700 rounded-lg hover:bg-green-50 transition-all">
-                            View
-                          </button>
-                          <button className="px-4 py-2 bg-gradient-to-r from-green-700 to-green-600 text-white rounded-lg hover:shadow-lg transition-all">
-                            Approve
-                          </button>
+                  {recentJobs.map((job, index) => {
+                    const isApproved = isJobApproved(job.title);
+                    return (
+                      <div key={index} className="p-4 bg-green-50 rounded-lg border border-green-200">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h4 className="text-gray-900 mb-1">{job.title}</h4>
+                            <p className="text-sm text-gray-600">{job.company} • Posted {job.posted}</p>
+                            <p className="text-sm text-gray-500 mt-1">{job.applicants} applicants • Status: {job.status}</p>
+                          </div>
+                          <div className="flex gap-2">
+                            <button className="px-4 py-2 border-2 border-green-600 text-green-700 rounded-lg hover:bg-green-50 transition-all" onClick={() => handleViewJob(job.title)}>
+                              View
+                            </button>
+                            <button 
+                              className={`px-4 py-2 rounded-lg transition-all ${
+                                isApproved
+                                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                  : 'bg-gradient-to-r from-green-700 to-green-600 text-white hover:shadow-lg'
+                              }`}
+                              onClick={() => handleApproveJob(job.title)}
+                              disabled={isApproved}
+                            >
+                              {isApproved ? 'Approved' : 'Approve'}
+                            </button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -263,7 +320,7 @@ export function AdminDashboard() {
               <div>
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-gray-900">Course Management</h3>
-                  <button className="px-4 py-2 bg-gradient-to-r from-green-700 to-green-600 text-white rounded-lg hover:shadow-lg transition-all">
+                  <button className="px-4 py-2 bg-gradient-to-r from-green-700 to-green-600 text-white rounded-lg hover:shadow-lg transition-all" onClick={handleAddCourse}>
                     Add Course
                   </button>
                 </div>
@@ -281,14 +338,14 @@ export function AdminDashboard() {
                   <div className="p-4 bg-green-50 rounded-lg border border-green-200">
                     <h4 className="text-gray-900 mb-2">AI Model Configuration</h4>
                     <p className="text-sm text-gray-600 mb-3">Configure AI analysis parameters and model settings.</p>
-                    <button className="px-4 py-2 border-2 border-green-600 text-green-700 rounded-lg hover:bg-green-50 transition-all text-sm">
+                    <button className="px-4 py-2 border-2 border-green-600 text-green-700 rounded-lg hover:bg-green-50 transition-all text-sm" onClick={handleConfigureAI}>
                       Configure
                     </button>
                   </div>
                   <div className="p-4 bg-green-50 rounded-lg border border-green-200">
                     <h4 className="text-gray-900 mb-2">Ethical AI Compliance</h4>
                     <p className="text-sm text-gray-600 mb-3">Monitor and ensure fair, unbiased AI recommendations.</p>
-                    <button className="px-4 py-2 border-2 border-green-600 text-green-700 rounded-lg hover:bg-green-50 transition-all text-sm">
+                    <button className="px-4 py-2 border-2 border-green-600 text-green-700 rounded-lg hover:bg-green-50 transition-all text-sm" onClick={handleViewAuditLog}>
                       View Audit Log
                     </button>
                   </div>
