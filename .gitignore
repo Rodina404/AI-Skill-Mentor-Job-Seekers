@@ -137,3 +137,17 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Backend Node.js dependencies
+/backend/node_modules
+
+# Backend environment variables (NEVER commit secrets)
+/backend/.env
+
+# Backend logs
+/backend/logs/
+/backend/*.log
+
+# Frontend dependencies (if you have a front-end project)
+/front-end/node_modules
+/front-end/.env
