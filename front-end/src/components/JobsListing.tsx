@@ -8,6 +8,8 @@ interface JobsListingProps {
 export function JobsListing({ onNavigate }: JobsListingProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
+  const [savedJobs, setSavedJobs] = useState<number[]>([]);
+  const [savingJobId, setSavingJobId] = useState<number | null>(null);
 
   const jobs = [
     {
@@ -85,6 +87,14 @@ export function JobsListing({ onNavigate }: JobsListingProps) {
     const matchesFilter = filterType === 'all' || job.type.toLowerCase().includes(filterType);
     return matchesSearch && matchesFilter;
   });
+
+  const handleSaveJob = (jobId: number) => {
+    setSavingJobId(jobId);
+    setTimeout(() => {
+      setSavedJobs(prevSavedJobs => [...prevSavedJobs, jobId]);
+      setSavingJobId(null);
+    }, 500);
+  };
 
   return (
     <div className="min-h-screen pt-20 pb-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-green-50 to-lime-50">
@@ -208,11 +218,18 @@ export function JobsListing({ onNavigate }: JobsListingProps) {
                 </div>
 
                 <div className="flex lg:flex-col gap-3">
-                  <button className="flex-1 lg:w-40 px-6 py-3 bg-gradient-to-r from-green-700 to-green-600 text-white rounded-lg hover:shadow-lg transition-all">
+                  <button 
+                    onClick={() => onNavigate('job-details')}
+                    className="flex-1 lg:w-40 px-6 py-3 bg-gradient-to-r from-green-700 to-green-600 text-white rounded-lg hover:shadow-lg transition-all"
+                  >
                     View Details
                   </button>
-                  <button className="flex-1 lg:w-40 px-6 py-3 border-2 border-green-600 text-green-700 rounded-lg hover:bg-green-50 transition-all">
-                    Save Job
+                  <button
+                    className="flex-1 lg:w-40 px-6 py-3 border-2 border-green-600 text-green-700 rounded-lg hover:bg-green-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={() => handleSaveJob(index)}
+                    disabled={savingJobId === index || savedJobs.includes(index)}
+                  >
+                    {savingJobId === index ? 'Saving...' : savedJobs.includes(index) ? 'Saved' : 'Save Job'}
                   </button>
                 </div>
               </div>

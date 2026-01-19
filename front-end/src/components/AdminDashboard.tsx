@@ -1,48 +1,97 @@
-import { Users, Briefcase, BookOpen, Activity, TrendingUp, AlertCircle, CheckCircle, Settings } from 'lucide-react';
+import { Users, Briefcase, BookOpen, Activity, TrendingUp, AlertCircle, CheckCircle, Settings, X, User, Mail, Briefcase as BriefcaseIcon, Plus, Save } from 'lucide-react';
 import { useState } from 'react';
 
 export function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
-  const [approvedJobs, setApprovedJobs] = useState<string[]>(['Senior Software Engineer', 'Data Scientist']); // Track approved jobs
+  const [approvedJobs, setApprovedJobs] = useState<string[]>(['Senior Software Engineer', 'Data Scientist']);
+  const [showAddUserModal, setShowAddUserModal] = useState(false);
+  const [showAddCourseModal, setShowAddCourseModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+
+  const [newUser, setNewUser] = useState({
+    name: '',
+    email: '',
+    role: 'jobseeker',
+  });
+
+  const [newCourse, setNewCourse] = useState({
+    title: '',
+    platform: '',
+    duration: '',
+    level: 'beginner',
+  });
 
   const handleAddUser = () => {
-    alert('Add New User - Create a new user account with role assignment (User, Recruiter, or Admin).');
+    setShowAddUserModal(true);
   };
 
-  const handleEditUser = (userName: string) => {
-    alert(`Edit User: ${userName}\n\nYou can:\n- Update user information\n- Change user role\n- Manage permissions\n- Deactivate account`);
+  const handleSaveUser = async () => {
+    // Validate
+    if (!newUser.name || !newUser.email) {
+      alert('Please fill in all required fields');
+      return;
+    }
+
+    setIsLoading(true);
+
+    // Simulate API call
+    setTimeout(() => {
+      setIsLoading(false);
+      setShowAddUserModal(false);
+      setSuccessMessage(`User "${newUser.name}" added successfully!`);
+      setShowSuccess(true);
+      setNewUser({ name: '', email: '', role: 'jobseeker' });
+
+      setTimeout(() => setShowSuccess(false), 3000);
+    }, 1000);
   };
 
   const handleViewJob = (jobTitle: string) => {
-    alert(`Viewing job: ${jobTitle}\n\nThis would show:\n- Full job details\n- Company information\n- Current applicants\n- Status and metrics`);
+    // In production, this would navigate to a job details view
+    setSuccessMessage(`Viewing details for: ${jobTitle}`);
+    setShowSuccess(true);
+    setTimeout(() => setShowSuccess(false), 2000);
   };
 
   const handleApproveJob = (jobTitle: string) => {
-    // Prevent re-approving already approved jobs
     if (approvedJobs.includes(jobTitle)) {
-      alert(`Job "${jobTitle}" is already approved and active!`);
+      setSuccessMessage(`Job "${jobTitle}" is already approved!`);
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 2000);
       return;
     }
-    
-    // Add to approved jobs
+
     setApprovedJobs([...approvedJobs, jobTitle]);
-    alert(`Job "${jobTitle}" has been approved and is now live!`);
+    setSuccessMessage(`Job "${jobTitle}" has been approved and is now live!`);
+    setShowSuccess(true);
+    setTimeout(() => setShowSuccess(false), 3000);
   };
-  
+
   const handleAddCourse = () => {
-    alert('Add New Course - Add a course from learning platforms to the recommendation system.');
+    setShowAddCourseModal(true);
   };
 
-  const handleConfigureAI = () => {
-    alert('AI Configuration - Adjust skill extraction algorithms, matching weights, and recommendation parameters.');
-  };
+  const handleSaveCourse = async () => {
+    // Validate
+    if (!newCourse.title || !newCourse.platform) {
+      alert('Please fill in all required fields');
+      return;
+    }
 
-  const handleViewAuditLog = () => {
-    alert('Ethical AI Audit Log - Review AI decisions, bias detection reports, and fairness monitoring data.');
-  };
+    setIsLoading(true);
 
-  const handleReviewJobs = () => {
-    alert('Job Review Queue - View and approve pending job postings from recruiters.');
+    // Simulate API call
+    setTimeout(() => {
+      setIsLoading(false);
+      setShowAddCourseModal(false);
+      setSuccessMessage(`Course "${newCourse.title}" added successfully!`);
+      setShowSuccess(true);
+      setNewCourse({ title: '', platform: '', duration: '', level: 'beginner' });
+
+      setTimeout(() => setShowSuccess(false), 3000);
+    }, 1000);
   };
 
   const stats = [
@@ -64,8 +113,7 @@ export function AdminDashboard() {
     { title: 'Data Scientist', company: 'DataInc', posted: '2025-01-14', applicants: 32, status: 'Active' },
     { title: 'Product Manager', company: 'StartupXYZ', posted: '2025-01-13', applicants: 28, status: 'Under Review' },
   ];
-  
-  // Check if job is already approved
+
   const isJobApproved = (jobTitle: string) => {
     return approvedJobs.includes(jobTitle) || recentJobs.find(j => j.title === jobTitle)?.status === 'Active';
   };
@@ -79,6 +127,14 @@ export function AdminDashboard() {
           </h2>
           <p className="text-gray-600">Manage users, jobs, and system performance</p>
         </div>
+
+        {/* Success Message */}
+        {showSuccess && (
+          <div className="mb-6 flex items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700">
+            <CheckCircle className="w-5 h-5" />
+            <span>{successMessage}</span>
+          </div>
+        )}
 
         {/* Stats Grid */}
         <div className="grid md:grid-cols-4 gap-6 mb-8">
@@ -137,16 +193,6 @@ export function AdminDashboard() {
                 }`}
               >
                 Courses
-              </button>
-              <button
-                onClick={() => setActiveTab('settings')}
-                className={`px-6 py-3 rounded-lg transition-all ${
-                  activeTab === 'settings'
-                    ? 'bg-gradient-to-r from-green-700 to-green-600 text-white'
-                    : 'text-gray-600 hover:bg-green-50'
-                }`}
-              >
-                Settings
               </button>
             </div>
           </div>
@@ -232,7 +278,11 @@ export function AdminDashboard() {
               <div>
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-gray-900">User Management</h3>
-                  <button className="px-4 py-2 bg-gradient-to-r from-green-700 to-green-600 text-white rounded-lg hover:shadow-lg transition-all" onClick={handleAddUser}>
+                  <button 
+                    className="px-4 py-2 bg-gradient-to-r from-green-700 to-green-600 text-white rounded-lg hover:shadow-lg transition-all flex items-center gap-2" 
+                    onClick={handleAddUser}
+                  >
+                    <Plus className="w-4 h-4" />
                     Add User
                   </button>
                 </div>
@@ -245,7 +295,6 @@ export function AdminDashboard() {
                         <th className="text-left py-3 px-4 text-gray-700">Role</th>
                         <th className="text-left py-3 px-4 text-gray-700">Joined</th>
                         <th className="text-left py-3 px-4 text-gray-700">Status</th>
-                        <th className="text-left py-3 px-4 text-gray-700">Actions</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -262,9 +311,6 @@ export function AdminDashboard() {
                               {user.status}
                             </span>
                           </td>
-                          <td className="py-3 px-4">
-                            <button className="text-green-700 hover:text-green-600 text-sm" onClick={() => handleEditUser(user.name)}>Edit</button>
-                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -277,9 +323,6 @@ export function AdminDashboard() {
               <div>
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-gray-900">Job Management</h3>
-                  <button className="px-4 py-2 bg-gradient-to-r from-green-700 to-green-600 text-white rounded-lg hover:shadow-lg transition-all" onClick={handleReviewJobs}>
-                    Review Jobs
-                  </button>
                 </div>
                 <div className="space-y-4">
                   {recentJobs.map((job, index) => {
@@ -293,7 +336,10 @@ export function AdminDashboard() {
                             <p className="text-sm text-gray-500 mt-1">{job.applicants} applicants • Status: {job.status}</p>
                           </div>
                           <div className="flex gap-2">
-                            <button className="px-4 py-2 border-2 border-green-600 text-green-700 rounded-lg hover:bg-green-50 transition-all" onClick={() => handleViewJob(job.title)}>
+                            <button 
+                              className="px-4 py-2 border-2 border-green-600 text-green-700 rounded-lg hover:bg-green-50 transition-all" 
+                              onClick={() => handleViewJob(job.title)}
+                            >
                               View
                             </button>
                             <button 
@@ -320,40 +366,184 @@ export function AdminDashboard() {
               <div>
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-gray-900">Course Management</h3>
-                  <button className="px-4 py-2 bg-gradient-to-r from-green-700 to-green-600 text-white rounded-lg hover:shadow-lg transition-all" onClick={handleAddCourse}>
+                  <button 
+                    className="px-4 py-2 bg-gradient-to-r from-green-700 to-green-600 text-white rounded-lg hover:shadow-lg transition-all flex items-center gap-2" 
+                    onClick={handleAddCourse}
+                  >
+                    <Plus className="w-4 h-4" />
                     Add Course
                   </button>
                 </div>
                 <p className="text-gray-600">Manage and curate course recommendations for users.</p>
               </div>
             )}
+          </div>
+        </div>
 
-            {activeTab === 'settings' && (
-              <div>
-                <h3 className="text-gray-900 mb-6 flex items-center gap-2">
-                  <Settings className="w-5 h-5 text-green-600" />
-                  System Settings
-                </h3>
-                <div className="space-y-4">
-                  <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-                    <h4 className="text-gray-900 mb-2">AI Model Configuration</h4>
-                    <p className="text-sm text-gray-600 mb-3">Configure AI analysis parameters and model settings.</p>
-                    <button className="px-4 py-2 border-2 border-green-600 text-green-700 rounded-lg hover:bg-green-50 transition-all text-sm" onClick={handleConfigureAI}>
-                      Configure
-                    </button>
+        {/* Add User Modal */}
+        {showAddUserModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-2xl p-8 w-96">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-gray-900 text-xl">Add New User</h3>
+                <button onClick={() => setShowAddUserModal(false)} className="text-gray-500 hover:text-gray-700">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-gray-700 mb-2">Name <span className="text-red-500">*</span></label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <input
+                      type="text"
+                      value={newUser.name}
+                      onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
+                      className="w-full pl-11 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-green-600"
+                      placeholder="Full Name"
+                    />
                   </div>
-                  <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-                    <h4 className="text-gray-900 mb-2">Ethical AI Compliance</h4>
-                    <p className="text-sm text-gray-600 mb-3">Monitor and ensure fair, unbiased AI recommendations.</p>
-                    <button className="px-4 py-2 border-2 border-green-600 text-green-700 rounded-lg hover:bg-green-50 transition-all text-sm" onClick={handleViewAuditLog}>
-                      View Audit Log
-                    </button>
+                </div>
+                <div>
+                  <label className="block text-gray-700 mb-2">Email <span className="text-red-500">*</span></label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <input
+                      type="email"
+                      value={newUser.email}
+                      onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+                      className="w-full pl-11 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-green-600"
+                      placeholder="email@example.com"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-gray-700 mb-2">Role</label>
+                  <div className="relative">
+                    <BriefcaseIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <select
+                      value={newUser.role}
+                      onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
+                      className="w-full pl-11 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-green-600"
+                    >
+                      <option value="jobseeker">Job Seeker</option>
+                      <option value="recruiter">Recruiter</option>
+                      <option value="admin">Administrator</option>
+                    </select>
                   </div>
                 </div>
               </div>
-            )}
+              <div className="flex items-center justify-end mt-6 gap-3">
+                <button
+                  onClick={() => setShowAddUserModal(false)}
+                  className="px-4 py-2 border-2 border-gray-300 text-gray-500 rounded-lg hover:bg-gray-100 transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSaveUser}
+                  disabled={isLoading}
+                  className="px-6 py-2 bg-gradient-to-r from-green-700 to-green-600 text-white rounded-lg hover:shadow-lg transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isLoading ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-5 h-5" />
+                      Save User
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
           </div>
-        </div>
+        )}
+
+        {/* Add Course Modal */}
+        {showAddCourseModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-2xl p-8 w-96">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-gray-900 text-xl">Add New Course</h3>
+                <button onClick={() => setShowAddCourseModal(false)} className="text-gray-500 hover:text-gray-700">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-gray-700 mb-2">Title <span className="text-red-500">*</span></label>
+                  <input
+                    type="text"
+                    value={newCourse.title}
+                    onChange={(e) => setNewCourse({ ...newCourse, title: e.target.value })}
+                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-green-600"
+                    placeholder="Course Title"
+                  />
+                </div>
+                <div>
+                  <label className="block text-gray-700 mb-2">Platform <span className="text-red-500">*</span></label>
+                  <input
+                    type="text"
+                    value={newCourse.platform}
+                    onChange={(e) => setNewCourse({ ...newCourse, platform: e.target.value })}
+                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-green-600"
+                    placeholder="e.g. Coursera, Udemy"
+                  />
+                </div>
+                <div>
+                  <label className="block text-gray-700 mb-2">Duration</label>
+                  <input
+                    type="text"
+                    value={newCourse.duration}
+                    onChange={(e) => setNewCourse({ ...newCourse, duration: e.target.value })}
+                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-green-600"
+                    placeholder="e.g. 4 weeks"
+                  />
+                </div>
+                <div>
+                  <label className="block text-gray-700 mb-2">Level</label>
+                  <select
+                    value={newCourse.level}
+                    onChange={(e) => setNewCourse({ ...newCourse, level: e.target.value })}
+                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-green-600"
+                  >
+                    <option value="beginner">Beginner</option>
+                    <option value="intermediate">Intermediate</option>
+                    <option value="advanced">Advanced</option>
+                  </select>
+                </div>
+              </div>
+              <div className="flex items-center justify-end mt-6 gap-3">
+                <button
+                  onClick={() => setShowAddCourseModal(false)}
+                  className="px-4 py-2 border-2 border-gray-300 text-gray-500 rounded-lg hover:bg-gray-100 transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSaveCourse}
+                  disabled={isLoading}
+                  className="px-6 py-2 bg-gradient-to-r from-green-700 to-green-600 text-white rounded-lg hover:shadow-lg transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isLoading ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-5 h-5" />
+                      Save Course
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import { Mail, MapPin, Briefcase, Calendar, Target, Award, TrendingUp, Edit, FileText, Clock } from 'lucide-react';
+import { Mail, MapPin, Briefcase, Calendar, Target, Award, TrendingUp, Edit, FileText, Clock, Plus, Save, X, CheckCircle, AlertCircle } from 'lucide-react';
 import { useState } from 'react';
 
 interface UserProfileProps {
@@ -6,28 +6,86 @@ interface UserProfileProps {
 }
 
 export function UserProfile({ onNavigate }: UserProfileProps) {
-  const [isEditingProfile, setIsEditingProfile] = useState(false);
-  const [isEditingSkills, setIsEditingSkills] = useState(false);
+  const [isAddingSkill, setIsAddingSkill] = useState(false);
+  const [newSkill, setNewSkill] = useState({ name: '', level: 50, category: 'Programming' });
+  const [isAddingSkillLoading, setIsAddingSkillLoading] = useState(false);
+  const [showSkillSuccess, setShowSkillSuccess] = useState(false);
+
   const [isEditingGoals, setIsEditingGoals] = useState(false);
+  const [goals, setGoals] = useState([
+    'Transition to Senior Software Engineer role',
+    'Master Machine Learning and AI technologies',
+    'Lead a development team within 2 years',
+    'Contribute to open-source projects',
+  ]);
+  const [newGoal, setNewGoal] = useState('');
+  const [isSavingGoals, setIsSavingGoals] = useState(false);
+  const [showGoalsSuccess, setShowGoalsSuccess] = useState(false);
 
   const handleEditProfile = () => {
-    alert('Profile editing feature - Coming soon! You will be able to update your name, job title, location, and contact information.');
+    onNavigate('edit-profile');
   };
 
-  const handleAddSkill = () => {
-    alert('Add new skill feature - You can add a new skill with proficiency level.');
-  };
+  const handleAddSkill = async () => {
+    if (!newSkill.name || newSkill.name.trim().length === 0) {
+      alert('Please enter a skill name');
+      return;
+    }
 
-  const handleViewAnalysis = (title: string) => {
-    alert(`Viewing detailed analysis for: ${title}\n\nThis would show:\n- Complete skill breakdown\n- Detailed gap analysis\n- Personalized recommendations\n- Improvement strategies`);
-  };
+    setIsAddingSkillLoading(true);
 
-  const handleViewJobDetails = (title: string, company: string) => {
-    alert(`Job Details: ${title} at ${company}\n\nThis would show:\n- Full job description\n- Required qualifications\n- Your match score breakdown\n- Application status`);
+    // Simulate API call
+    // In a real app: await addSkill(newSkill);
+    setTimeout(() => {
+      setIsAddingSkillLoading(false);
+      setShowSkillSuccess(true);
+      setNewSkill({ name: '', level: 50, category: 'Programming' });
+      setIsAddingSkill(false);
+
+      // Hide success message after 3 seconds
+      setTimeout(() => setShowSkillSuccess(false), 3000);
+    }, 1000);
   };
 
   const handleUpdateGoals = () => {
-    alert('Update career goals - You can add, edit, or remove career goals to track your progress.');
+    setIsEditingGoals(true);
+  };
+
+  const handleSaveGoals = async () => {
+    setIsSavingGoals(true);
+
+    // Simulate API call
+    // In a real app: await updateGoals(goals);
+    setTimeout(() => {
+      setIsSavingGoals(false);
+      setShowGoalsSuccess(true);
+      setIsEditingGoals(false);
+      setNewGoal('');
+
+      // Hide success message after 3 seconds
+      setTimeout(() => setShowGoalsSuccess(false), 3000);
+    }, 1000);
+  };
+
+  const handleAddGoal = () => {
+    if (newGoal.trim().length > 0) {
+      setGoals([...goals, newGoal.trim()]);
+      setNewGoal('');
+    }
+  };
+
+  const handleRemoveGoal = (index: number) => {
+    setGoals(goals.filter((_, i) => i !== index));
+  };
+
+  const handleViewAnalysis = (title: string) => {
+    // In production, this would navigate to analysis page with ID
+    onNavigate('analysis');
+  };
+
+  const handleViewJobDetails = (title: string, company: string) => {
+    // In production, this would navigate with job ID
+    onNavigate('job-details');
   };
 
   const skills = [
@@ -46,10 +104,39 @@ export function UserProfile({ onNavigate }: UserProfileProps) {
     'Contribute to open-source projects',
   ];
 
-  const achievements = [
-    { title: 'Resume Analyzed', date: '2025-01-15', icon: Award },
-    { title: 'Completed 3 Courses', date: '2025-01-10', icon: TrendingUp },
-    { title: 'Profile 85% Complete', date: '2025-01-05', icon: Target },
+  const skillGaps = [
+    { 
+      skill: 'System Design',
+      priority: 'High',
+      currentLevel: 'Beginner',
+      targetLevel: 'Advanced',
+      impact: 'Critical for senior roles',
+      suggestedFocus: 'Complete system design course and practice with real-world scenarios'
+    },
+    {
+      skill: 'Kubernetes',
+      priority: 'High',
+      currentLevel: 'None',
+      targetLevel: 'Intermediate',
+      impact: 'Required by 80% of target jobs',
+      suggestedFocus: 'Start with container basics, then move to orchestration'
+    },
+    {
+      skill: 'GraphQL',
+      priority: 'Medium',
+      currentLevel: 'Beginner',
+      targetLevel: 'Intermediate',
+      impact: 'Valuable for modern APIs',
+      suggestedFocus: 'Build a project integrating GraphQL with existing backend'
+    },
+    {
+      skill: 'TypeScript',
+      priority: 'Medium',
+      currentLevel: 'Intermediate',
+      targetLevel: 'Advanced',
+      impact: 'Industry standard for large projects',
+      suggestedFocus: 'Master advanced types and patterns'
+    },
   ];
 
   const analysisHistory = [
@@ -100,6 +187,12 @@ export function UserProfile({ onNavigate }: UserProfileProps) {
     },
   ];
 
+  const achievements = [
+    { title: 'Resume Analyzed', date: '2025-01-15', icon: Award },
+    { title: 'Completed 3 Courses', date: '2025-01-10', icon: TrendingUp },
+    { title: 'Profile 85% Complete', date: '2025-01-05', icon: Target },
+  ];
+
   return (
     <div className="min-h-screen pt-20 pb-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-green-50 to-lime-50">
       <div className="max-w-7xl mx-auto">
@@ -127,15 +220,15 @@ export function UserProfile({ onNavigate }: UserProfileProps) {
               <div className="grid md:grid-cols-3 gap-4 mb-6">
                 <div className="flex items-center gap-2 text-gray-600">
                   <Mail className="w-5 h-5 text-green-600" />
-                  <span className="text-sm">john.doe@example.com</span>
+                  <span className="text-sm">aya.mamdouh10@icloud.com</span>
                 </div>
                 <div className="flex items-center gap-2 text-gray-600">
                   <MapPin className="w-5 h-5 text-green-600" />
-                  <span className="text-sm">San Francisco, CA</span>
+                  <span className="text-sm">Egypt, Alex</span>
                 </div>
                 <div className="flex items-center gap-2 text-gray-600">
                   <Calendar className="w-5 h-5 text-green-600" />
-                  <span className="text-sm">Joined January 2025</span>
+                  <span className="text-sm">Joined January 2026</span>
                 </div>
               </div>
 
@@ -188,11 +281,92 @@ export function UserProfile({ onNavigate }: UserProfileProps) {
               </div>
 
               <button
-                onClick={handleAddSkill}
+                onClick={() => setIsAddingSkill(true)}
                 className="mt-6 w-full px-4 py-2 border-2 border-green-600 text-green-700 rounded-lg hover:bg-green-50 transition-all"
               >
                 Add New Skill
               </button>
+
+              {/* Add Skill Modal */}
+              {isAddingSkill && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                  <div className="bg-white rounded-2xl p-8 w-96">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-gray-900">Add New Skill</h3>
+                      <button onClick={() => setIsAddingSkill(false)} className="text-gray-500 hover:text-gray-700">
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2">
+                        <Briefcase className="w-5 h-5 text-gray-500" />
+                        <input
+                          type="text"
+                          value={newSkill.name}
+                          onChange={(e) => setNewSkill({ ...newSkill, name: e.target.value })}
+                          className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-green-600"
+                          placeholder="Skill Name"
+                        />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Target className="w-5 h-5 text-gray-500" />
+                        <input
+                          type="number"
+                          value={newSkill.level}
+                          onChange={(e) => setNewSkill({ ...newSkill, level: parseInt(e.target.value) })}
+                          className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-green-600"
+                          placeholder="Proficiency Level"
+                        />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Briefcase className="w-5 h-5 text-gray-500" />
+                        <select
+                          value={newSkill.category}
+                          onChange={(e) => setNewSkill({ ...newSkill, category: e.target.value })}
+                          className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-green-600"
+                        >
+                          <option value="Programming">Programming</option>
+                          <option value="Framework">Framework</option>
+                          <option value="Backend">Backend</option>
+                          <option value="AI/ML">AI/ML</option>
+                          <option value="Database">Database</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-end mt-4">
+                      <button
+                        onClick={() => setIsAddingSkill(false)}
+                        className="px-4 py-2 border-2 border-gray-300 text-gray-500 rounded-lg hover:bg-gray-100 transition-all mr-2"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleAddSkill}
+                        className="px-4 py-2 bg-gradient-to-r from-green-700 to-green-600 text-white rounded-lg hover:shadow-lg transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled={isAddingSkillLoading}
+                      >
+                        {isAddingSkillLoading ? (
+                          <>
+                            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            Adding...
+                          </>
+                        ) : (
+                          <>
+                            <Plus className="w-5 h-5" />
+                            Add Skill
+                          </>
+                        )}
+                      </button>
+                    </div>
+                    {showSkillSuccess && (
+                      <div className="mt-4 text-sm text-green-700 flex items-center gap-2">
+                        <CheckCircle className="w-5 h-5" />
+                        Skill added successfully!
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Analysis History */}
@@ -289,25 +463,47 @@ export function UserProfile({ onNavigate }: UserProfileProps) {
             <div className="bg-white rounded-2xl shadow-lg p-8 border-2 border-green-100">
               <h3 className="text-gray-900 mb-6 flex items-center gap-2">
                 <Target className="w-6 h-6 text-green-600" />
-                Career Goals
+                Skill Gaps
               </h3>
 
-              <div className="space-y-3">
-                {careerGoals.map((goal, index) => (
-                  <div key={index} className="flex items-start gap-3 p-4 bg-green-50 rounded-lg border border-green-200">
-                    <div className="w-6 h-6 bg-gradient-to-br from-green-700 to-green-600 rounded-full flex items-center justify-center text-white text-sm flex-shrink-0">
-                      {index + 1}
+              <div className="space-y-4">
+                {skillGaps.map((gap, index) => (
+                  <div key={index} className="p-4 bg-gradient-to-br from-red-50 to-orange-50 rounded-lg border border-orange-200">
+                    <div className="flex items-start justify-between mb-2">
+                      <h4 className="text-gray-900">{gap.skill}</h4>
+                      <span className={`text-xs px-2 py-1 rounded ${
+                        gap.priority === 'High' 
+                          ? 'bg-red-100 text-red-700 border border-red-200' 
+                          : 'bg-yellow-100 text-yellow-700 border border-yellow-200'
+                      }`}>
+                        {gap.priority} Priority
+                      </span>
                     </div>
-                    <p className="text-gray-700">{goal}</p>
+                    <div className="grid grid-cols-2 gap-2 mb-3 text-sm">
+                      <div>
+                        <span className="text-gray-600">Current:</span>
+                        <span className="ml-1 text-orange-700">{gap.currentLevel}</span>
+                      </div>
+                      <div>
+                        <span className="text-gray-600">Target:</span>
+                        <span className="ml-1 text-green-700">{gap.targetLevel}</span>
+                      </div>
+                    </div>
+                    <p className="text-xs text-gray-600 mb-2">
+                      <strong>Impact:</strong> {gap.impact}
+                    </p>
+                    <p className="text-xs text-gray-700 p-2 bg-white rounded border border-orange-100">
+                      <strong>Suggested Focus:</strong> {gap.suggestedFocus}
+                    </p>
                   </div>
                 ))}
               </div>
 
               <button
-                onClick={handleUpdateGoals}
-                className="mt-6 w-full px-4 py-2 border-2 border-green-600 text-green-700 rounded-lg hover:bg-green-50 transition-all"
+                onClick={() => onNavigate('courses')}
+                className="mt-6 w-full px-4 py-2 bg-gradient-to-r from-green-700 to-green-600 text-white rounded-lg hover:shadow-lg transition-all"
               >
-                Update Goals
+                View Course Recommendations
               </button>
             </div>
           </div>
