@@ -1,13 +1,11 @@
 const mongoose = require("mongoose");
 
-const connectDB = async () => {
-  try {
-    await mongoose.connect(process.env.MONGO_URI);
-    console.log("MongoDB Connected via Docker...");
-  } catch (err) {
-    console.error("MongoDB Connection Error:", err.message);
-    process.exit(1);
-  }
-};
+async function connectDB() {
+  const uri = process.env.MONGODB_URI;
+  if (!uri) throw new Error("Missing MONGODB_URI");
 
-module.exports = connectDB;
+  await mongoose.connect(uri, { autoIndex: true });
+  console.log("MongoDB connected");
+}
+
+module.exports = { connectDB };
