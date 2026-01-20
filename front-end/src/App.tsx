@@ -19,6 +19,8 @@ import { JobPosting } from "./components/JobPosting";
 import { JobsListing } from "./components/JobsListing";
 import { ChatHistorySidebar } from "./components/ChatHistorySidebar";
 import { AuthProvider } from "./contexts/AuthContext";
+import { EditProfile } from "./components/EditProfile";
+import { JobDetails } from "./components/JobDetails";
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState("home");
@@ -49,6 +51,8 @@ export default function App() {
         return <SignUp onNavigate={handleNavigate} />;
       case "profile":
         return <UserProfile onNavigate={handleNavigate} />;
+      case "edit-profile":
+        return <EditProfile onNavigate={handleNavigate} />;
       case "history":
         return <History onNavigate={handleNavigate} />;
       case "courses":
@@ -63,6 +67,8 @@ export default function App() {
         return <JobPosting onNavigate={handleNavigate} />;
       case "jobs":
         return <JobsListing onNavigate={handleNavigate} />;
+      case "job-details":
+        return <JobDetails onNavigate={handleNavigate} />;
       case "analysis":
         return (
           <>

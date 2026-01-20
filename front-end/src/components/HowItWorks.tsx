@@ -66,12 +66,6 @@ export function HowItWorks() {
             </div>
           ))}
         </div>
-
-        <div className="mt-16 text-center">
-          <button className="px-8 py-4 bg-gradient-to-r from-green-700 to-green-600 text-white rounded-lg hover:shadow-xl transition-all">
-            Start Your Free Trial
-          </button>
-        </div>
       </div>
     </section>
   );
