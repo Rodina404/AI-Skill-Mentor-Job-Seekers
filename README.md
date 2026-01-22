@@ -7,7 +7,7 @@ The system connects **students, employers, and administrators** through a smart 
 ---
 
 ###  System Components
-- **Frontend:** Vue.js  
+- **Frontend:** React.js  + TypeScript.js
 - **Backend:** Express.js (Node.js)  
 - **Database:** MongoDB  
 - **AI/NLP:** BART-based model for skill extraction and text summarization  
