@@ -1,12 +1,18 @@
+const validator = require("validator");
+const bcrypt = require("bcryptjs");
 const mongoose = require("mongoose");
-const { Schema } = mongoose;
+const { USER_ROLES } = require("../../utils/constants");
+const { env } = require("../../config/env"); // ✅ add this
+
+const SALT_WORK_FACTOR = env.bcryptSaltRounds; // ✅ now works
+
 const userSchema = new mongoose.Schema({
   email: {
     type: String,
     required: [true, 'Email is required'],
     unique: true,
     lowercase: true,
-    validate: [isEmail, 'Please enter a valid email'],
+    validate: [validator.isEmail, 'Please enter a valid email'],
     trim: true,
     index: true, // Index for fast login/lookup
   },
@@ -30,11 +36,11 @@ const userSchema = new mongoose.Schema({
     default: true, // Soft delete mechanism
   },
   // Reference to the specific profile model (polymorphic reference)
-  profileId: {
-    type: mongoose.Schema.Types.ObjectId,
-    required: true,
-    index: true,
-  },
+profileId: {
+  type: mongoose.Schema.Types.ObjectId,
+  required: true,
+  default: () => new mongoose.Types.ObjectId(),
+},
 }, {
   timestamps: true, // Adds createdAt and updatedAt
 });
@@ -56,4 +62,4 @@ userSchema.methods.comparePassword = async function(candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };
 
-const User = mongoose.model('User', userSchema);
+module.exports = mongoose.model("User", userSchema);

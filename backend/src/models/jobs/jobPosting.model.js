@@ -3,13 +3,14 @@ const { Schema } = mongoose;
 
 const JobPostingSchema = new Schema(
   {
-    recruiterId: { type: Schema.Types.ObjectId, ref: "RecruiterProfile", required: true, index: true },
+    recruiterId: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
 
     jobTitle: { type: String, required: true, maxlength: 100, trim: true, index: true },
     jobDescription: { type: String, required: true, maxlength: 20000 },
 
-    requiredSkills: [{ type: Schema.Types.ObjectId, ref: "Skill", required: true }],
-    preferredSkills: [{ type: Schema.Types.ObjectId, ref: "Skill" }],
+requiredSkills: { type: [String], required: true, default: [] },
+preferredSkills: { type: [String], default: [] },
+
 
     minExperience: { type: Number, min: 0, max: 60 },
     maxExperience: { type: Number, min: 0, max: 60 },

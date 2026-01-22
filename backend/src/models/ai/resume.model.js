@@ -3,18 +3,21 @@ const { Schema } = mongoose;
 
 const ResumeSchema = new Schema(
   {
-    // per guide: RESUME.userId references JOB_SEEKER_PROFILE.userId (same ObjectId value)
-    userId: { type: Schema.Types.ObjectId, ref: "JobSeekerProfile", required: true, index: true },
+    // IMPORTANT: Your controller uses req.user.id (User._id).
+    // So this should reference User, not JobSeekerProfile unless you really pass profileId.
+    userId: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
 
-    fileName: { type: String, required: true, maxlength: 255 },
-    fileUrl: { type: String, required: true, maxlength: 1024 },
-
-    // SRS: ≤ 5MB
-    fileSize: { type: Number, required: true, min: 1, max: 5 * 1024 * 1024 },
+    // File metadata
+    originalName: { type: String, required: true, trim: true, maxlength: 255 },
+    fileName: { type: String, required: true, trim: true, maxlength: 255 }, // stored name in uploads folder
+    fileUrl: { type: String, required: true, maxlength: 1024 }, // can be local path now, later cloud URL
+    fileSize: { type: Number, required: true, min: 1, max: 5 * 1024 * 1024 }, // bytes
     fileFormat: { type: String, required: true, enum: ["pdf", "docx"] },
+    mimeType: { type: String, required: true },
 
     uploadedAt: { type: Date, default: Date.now, index: true },
 
+    // Analysis
     isAnalyzed: { type: Boolean, default: false, index: true },
     analysisStatus: {
       type: String,
