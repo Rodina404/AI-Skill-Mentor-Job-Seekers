@@ -1,19 +1,20 @@
 import { useState } from 'react';
-import { Mail, Lock, ArrowRight, Brain, Briefcase, AlertCircle } from 'lucide-react';
-import { validateEmail, validatePassword } from '../utils/validation';
+import { Mail, Lock, ArrowRight, Brain, AlertCircle } from 'lucide-react';
+import { validateEmail } from '../utils/validation';
+import { useAuth } from '../context/AuthContext';
 
 interface LoginProps {
   onNavigate: (page: string) => void;
 }
 
 export function Login({ onNavigate }: LoginProps) {
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [selectedRole, setSelectedRole] = useState('user');
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [errors, setErrors] = useState<{ email?: string; password?: string; general?: string }>({});
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Validate form
@@ -32,18 +33,13 @@ export function Login({ onNavigate }: LoginProps) {
     setErrors({});
     setIsLoading(true);
     
-    // Simulate login with role-based navigation
-    setTimeout(() => {
+    try {
+      await login(email, password);
+      // Navigation will be handled by App.tsx based on role
+    } catch (error) {
       setIsLoading(false);
-      // In a real app, the role would come from authentication response
-      if (selectedRole === 'admin') {
-        onNavigate('admin');
-      } else if (selectedRole === 'recruiter') {
-        onNavigate('recruiter-profile');
-      } else {
-        onNavigate('profile'); // User/Job Seeker
-      }
-    }, 1000);
+      setErrors({ general: error instanceof Error ? error.message : 'Login failed. Please check your credentials.' });
+    }
   };
 
   return (
@@ -60,6 +56,13 @@ export function Login({ onNavigate }: LoginProps) {
         </div>
 
         <div className="bg-white rounded-2xl shadow-xl p-8 border-2 border-green-100">
+          {errors.general && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700">
+              <AlertCircle className="w-5 h-5" />
+              <span>{errors.general}</span>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label className="block text-gray-700 mb-2">Email Address</label>
@@ -113,22 +116,6 @@ export function Login({ onNavigate }: LoginProps) {
               )}
             </div>
 
-            <div>
-              <label className="block text-gray-700 mb-2">Sign in as</label>
-              <div className="relative">
-                <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <select
-                  value={selectedRole}
-                  onChange={(e) => setSelectedRole(e.target.value)}
-                  className="w-full pl-11 pr-4 py-3 border-2 border-green-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent bg-green-50/50"
-                >
-                  <option value="user">User (Job Seeker)</option>
-                  <option value="recruiter">Recruiter</option>
-                  <option value="admin">Administrator</option>
-                </select>
-              </div>
-            </div>
-
             <div className="flex items-center justify-between">
               <label className="flex items-center">
                 <input type="checkbox" className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500" />
@@ -168,27 +155,6 @@ export function Login({ onNavigate }: LoginProps) {
                 Sign up for free
               </button>
             </p>
-          </div>
-
-          <div className="mt-6 relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">Or continue with</span>
-            </div>
-          </div>
-
-          <div className="mt-6 grid grid-cols-3 gap-3">
-            <button className="px-4 py-2 border-2 border-gray-200 rounded-lg hover:border-green-300 transition-colors">
-              <span className="text-sm">Google</span>
-            </button>
-            <button className="px-4 py-2 border-2 border-gray-200 rounded-lg hover:border-green-300 transition-colors">
-              <span className="text-sm">GitHub</span>
-            </button>
-            <button className="px-4 py-2 border-2 border-gray-200 rounded-lg hover:border-green-300 transition-colors">
-              <span className="text-sm">LinkedIn</span>
-            </button>
           </div>
         </div>
       </div>

@@ -1,6 +1,11 @@
-import { Sparkles } from 'lucide-react';
+import { Sparkles, ArrowRight } from "lucide-react";
 
-export function Hero() {
+interface HeroProps {
+  onNavigate: (page: string) => void;
+  isAuthenticated: boolean;
+}
+
+export function Hero({ onNavigate, isAuthenticated }: HeroProps) {
   return (
     <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-green-50 via-lime-50 to-white">
       <div className="max-w-7xl mx-auto">
@@ -10,32 +15,53 @@ export function Hero() {
               <Sparkles className="w-4 h-4" />
               <span className="text-sm">AI-Powered Career Development</span>
             </div>
-            
+
             <h1 className="text-5xl lg:text-6xl bg-gradient-to-r from-green-700 to-green-600 bg-clip-text text-transparent">
               Transform Your Career with AI-Powered Skill Mentorship
             </h1>
-            
+
             <p className="text-gray-600 text-lg">
-              Leverage cutting-edge artificial intelligence to analyze your skills, identify gaps, 
-              and receive personalized recommendations that boost your employability. Perfect for 
-              job seekers, recruiters, and HR professionals.
+              Leverage cutting-edge artificial intelligence to analyze your
+              skills, identify gaps, and receive personalized recommendations
+              that boost your employability. Perfect for job seekers, recruiters,
+              and HR professionals.
             </p>
+
+            {/* Hide buttons when logged in */}
+            {!isAuthenticated && (
+              <div className="flex gap-4">
+                <button
+                  onClick={() => onNavigate("signup")}
+                  className="px-8 py-4 bg-gradient-to-r from-green-700 to-green-600 text-white rounded-lg hover:shadow-xl transition-all flex items-center gap-2 group"
+                >
+                  Get Started Free
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </button>
+
+                <button
+                  onClick={() => onNavigate("login")}
+                  className="px-8 py-4 border-2 border-green-600 text-green-700 rounded-lg hover:bg-green-50 transition-all"
+                >
+                  Sign In
+                </button>
+              </div>
+            )}
 
             <div className="flex gap-8 pt-4">
               <div>
-                <div className="bg-gradient-to-r from-green-700 to-green-600 bg-clip-text text-transparent">
+                <div className="bg-gradient-to-r from-green-700 to-green-600 bg-clip-text text-transparent text-3xl font-bold">
                   10k+
                 </div>
                 <p className="text-gray-600 text-sm">Active Users</p>
               </div>
               <div>
-                <div className="bg-gradient-to-r from-green-700 to-green-600 bg-clip-text text-transparent">
+                <div className="bg-gradient-to-r from-green-700 to-green-600 bg-clip-text text-transparent text-3xl font-bold">
                   95%
                 </div>
                 <p className="text-gray-600 text-sm">Success Rate</p>
               </div>
               <div>
-                <div className="bg-gradient-to-r from-green-700 to-green-600 bg-clip-text text-transparent">
+                <div className="bg-gradient-to-r from-green-700 to-green-600 bg-clip-text text-transparent text-3xl font-bold">
                   500+
                 </div>
                 <p className="text-gray-600 text-sm">Partner Companies</p>
@@ -72,8 +98,12 @@ export function Hero() {
                   </div>
 
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Machine Learning</span>
-                    <span className="text-sm text-orange-600">Intermediate</span>
+                    <span className="text-sm text-gray-600">
+                      Machine Learning
+                    </span>
+                    <span className="text-sm text-orange-600">
+                      Intermediate
+                    </span>
                   </div>
                   <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
                     <div className="h-full w-3/5 bg-gradient-to-r from-green-700 to-green-600 rounded-full"></div>
@@ -82,8 +112,9 @@ export function Hero() {
 
                 <div className="mt-6 p-4 bg-gradient-to-br from-green-50 to-lime-50 rounded-lg border border-green-200">
                   <p className="text-sm text-gray-700">
-                    <span className="text-green-700">AI Recommendation:</span> Consider taking 
-                    "Advanced ML Engineering" to boost your profile by 23%
+                    <span className="text-green-700">AI Recommendation:</span>{" "}
+                    Consider taking "Advanced ML Engineering" to boost your
+                    profile by 23%
                   </p>
                 </div>
               </div>

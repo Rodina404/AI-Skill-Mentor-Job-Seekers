@@ -6,7 +6,7 @@ interface Course {
   platform: string;
   duration: string;
   level: string;
-  impact: string;
+  impact: string; // e.g. "+23% Readiness"
 }
 
 interface SkillGap {
@@ -16,12 +16,57 @@ interface SkillGap {
   gap: number;
 }
 
-export function SkillAnalysis() {
+interface SkillAnalysisProps {
+  onNavigate: (page: string) => void;
+}
+
+/* ---------------- HELPERS ---------------- */
+
+// Skills score from gaps: average of (current/required)*100, capped [0..100]
+function calculateSkillsScore(skillGaps: SkillGap[]): number {
+  if (!skillGaps.length) return 0;
+
+  const ratios = skillGaps.map((g) => {
+    const required = Math.max(1, g.requiredLevel);
+    const ratio = (g.currentLevel / required) * 100;
+    return Math.max(0, Math.min(100, ratio));
+  });
+
+  const avg = ratios.reduce((a, b) => a + b, 0) / ratios.length;
+  return Math.round(avg);
+}
+
+// Your requested formula:
+function calculateReadinessScore(skills: number, experience: number, education: number): number {
+  const s = Math.max(0, Math.min(100, skills));
+  const e = Math.max(0, Math.min(100, experience));
+  const ed = Math.max(0, Math.min(100, education));
+
+  return Math.round(s * 0.5 + e * 0.3 + ed * 0.2);
+}
+
+// Sum "+xx% Readiness" impacts from course list
+function sumCourseImpacts(courses: Course[]): number {
+  return courses.reduce((sum, c) => {
+    const match = c.impact.match(/(\d+)\s*%/);
+    const val = match ? Number(match[1]) : 0;
+    return sum + (Number.isFinite(val) ? val : 0);
+  }, 0);
+}
+
+export function SkillAnalysis({ onNavigate }: SkillAnalysisProps) {
   const [file, setFile] = useState<File | null>(null);
   const [jobTitle, setJobTitle] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisComplete, setAnalysisComplete] = useState(false);
+
+  // animated score shown in UI
   const [readinessScore, setReadinessScore] = useState(0);
+
+  // component scores (for transparency + future backend integration)
+  const [skillsScore, setSkillsScore] = useState(0);
+  const [experienceScore, setExperienceScore] = useState(0);
+  const [educationScore, setEducationScore] = useState(0);
 
   const jobTitles = [
     'Software Engineer',
@@ -82,15 +127,32 @@ export function SkillAnalysis() {
 
   const handleAnalyze = () => {
     if (!file || !jobTitle) return;
-    
+
     setIsAnalyzing(true);
     setAnalysisComplete(false);
-    
-    // Simulate AI analysis
+
     setTimeout(() => {
-      // Animate readiness score
+      // ✅ 1) Skills from your skillGaps
+      const computedSkills = calculateSkillsScore(skillGaps);
+
+      // ✅ 2) Experience/Education (DEMO for now)
+      // Later you can replace these with real extraction from resume/backend response.
+      const computedExperience = 62; // example
+      const computedEducation = 74;  // example
+
+      setSkillsScore(computedSkills);
+      setExperienceScore(computedExperience);
+      setEducationScore(computedEducation);
+
+      // ✅ 3) Final weighted readiness
+      const targetScore = calculateReadinessScore(
+        computedSkills,
+        computedExperience,
+        computedEducation
+      );
+
+      // ✅ animate readiness score up to targetScore
       let score = 0;
-      const targetScore = 67;
       const interval = setInterval(() => {
         score += 1;
         setReadinessScore(score);
@@ -102,6 +164,11 @@ export function SkillAnalysis() {
       }, 20);
     }, 1500);
   };
+
+  // Dynamic projected score from course impacts (keeps your old 67→94 style, but dynamic)
+  const totalCourseImpact = sumCourseImpacts(recommendedCourses);
+  const improvement = Math.round(totalCourseImpact * 0.35); // 76 * 0.35 ≈ 27
+  const projectedScore = Math.min(100, readinessScore + improvement);
 
   return (
     <section id="analysis" className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-green-50 to-lime-50 min-h-screen">
@@ -228,14 +295,7 @@ export function SkillAnalysis() {
               <div className="flex flex-col md:flex-row items-center gap-8">
                 <div className="relative w-48 h-48">
                   <svg className="w-48 h-48 transform -rotate-90">
-                    <circle
-                      cx="96"
-                      cy="96"
-                      r="80"
-                      stroke="#e5e7eb"
-                      strokeWidth="16"
-                      fill="none"
-                    />
+                    <circle cx="96" cy="96" r="80" stroke="#e5e7eb" strokeWidth="16" fill="none" />
                     <circle
                       cx="96"
                       cy="96"
@@ -255,6 +315,7 @@ export function SkillAnalysis() {
                       </linearGradient>
                     </defs>
                   </svg>
+
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="text-center">
                       <div className="text-5xl bg-gradient-to-r from-green-700 to-green-600 bg-clip-text text-transparent">
@@ -269,23 +330,28 @@ export function SkillAnalysis() {
                   <div>
                     <h4 className="text-gray-900 mb-2">Overall Assessment</h4>
                     <p className="text-gray-600">
-                      You're <span className="text-green-700">moderately ready</span> for the {jobTitle} role. 
+                      You're <span className="text-green-700">moderately ready</span> for the {jobTitle} role.
                       With focused learning in key areas, you can significantly improve your chances.
+                    </p>
+                    {/* ✅ show the formula */}
+                    <p className="text-xs text-gray-500 mt-2">
+                      Calculated as: <span className="font-semibold">50% Skills + 30% Experience + 20% Education</span>
                     </p>
                   </div>
 
+                  {/* ✅ show component scores */}
                   <div className="grid grid-cols-3 gap-4">
                     <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-                      <div className="text-2xl text-green-700">8</div>
-                      <p className="text-sm text-gray-600">Matching Skills</p>
+                      <div className="text-2xl text-green-700">{skillsScore}%</div>
+                      <p className="text-sm text-gray-600">Skills</p>
                     </div>
                     <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-                      <div className="text-2xl text-yellow-700">4</div>
-                      <p className="text-sm text-gray-600">Skill Gaps</p>
+                      <div className="text-2xl text-yellow-700">{experienceScore}%</div>
+                      <p className="text-sm text-gray-600">Experience</p>
                     </div>
                     <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                      <div className="text-2xl text-blue-700">12</div>
-                      <p className="text-sm text-gray-600">Weeks to Target</p>
+                      <div className="text-2xl text-blue-700">{educationScore}%</div>
+                      <p className="text-sm text-gray-600">Education</p>
                     </div>
                   </div>
                 </div>
@@ -311,10 +377,6 @@ export function SkillAnalysis() {
                       </span>
                     </div>
                     <div className="relative h-3 bg-gray-200 rounded-full overflow-hidden">
-                      <div
-                        className="absolute h-full bg-green-200 rounded-full transition-all duration-1000"
-                        style={{ width: `${gap.currentLevel}%` }}
-                      ></div>
                       <div
                         className="absolute h-full bg-gradient-to-r from-green-600 to-green-500 rounded-full transition-all duration-1000"
                         style={{ width: `${gap.currentLevel}%` }}
@@ -355,7 +417,7 @@ export function SkillAnalysis() {
                         {course.impact}
                       </span>
                     </div>
-                    
+
                     <div className="space-y-2 mb-4">
                       <div className="flex items-center gap-2 text-sm text-gray-600">
                         <div className="w-1.5 h-1.5 bg-green-600 rounded-full"></div>
@@ -371,7 +433,10 @@ export function SkillAnalysis() {
                       </div>
                     </div>
 
-                    <button className="w-full px-4 py-2 bg-gradient-to-r from-green-700 to-green-600 text-white rounded-lg hover:shadow-md transition-all text-sm">
+                    <button
+                      className="w-full px-4 py-2 bg-gradient-to-r from-green-700 to-green-600 text-white rounded-lg hover:shadow-md transition-all text-sm"
+                      onClick={() => onNavigate('courses')}
+                    >
                       View Course Details
                     </button>
                   </div>
@@ -386,11 +451,14 @@ export function SkillAnalysis() {
                   <div>
                     <h4 className="text-gray-900 mb-2">Potential Impact</h4>
                     <p className="text-gray-600 text-sm mb-3">
-                      Completing all recommended courses could increase your readiness score from 
-                      <span className="text-green-700"> 67%</span> to 
-                      <span className="text-green-700"> 94%</span>, significantly boosting your employability.
+                      Completing all recommended courses could increase your readiness score from
+                      <span className="text-green-700"> {readinessScore}%</span> to
+                      <span className="text-green-700"> {projectedScore}%</span>, significantly boosting your employability.
                     </p>
-                    <button className="px-6 py-2 bg-gradient-to-r from-green-700 to-green-600 text-white rounded-lg hover:shadow-lg transition-all text-sm flex items-center gap-2">
+                    <button
+                      className="px-6 py-2 bg-gradient-to-r from-green-700 to-green-600 text-white rounded-lg hover:shadow-lg transition-all text-sm flex items-center gap-2"
+                      onClick={() => onNavigate('learning-path')}
+                    >
                       Create Learning Path
                       <ArrowRight className="w-4 h-4" />
                     </button>
@@ -398,6 +466,7 @@ export function SkillAnalysis() {
                 </div>
               </div>
             </div>
+
           </div>
         )}
       </div>

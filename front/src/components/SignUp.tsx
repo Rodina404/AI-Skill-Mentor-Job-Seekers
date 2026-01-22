@@ -1,27 +1,30 @@
 import { useState } from 'react';
 import { Mail, Lock, User, Briefcase, ArrowRight, Brain, AlertCircle } from 'lucide-react';
 import { validateEmail, validatePassword, validateName } from '../utils/validation';
+import { useAuth } from '../context/AuthContext';
 
 interface SignUpProps {
   onNavigate: (page: string) => void;
 }
 
 export function SignUp({ onNavigate }: SignUpProps) {
+  const { signup } = useAuth();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
-    role: 'jobseeker',
+    role: 'jobseeker' as 'jobseeker' | 'recruiter',
   });
   const [errors, setErrors] = useState<{
     name?: string;
     email?: string;
     password?: string;
+    general?: string;
   }>({});
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Validate all fields
@@ -39,7 +42,7 @@ export function SignUp({ onNavigate }: SignUpProps) {
     }
     
     if (!agreedToTerms) {
-      alert('Please agree to the Terms of Service and Privacy Policy to continue.');
+      setErrors({ general: 'Please agree to the Terms of Service and Privacy Policy to continue.' });
       return;
     }
     
@@ -47,17 +50,13 @@ export function SignUp({ onNavigate }: SignUpProps) {
     setErrors({});
     setIsLoading(true);
     
-    // Simulate signup - in real app, would create account and then route based on role
-    setTimeout(() => {
+    try {
+      await signup(formData.name, formData.email, formData.password, formData.role);
+      // Navigation will be handled by App.tsx based on role
+    } catch (error) {
       setIsLoading(false);
-      if (formData.role === 'admin') {
-        onNavigate('admin');
-      } else if (formData.role === 'recruiter') {
-        onNavigate('recruiter-profile');
-      } else {
-        onNavigate('profile'); // Job Seeker/User
-      }
-    }, 1000);
+      setErrors({ general: error instanceof Error ? error.message : 'Sign up failed. Please try again.' });
+    }
   };
 
   return (
@@ -163,12 +162,11 @@ export function SignUp({ onNavigate }: SignUpProps) {
                 <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <select
                   value={formData.role}
-                  onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                  onChange={(e) => setFormData({ ...formData, role: e.target.value as 'jobseeker' | 'recruiter' })}
                   className="w-full pl-11 pr-4 py-3 border-2 border-green-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent bg-green-50/50"
                 >
                   <option value="jobseeker">Job Seeker</option>
                   <option value="recruiter">Recruiter</option>
-                  <option value="admin">Administrator</option>
                 </select>
               </div>
               <p className="text-xs text-gray-500 mt-1">
