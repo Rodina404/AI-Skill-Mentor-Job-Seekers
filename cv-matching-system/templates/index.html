@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+{% block title %}Matcher - CV Matching System{% endblock %}
+
+{% block content %}
+<h1>🔍 Find Your Perfect Candidates</h1>
+
+<div class="stats">
+    <div class="stat-box">
+        <h3>Available Candidates</h3>
+        <div class="stat-number">{{ candidates_count }}</div>
+    </div>
+    <div class="stat-box" style="background: linear-gradient(135deg, #27ae60, #1e8449);">
+        <h3>Matching Algorithm</h3>
+        <div class="stat-number">AI</div>
+    </div>
+    <div class="stat-box" style="background: linear-gradient(135deg, #e74c3c, #c0392b);">
+        <h3>Accuracy</h3>
+        <div class="stat-number">82%</div>
+    </div>
+</div>
+
+<form id="matchForm">
+    <div class="form-group">
+        <label for="jobDescription">Job Description</label>
+        <textarea 
+            id="jobDescription" 
+            name="job_description" 
+            placeholder="Enter the job description here. Include required skills, experience, and qualifications...&#10;&#10;Example: We are looking for a Machine Learning Engineer with 3+ years of experience in Python, TensorFlow, and cloud platforms..."
+            required
+        ></textarea>
+        <small style="color: #666; margin-top: 0.5rem; display: block;">
+            ℹ️ Tip: More detailed job descriptions lead to better matching results
+        </small>
+    </div>
+
+    <button type="submit" class="btn btn-primary" id="submitBtn">
+        <span id="btnText">🚀 Match Candidates</span>
+        <span id="btnSpinner" style="display: none;">⏳ Matching...</span>
+    </button>
+</form>
+
+<div id="resultsContainer" style="display: none;">
+    <div id="alert"></div>
+    <div id="results"></div>
+</div>
+
+<script>
+    const form = document.getElementById('matchForm');
+    const jobDescriptionInput = document.getElementById('jobDescription');
+    const submitBtn = document.getElementById('submitBtn');
+    const resultsContainer = document.getElementById('resultsContainer');
+    const alertDiv = document.getElementById('alert');
+    const resultsDiv = document.getElementById('results');
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const jobDescription = jobDescriptionInput.value.trim();
+
+        if (!jobDescription) {
+            showAlert('Please enter a job description', 'error');
+            return;
+        }
+
+        if (jobDescription.length < 10) {
+            showAlert('Job description must be at least 10 characters', 'error');
+            return;
+        }
+
+        // Disable submit button and show loading
+        submitBtn.disabled = true;
+        document.getElementById('btnText').style.display = 'none';
+        document.getElementById('btnSpinner').style.display = 'inline';
+
+        try {
+            const response = await makeRequest('/api/match', 'POST', {
+                job_description: jobDescription
+            });
+
+            if (!response.success) {
+                throw new Error(response.error || 'Matching failed');
+            }
+
+            displayResults(response.results);
+            showAlert(`✅ Successfully matched ${response.candidates_count} candidates!`, 'success');
+            resultsContainer.style.display = 'block';
+            resultsContainer.scrollIntoView({ behavior: 'smooth' });
+
+        } catch (error) {
+            showAlert(`❌ Error: ${error.message}`, 'error');
+            console.error('Matching error:', error);
+        } finally {
+            // Re-enable submit button
+            submitBtn.disabled = false;
+            document.getElementById('btnText').style.display = 'inline';
+            document.getElementById('btnSpinner').style.display = 'none';
+        }
+    });
+
+    function showAlert(message, type) {
+        alertDiv.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+    }
+
+    function getScoreBadgeClass(score) {
+        if (score >= 75) return 'score-badge score-high';
+        if (score >= 50) return 'score-badge score-medium';
+        return 'score-badge score-low';
+    }
+
+    function displayResults(results) {
+        if (!results || results.length === 0) {
+            resultsDiv.innerHTML = '<p>No candidates found.</p>';
+            return;
+        }
+
+        let html = '<h2>📊 Matching Results</h2>';
+        html += `<p style="color: #666; margin-bottom: 1rem;">Ranked by match score (highest first)</p>`;
+
+        results.forEach((result, index) => {
+            const score = result.score;
+            const badgeClass = getScoreBadgeClass(score);
+            const matchingSkills = result.matching_skills || [];
+            const missingSkills = result.missing_skills || [];
+            const skillMatch = result.skill_match_count || 0;
+            const skillTotal = result.skill_total_required || 1;
+
+            html += `
+                <div class="result-card">
+                    <div class="result-header">
+                        <div>
+                            <span style="color: #999; font-size: 0.9rem;">Rank #{index + 1}</span><br>
+                            <span class="result-name">${result.name}</span>
+                        </div>
+                        <div class="${badgeClass}">${score.toFixed(1)}%</div>
+                    </div>
+                    <div class="result-details">
+                        <div class="detail-item">
+                            <span class="detail-label">Experience:</span> 
+                            <span>${result.experience} years</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Skill Match:</span>
+                            <span style="font-weight: bold; color: #27ae60;">${skillMatch}/${skillTotal} required skills</span>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <span class="detail-label">✅ Matching Skills (${matchingSkills.length}):</span>
+                            <div class="skills-list">
+            `;
+            
+            matchingSkills.forEach(skill => {
+                html += `<span class="skill-tag" style="background: #d4edda; color: #155724; border: 1px solid #c3e6cb;">✓ ${skill}</span>`;
+            });
+
+            html += `
+                            </div>
+                        </div>
+            `;
+
+            if (missingSkills.length > 0) {
+                html += `
+                        <div class="detail-item">
+                            <span class="detail-label">❌ Missing Skills (${missingSkills.length}):</span>
+                            <div class="skills-list">
+                `;
+                
+                missingSkills.forEach(skill => {
+                    html += `<span class="skill-tag" style="background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;">✗ ${skill}</span>`;
+                });
+
+                html += `
+                            </div>
+                        </div>
+                `;
+            }
+
+            html += `
+                        <div class="detail-item">
+                            <span class="detail-label">All Skills:</span>
+                            <div class="skills-list">
+            `;
+
+            // Show all candidate skills
+            const skills = result.skills || [];
+            skills.forEach(skill => {
+                html += `<span class="skill-tag">${skill}</span>`;
+            });
+
+            html += `
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        resultsDiv.innerHTML = html;
+    }
+
+    // Load sample description on page load
+    document.addEventListener('DOMContentLoaded', () => {
+        // Optional: Pre-fill with sample text for demo
+        // jobDescriptionInput.value = 'Looking for Machine Learning Engineer with Python, SQL, and 2+ years experience. Experience with TensorFlow is required.';
+    });
+</script>
+{% endblock %}
