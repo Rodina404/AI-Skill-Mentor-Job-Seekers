@@ -1,0 +1,65 @@
+[
+  {"id": "S_python", "name": "Python", "aliases": ["py"]},
+  {"id": "S_java", "name": "Java", "aliases": []},
+  {"id": "S_cpp", "name": "C++", "aliases": ["cpp"]},
+  {"id": "S_csharp", "name": "C#", "aliases": ["csharp"]},
+  {"id": "S_go", "name": "Go", "aliases": ["golang"]},
+  {"id": "S_rust", "name": "Rust", "aliases": []},
+
+  {"id": "S_js", "name": "JavaScript", "aliases": ["js"]},
+  {"id": "S_ts", "name": "TypeScript", "aliases": ["ts"]},
+
+  {"id": "S_html", "name": "HTML", "aliases": []},
+  {"id": "S_css", "name": "CSS", "aliases": []},
+
+  {"id": "S_react", "name": "React", "aliases": ["reactjs"]},
+  {"id": "S_next", "name": "Next.js", "aliases": ["nextjs"]},
+  {"id": "S_angular", "name": "Angular", "aliases": []},
+  {"id": "S_vue", "name": "Vue.js", "aliases": ["vue"]},
+
+  {"id": "S_node", "name": "Node.js", "aliases": ["node"]},
+  {"id": "S_express", "name": "Express.js", "aliases": ["express"]},
+  {"id": "S_spring", "name": "Spring Boot", "aliases": ["spring"]},
+  {"id": "S_django", "name": "Django", "aliases": []},
+  {"id": "S_flask", "name": "Flask", "aliases": []},
+
+  {"id": "S_sql", "name": "SQL", "aliases": []},
+  {"id": "S_mysql", "name": "MySQL", "aliases": []},
+  {"id": "S_postgresql", "name": "PostgreSQL", "aliases": ["postgres"]},
+  {"id": "S_mongodb", "name": "MongoDB", "aliases": ["mongo"]},
+  {"id": "S_redis", "name": "Redis", "aliases": []},
+
+  {"id": "S_powerbi", "name": "Power BI", "aliases": []},
+  {"id": "S_tableau", "name": "Tableau", "aliases": []},
+  {"id": "S_excel", "name": "Microsoft Excel", "aliases": ["excel"]},
+
+  {"id": "S_ml", "name": "Machine Learning", "aliases": ["ml"]},
+  {"id": "S_dl", "name": "Deep Learning", "aliases": ["dl"]},
+  {"id": "S_nlp", "name": "Natural Language Processing", "aliases": ["nlp"]},
+  {"id": "S_cv", "name": "Computer Vision", "aliases": ["cv"]},
+
+  {"id": "S_tensorflow", "name": "TensorFlow", "aliases": ["tf"]},
+  {"id": "S_pytorch", "name": "PyTorch", "aliases": ["torch"]},
+  {"id": "S_keras", "name": "Keras", "aliases": []},
+  {"id": "S_sklearn", "name": "Scikit-learn", "aliases": ["sklearn"]},
+
+  {"id": "S_git", "name": "Git", "aliases": []},
+  {"id": "S_github", "name": "GitHub", "aliases": []},
+  {"id": "S_gitlab", "name": "GitLab", "aliases": []},
+
+  {"id": "S_docker", "name": "Docker", "aliases": []},
+  {"id": "S_kubernetes", "name": "Kubernetes", "aliases": ["k8s"]},
+
+  {"id": "S_linux", "name": "Linux", "aliases": []},
+
+  {"id": "S_aws", "name": "AWS", "aliases": ["amazon web services"]},
+  {"id": "S_gcp", "name": "Google Cloud", "aliases": ["gcp"]},
+  {"id": "S_azure", "name": "Microsoft Azure", "aliases": ["azure"]},
+
+  {"id": "S_oop", "name": "Object-Oriented Programming", "aliases": ["oop"]},
+  {"id": "S_ds", "name": "Data Structures", "aliases": ["ds"]},
+  {"id": "S_algo", "name": "Algorithms", "aliases": ["algo"]},
+
+  {"id": "S_rest", "name": "REST API", "aliases": ["rest"]},
+  {"id": "S_graphql", "name": "GraphQL", "aliases": []}
+]
