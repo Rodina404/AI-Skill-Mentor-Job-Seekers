@@ -2,6 +2,8 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from routes.extract import router as extract_router
+from dotenv import load_dotenv
+load_dotenv()
 
 # ---------------------------------------------------------------------------
 # App setup
@@ -11,7 +13,6 @@ app = FastAPI(title="Resume Extraction API", version="1.0.0")
 
 # CORS — allow React dev server and any configured production origin
 _PROD_ORIGIN = os.getenv("ALLOWED_ORIGIN", "")
-_ALLOWED_ORIGINS = ["http://localhost:3000"]
 if _PROD_ORIGIN:
     _ALLOWED_ORIGINS.append(_PROD_ORIGIN)
 
