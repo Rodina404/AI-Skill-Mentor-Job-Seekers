@@ -1,0 +1,63 @@
+Hana Kim
+hana.16@email.com | +1-555-261-8433 | linkedin.com/in/hana16 | github.com/hana16
+Istanbul, Turkey
+
+OBJECTIVE / SUMMARY
+----------------------------------------
+Infrastructure engineer passionate about automation, reliability, and cloud-native architectures. Skilled in designing CI/CD pipelines and managing Kubernetes clusters at scale. Dedicated to enabling teams to ship software faster with confidence.
+
+EDUCATION
+----------------------------------------
+  BSc in Computer Engineering
+  Georgia Tech
+  Graduated: 2019
+  Relevant Coursework: Computer Networks, Operating Systems, Cloud Computing, Distributed Systems
+
+COURSES & TRAINING
+----------------------------------------
+  - AWS Certified Solutions Architect – Associate — Amazon, 2023
+  - Certified Kubernetes Administrator (CKA) — CNCF, 2023
+  - HashiCorp Certified: Terraform Associate — HashiCorp, 2022
+
+SKILLS
+----------------------------------------
+  Languages: Bash, Python, Go, YAML
+  Frameworks/Libraries: Ansible, Terraform, Helm, Prometheus
+  Tools: Docker, Kubernetes, Jenkins, Git, Grafana
+  Cloud/DevOps: AWS, GCP, Azure, Terraform Cloud, CI/CD Pipelines
+  Soft Skills: Systems Thinking, Root Cause Analysis, Documentation
+
+PROJECTS
+----------------------------------------
+  Kubernetes Multi-Cluster Manager
+    Deployed a multi-cluster Kubernetes setup with automated failover.
+    Stack: Kubernetes, Helm, Terraform, AWS
+    Link: https://github.com/sample/k8s-manager
+
+  Infrastructure as Code Template Library
+    Reusable Terraform modules for common cloud infrastructure patterns.
+    Stack: Terraform, AWS, GCP
+    Link: https://github.com/sample/iac-templates
+
+  Log Aggregation Pipeline
+    Centralized logging pipeline using the ELK stack with alerting.
+    Stack: Elasticsearch, Logstash, Kibana, Docker
+    Link: https://github.com/sample/log-pipeline
+
+EXPERIENCE
+----------------------------------------
+  Amazon AWS Internship
+  DevOps Engineer Intern | 2018 – 2019
+  • Contributed to production codebase and reduced processing latency by 18%.
+  • Collaborated with senior engineers to redesign data ingestion architecture.
+  • Wrote unit and integration tests increasing coverage from 60% to 87%.
+
+  GitLab
+  Freelance DevOps Consultant | 2022 – 2023
+  • Delivered end-to-end ML solution for client reducing manual effort by 40%.
+  • Built automated reporting pipeline saving 5+ hours/week of analyst time.
+
+EXTRACURRICULAR & VOLUNTEERING
+----------------------------------------
+  Teaching Assistant, Data Structures course — Held weekly office hours for 80+ students.
+

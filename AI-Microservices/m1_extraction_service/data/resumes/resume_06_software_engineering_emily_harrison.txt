@@ -1,0 +1,60 @@
+Emily Harrison
+emily.6@email.com | +1-555-487-2291 | linkedin.com/in/emily6 | github.com/emily6
+San Francisco, USA
+
+OBJECTIVE / SUMMARY
+----------------------------------------
+Full-stack software engineer skilled in building scalable web applications from end to end. Enthusiastic about clean code, test-driven development, and team collaboration. Looking to contribute to high-impact products in a fast-moving engineering team.
+
+EDUCATION
+----------------------------------------
+  MEng in Computer Science
+  MIT, GPA: 3.58/4.0
+  Graduated: 2019
+  Relevant Coursework: Algorithms & Data Structures, Operating Systems, Database Systems, Software Architecture
+
+COURSES & TRAINING
+----------------------------------------
+  - The Complete Web Developer Bootcamp — Udemy, 2022
+  - AWS Certified Developer – Associate — Amazon, 2023
+  - Meta Frontend Developer Certificate — Coursera, 2023
+  - MongoDB for JavaScript Developers — MongoDB University, 2022
+
+SKILLS
+----------------------------------------
+  Languages: JavaScript, TypeScript, Python, Java
+  Frameworks/Libraries: React, Node.js, Express, Spring Boot, Next.js
+  Tools: Git, Docker, PostgreSQL, Redis, Jest
+  Cloud/DevOps: AWS EC2, GitHub Actions, Nginx
+  Soft Skills: Problem Solving, Team Collaboration, Agile Methodologies
+
+PROJECTS
+----------------------------------------
+  Task Management App
+    Full-stack task manager with real-time collaboration using WebSockets.
+    Stack: React, Node.js, Socket.io, PostgreSQL
+    Link: https://github.com/sample/task-app
+
+  E-Commerce REST API
+    Scalable RESTful API for product catalog and order management.
+    Stack: Express, TypeScript, PostgreSQL, Docker
+    Link: https://github.com/sample/ecom-api
+
+  CI/CD Pipeline Automation
+    Automated test-deploy pipelines using GitHub Actions.
+    Stack: GitHub Actions, Docker, Nginx
+    Link: https://github.com/sample/ci-automation
+
+EXPERIENCE
+----------------------------------------
+  Instabug
+  Software Engineering Intern | 2018 – 2019
+  • Contributed to production codebase and reduced processing latency by 18%.
+  • Collaborated with senior engineers to redesign data ingestion architecture.
+  • Wrote unit and integration tests increasing coverage from 60% to 87%.
+
+  Amazon
+  Freelance Software Engineering Consultant | 2022 – 2023
+  • Delivered end-to-end ML solution for client reducing manual effort by 40%.
+  • Built automated reporting pipeline saving 5+ hours/week of analyst time.
+

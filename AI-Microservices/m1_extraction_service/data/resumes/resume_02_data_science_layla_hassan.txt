@@ -1,0 +1,45 @@
+Layla Hassan
+layla.2@email.com | +1-555-704-7912 | linkedin.com/in/layla2 | github.com/layla2
+Berlin, Germany
+
+OBJECTIVE / SUMMARY
+----------------------------------------
+Results-driven data scientist with hands-on experience in predictive modeling and statistical analysis. Passionate about turning messy real-world datasets into actionable insights. Seeking to apply machine learning expertise at a data-driven organization.
+
+EDUCATION
+----------------------------------------
+  MSc in Data Science
+  University of Edinburgh, GPA: 3.58/4.0
+  Graduated: 2024
+  Relevant Coursework: Machine Learning, Statistical Inference, Big Data Analytics, Linear Algebra
+
+COURSES & TRAINING
+----------------------------------------
+  - IBM Data Science Professional Certificate — Coursera, 2023
+  - Applied Machine Learning — Coursera (University of Michigan), 2022
+  - SQL for Data Science — Coursera, 2021
+
+SKILLS
+----------------------------------------
+  Languages: Python, R, SQL
+  Frameworks/Libraries: pandas, scikit-learn, NumPy, TensorFlow, Matplotlib, Seaborn
+  Tools: Jupyter Notebook, Tableau, Power BI, Git
+  Cloud/DevOps: AWS S3, Google BigQuery, Databricks
+  Soft Skills: Analytical Thinking, Data Storytelling, Communication
+
+PROJECTS
+----------------------------------------
+  Churn Prediction Engine
+    Built a customer churn prediction model using LightGBM achieving 89% AUC.
+    Stack: Python, pandas, LightGBM, scikit-learn
+    Link: https://github.com/sample/churn-engine
+
+  COVID-19 Trend Dashboard
+    Interactive Tableau dashboard visualizing global pandemic data trends.
+    Stack: Python, Tableau, pandas
+    Link: https://github.com/sample/covid-dashboard
+
+EXPERIENCE
+----------------------------------------
+  No formal employment history yet.
+
