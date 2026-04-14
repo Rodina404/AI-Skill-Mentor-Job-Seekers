@@ -1,0 +1,17 @@
+NAME: Fatima Al-Rashid
+CONTACT: fatima.18@email.com / +1-555-100-6310
+WHERE: Berlin, Germany
+
+-- WHAT I KNOW --
+  C, C++, Python, VHDL, Assembly
+  Vivado, ModelSim, GDB, JTAG, Git
+
+-- WHERE I STUDIED --
+  BSc in Electrical and Computer Engineering @ University of Waterloo (2023)
+
+-- WHERE I WORKED --
+  Intel (Internship) — Computer Engineering Intern (2023)
+
+-- PROJECTS --
+  Autonomous Line-Following Robot: C++, ROS, Python, Arduino
+  FPGA-Based Image Processor: VHDL, Vivado, Python
