@@ -1,0 +1,49 @@
+Wei Zhang
+wei.13@email.com | +1-555-605-2489 | linkedin.com/in/wei13 | github.com/wei13
+Seoul, South Korea
+
+OBJECTIVE / SUMMARY
+----------------------------------------
+AI researcher and engineer with deep interest in NLP and large language models. Experienced in fine-tuning transformer models and building ML pipelines from research to production. Aiming to push the boundaries of applied AI at an innovative organization.
+
+EDUCATION
+----------------------------------------
+  MSc in Artificial Intelligence
+  UC Berkeley, GPA: 3.3/4.0
+  Graduated: 2020
+  Relevant Coursework: Deep Learning, Computer Vision, NLP, Reinforcement Learning, Probabilistic Graphical Models
+
+COURSES & TRAINING
+----------------------------------------
+  - Deep Learning Specialization — deeplearning.ai/Coursera, 2023
+  - Natural Language Processing Specialization — deeplearning.ai, 2023
+  - LLM Fine-Tuning Workshop — Hugging Face, 2024
+
+SKILLS
+----------------------------------------
+  Languages: Python, C++
+  Frameworks/Libraries: PyTorch, TensorFlow, HuggingFace Transformers, LangChain, ONNX
+  Tools: Jupyter Notebook, Weights & Biases, MLflow, Git, DVC
+  Cloud/DevOps: AWS SageMaker, Google Colab Pro, Azure ML
+  Soft Skills: Research Mindset, Critical Thinking, Technical Writing
+
+PROJECTS
+----------------------------------------
+  LLM Fine-Tuning for Medical Q&A
+    Fine-tuned Llama-2 on PubMed QA dataset achieving ROUGE-L of 0.71.
+    Stack: PyTorch, HuggingFace, PEFT, LoRA
+    Link: https://github.com/sample/medical-llm
+
+  Resume NER Extraction System
+    End-to-end NER pipeline for extracting skills and experience from CVs.
+    Stack: Python, HuggingFace Transformers, FastAPI
+    Link: https://github.com/sample/resume-ner
+
+EXPERIENCE
+----------------------------------------
+  No formal employment history yet.
+
+EXTRACURRICULAR & VOLUNTEERING
+----------------------------------------
+  Vice President, IEEE Student Branch — Organized 5 technical workshops per semester.
+

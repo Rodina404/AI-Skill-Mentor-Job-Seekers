@@ -1,0 +1,54 @@
+Chioma Obi
+chioma.20@email.com | +1-555-597-2133 | linkedin.com/in/chioma20 | github.com/chioma20
+Toronto, Canada
+
+OBJECTIVE / SUMMARY
+----------------------------------------
+Embedded systems engineer with experience in FPGA design, real-time OS programming, and hardware-software integration. Enthusiastic about building reliable low-level systems that power physical-world applications. Seeking a role at the intersection of hardware design and systems engineering.
+
+EDUCATION
+----------------------------------------
+  MEng in Embedded Systems
+  NTNU
+  Graduated: 2019
+  Relevant Coursework: Digital Logic Design, Embedded Systems, Computer Architecture, Real-Time Operating Systems, VLSI Design
+
+COURSES & TRAINING
+----------------------------------------
+  - Embedded Systems Design — Udemy, 2022
+  - FreeRTOS Real-Time Embedded Systems — Coursera, 2023
+  - FPGA Programming with Vivado — Coursera (Duke), 2022
+
+SKILLS
+----------------------------------------
+  Languages: C, C++, Python, VHDL, Assembly
+  Frameworks/Libraries: ROS, OpenCV, FreeRTOS, Qt
+  Tools: Vivado, ModelSim, GDB, JTAG, Git
+  Cloud/DevOps: Linux Kernel, Embedded Linux, CMake
+  Soft Skills: Low-Level Debugging, Hardware/Software Co-Design, Technical Documentation
+
+PROJECTS
+----------------------------------------
+  Autonomous Line-Following Robot
+    Designed PID-controlled robot on custom PCB with ROS integration.
+    Stack: C++, ROS, Python, Arduino
+    Link: https://github.com/sample/line-robot
+
+  FPGA-Based Image Processor
+    Hardware accelerated edge detection implemented on Xilinx FPGA.
+    Stack: VHDL, Vivado, Python
+    Link: https://github.com/sample/fpga-img
+
+EXPERIENCE
+----------------------------------------
+  Texas Instruments
+  Embedded Systems Intern | 2018 – 2019
+  • Contributed to production codebase and reduced processing latency by 18%.
+  • Collaborated with senior engineers to redesign data ingestion architecture.
+  • Wrote unit and integration tests increasing coverage from 60% to 87%.
+
+  Valeo Automotive
+  Freelance Computer Engineering Consultant | 2022 – 2023
+  • Delivered end-to-end ML solution for client reducing manual effort by 40%.
+  • Built automated reporting pipeline saving 5+ hours/week of analyst time.
+

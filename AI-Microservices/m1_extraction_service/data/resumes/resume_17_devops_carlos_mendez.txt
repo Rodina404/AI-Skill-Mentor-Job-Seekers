@@ -1,0 +1,53 @@
+Carlos Mendez
+carlos.17@email.com | +1-555-405-9317 | linkedin.com/in/carlos17 | github.com/carlos17
+Cairo, Egypt
+
+OBJECTIVE / SUMMARY
+----------------------------------------
+Infrastructure engineer passionate about automation, reliability, and cloud-native architectures. Skilled in designing CI/CD pipelines and managing Kubernetes clusters at scale. Dedicated to enabling teams to ship software faster with confidence.
+
+EDUCATION
+----------------------------------------
+  BSc in Information Technology
+  TU Munich, GPA: 3.81/4.0
+  Graduated: 2023
+  Relevant Coursework: Computer Networks, Operating Systems, Cloud Computing, Distributed Systems
+
+COURSES & TRAINING
+----------------------------------------
+  - AWS Certified Solutions Architect – Associate — Amazon, 2023
+  - Certified Kubernetes Administrator (CKA) — CNCF, 2023
+  - HashiCorp Certified: Terraform Associate — HashiCorp, 2022
+
+SKILLS
+----------------------------------------
+  Languages: Bash, Python, Go, YAML
+  Frameworks/Libraries: Ansible, Terraform, Helm, Prometheus
+  Tools: Docker, Kubernetes, Jenkins, Git, Grafana
+  Cloud/DevOps: AWS, GCP, Azure, Terraform Cloud, CI/CD Pipelines
+  Soft Skills: Systems Thinking, Root Cause Analysis, Documentation
+
+PROJECTS
+----------------------------------------
+  Kubernetes Multi-Cluster Manager
+    Deployed a multi-cluster Kubernetes setup with automated failover.
+    Stack: Kubernetes, Helm, Terraform, AWS
+    Link: https://github.com/sample/k8s-manager
+
+  Infrastructure as Code Template Library
+    Reusable Terraform modules for common cloud infrastructure patterns.
+    Stack: Terraform, AWS, GCP
+    Link: https://github.com/sample/iac-templates
+
+EXPERIENCE
+----------------------------------------
+  GitLab
+  DevOps Engineer Intern | 2022 – 2023
+  • Contributed to production codebase and reduced processing latency by 18%.
+  • Collaborated with senior engineers to redesign data ingestion architecture.
+  • Wrote unit and integration tests increasing coverage from 60% to 87%.
+
+EXTRACURRICULAR & VOLUNTEERING
+----------------------------------------
+  Hackathon Winner, NASA Space Apps Challenge 2023 — First place, Climate Action track.
+
