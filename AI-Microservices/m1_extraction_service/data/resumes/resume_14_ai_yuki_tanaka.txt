@@ -1,0 +1,59 @@
+Yuki Tanaka
+yuki.14@email.com | +1-555-490-8668 | linkedin.com/in/yuki14 | github.com/yuki14
+San Francisco, USA
+
+OBJECTIVE / SUMMARY
+----------------------------------------
+AI researcher and engineer with deep interest in NLP and large language models. Experienced in fine-tuning transformer models and building ML pipelines from research to production. Aiming to push the boundaries of applied AI at an innovative organization.
+
+EDUCATION
+----------------------------------------
+  BSc in Computer Science
+  EPFL, GPA: 3.24/4.0
+  Graduated: 2024
+  Relevant Coursework: Deep Learning, Computer Vision, NLP, Reinforcement Learning, Probabilistic Graphical Models
+
+COURSES & TRAINING
+----------------------------------------
+  - Deep Learning Specialization — deeplearning.ai/Coursera, 2023
+  - Natural Language Processing Specialization — deeplearning.ai, 2023
+  - LLM Fine-Tuning Workshop — Hugging Face, 2024
+  - Practical Deep Learning for Coders — fast.ai, 2022
+
+SKILLS
+----------------------------------------
+  Languages: Python, C++
+  Frameworks/Libraries: PyTorch, TensorFlow, HuggingFace Transformers, LangChain, ONNX
+  Tools: Jupyter Notebook, Weights & Biases, MLflow, Git, DVC
+  Cloud/DevOps: AWS SageMaker, Google Colab Pro, Azure ML
+  Soft Skills: Research Mindset, Critical Thinking, Technical Writing
+
+PROJECTS
+----------------------------------------
+  LLM Fine-Tuning for Medical Q&A
+    Fine-tuned Llama-2 on PubMed QA dataset achieving ROUGE-L of 0.71.
+    Stack: PyTorch, HuggingFace, PEFT, LoRA
+    Link: https://github.com/sample/medical-llm
+
+  Resume NER Extraction System
+    End-to-end NER pipeline for extracting skills and experience from CVs.
+    Stack: Python, HuggingFace Transformers, FastAPI
+    Link: https://github.com/sample/resume-ner
+
+EXPERIENCE
+----------------------------------------
+  Microsoft Research
+  AI Research Intern | 2023 – 2024
+  • Contributed to production codebase and reduced processing latency by 18%.
+  • Collaborated with senior engineers to redesign data ingestion architecture.
+  • Wrote unit and integration tests increasing coverage from 60% to 87%.
+
+  OpenAI (Residency)
+  Freelance AI Consultant | 2022 – 2023
+  • Delivered end-to-end ML solution for client reducing manual effort by 40%.
+  • Built automated reporting pipeline saving 5+ hours/week of analyst time.
+
+EXTRACURRICULAR & VOLUNTEERING
+----------------------------------------
+  Open Source Contributor — Merged 3 PRs to scikit-learn documentation.
+

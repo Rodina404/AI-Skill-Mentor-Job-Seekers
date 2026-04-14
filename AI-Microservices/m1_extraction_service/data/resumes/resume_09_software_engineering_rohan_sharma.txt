@@ -1,0 +1,49 @@
+Rohan Sharma
+rohan.9@email.com | +1-555-750-3803 | linkedin.com/in/rohan9 | github.com/rohan9
+Cairo, Egypt
+
+OBJECTIVE / SUMMARY
+----------------------------------------
+Full-stack software engineer skilled in building scalable web applications from end to end. Enthusiastic about clean code, test-driven development, and team collaboration. Looking to contribute to high-impact products in a fast-moving engineering team.
+
+EDUCATION
+----------------------------------------
+  MEng in Computer Science
+  University of Melbourne
+  Graduated: 2024
+  Relevant Coursework: Algorithms & Data Structures, Operating Systems, Database Systems, Software Architecture
+
+COURSES & TRAINING
+----------------------------------------
+  - The Complete Web Developer Bootcamp — Udemy, 2022
+  - AWS Certified Developer – Associate — Amazon, 2023
+  - Meta Frontend Developer Certificate — Coursera, 2023
+
+SKILLS
+----------------------------------------
+  Languages: JavaScript, TypeScript, Python, Java
+  Frameworks/Libraries: React, Node.js, Express, Spring Boot, Next.js
+  Tools: Git, Docker, PostgreSQL, Redis, Jest
+  Cloud/DevOps: AWS EC2, GitHub Actions, Nginx
+  Soft Skills: Problem Solving, Team Collaboration, Agile Methodologies
+
+PROJECTS
+----------------------------------------
+  Task Management App
+    Full-stack task manager with real-time collaboration using WebSockets.
+    Stack: React, Node.js, Socket.io, PostgreSQL
+    Link: https://github.com/sample/task-app
+
+  E-Commerce REST API
+    Scalable RESTful API for product catalog and order management.
+    Stack: Express, TypeScript, PostgreSQL, Docker
+    Link: https://github.com/sample/ecom-api
+
+EXPERIENCE
+----------------------------------------
+  Google Summer of Code
+  Software Engineering Intern | 2023 – 2024
+  • Contributed to production codebase and reduced processing latency by 18%.
+  • Collaborated with senior engineers to redesign data ingestion architecture.
+  • Wrote unit and integration tests increasing coverage from 60% to 87%.
+

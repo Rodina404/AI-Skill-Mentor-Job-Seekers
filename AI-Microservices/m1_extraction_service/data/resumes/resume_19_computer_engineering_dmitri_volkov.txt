@@ -1,0 +1,49 @@
+Dmitri Volkov
+dmitri.19@email.com | +1-555-471-6038 | linkedin.com/in/dmitri19 | github.com/dmitri19
+Mumbai, India
+
+OBJECTIVE / SUMMARY
+----------------------------------------
+Embedded systems engineer with experience in FPGA design, real-time OS programming, and hardware-software integration. Enthusiastic about building reliable low-level systems that power physical-world applications. Seeking a role at the intersection of hardware design and systems engineering.
+
+EDUCATION
+----------------------------------------
+  BSc in Computer Engineering
+  Chalmers University
+  Graduated: 2022
+  Relevant Coursework: Digital Logic Design, Embedded Systems, Computer Architecture, Real-Time Operating Systems, VLSI Design
+
+COURSES & TRAINING
+----------------------------------------
+  - Embedded Systems Design — Udemy, 2022
+  - FreeRTOS Real-Time Embedded Systems — Coursera, 2023
+  - FPGA Programming with Vivado — Coursera (Duke), 2022
+
+SKILLS
+----------------------------------------
+  Languages: C, C++, Python, VHDL, Assembly
+  Frameworks/Libraries: ROS, OpenCV, FreeRTOS, Qt
+  Tools: Vivado, ModelSim, GDB, JTAG, Git
+  Cloud/DevOps: Linux Kernel, Embedded Linux, CMake
+  Soft Skills: Low-Level Debugging, Hardware/Software Co-Design, Technical Documentation
+
+PROJECTS
+----------------------------------------
+  Autonomous Line-Following Robot
+    Designed PID-controlled robot on custom PCB with ROS integration.
+    Stack: C++, ROS, Python, Arduino
+    Link: https://github.com/sample/line-robot
+
+  FPGA-Based Image Processor
+    Hardware accelerated edge detection implemented on Xilinx FPGA.
+    Stack: VHDL, Vivado, Python
+    Link: https://github.com/sample/fpga-img
+
+EXPERIENCE
+----------------------------------------
+  No formal employment history yet.
+
+EXTRACURRICULAR & VOLUNTEERING
+----------------------------------------
+  Vice President, IEEE Student Branch — Organized 5 technical workshops per semester.
+
