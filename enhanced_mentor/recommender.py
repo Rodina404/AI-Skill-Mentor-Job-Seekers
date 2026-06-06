@@ -152,11 +152,12 @@ class ProfessionalRecommender:
         if app_id and app_key:
             data = {}
             if target_role:
-                search_query = target_role.replace(' ', '+') + "+" + "+".join([s.replace(' ', '+') for s in user_skills[:2]])
+                # Query Adzuna strictly for the role to get a full spectrum of 100% -> 0% matches
+                search_query = target_role.replace(' ', '+')
             else:
                 search_query = "+".join([s.replace(' ', '+') for s in user_skills[:3]])
                 
-            url = f"https://api.adzuna.com/v1/api/jobs/us/search/1?app_id={app_id}&app_key={app_key}&results_per_page=50&what={search_query}"
+            url = f"https://api.adzuna.com/v1/api/jobs/us/search/1?app_id={app_id}&app_key={app_key}&results_per_page=100&what={search_query}"
             try:
                 resp = requests.get(url, timeout=5)
                 if resp.status_code == 200:

@@ -305,7 +305,7 @@ async def get_test_ui_v2():
             <textarea id="resumeText" placeholder="Or paste your resume text here..."></textarea>
         
             <div style="margin-bottom: 15px;">
-                <label for="targetRole" style="display:block; margin-bottom:5px; font-weight:600; color:var(--text-dark);">Target Role (Optional):</label>
+                <label for="targetRole" style="display:block; margin-bottom:5px; font-weight:600; color:var(--text-dark);">Target Role (Required):</label>
                 <input type="text" id="targetRole" placeholder="e.g. Data Scientist, Frontend Developer" style="width:100%; padding:10px; border:1px solid #e2e8f0; border-radius:8px;">
             </div>
 
@@ -338,6 +338,63 @@ async def get_test_ui_v2():
 </div>
 
 <script>
+async function processResume() {
+    const fileInput = document.getElementById('resumeFile');
+    const resumeText = document.getElementById('resumeText');
+    const targetRoleInput = document.getElementById('targetRole');
+    const statusEl = document.getElementById('uploadStatus');
+    
+    statusEl.className = 'status show';
+    statusEl.textContent = '⏳ Analyzing resume...';
+
+    if (!targetRoleInput.value.trim()) {
+        statusEl.className = 'status show error';
+        statusEl.textContent = '❌ Error: Please enter a Target Role before analyzing.';
+        return;
+    }
+
+    try {
+        let text = '';
+        let skills = [];
+
+        if (fileInput.files.length > 0) {
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            const uploadResp = await fetch('/api/v2/upload-cv', { method: 'POST', body: formData });
+            if (!uploadResp.ok) throw new Error('Upload failed');
+            const uploadData = await uploadResp.json();
+            text = uploadData.full_text;
+            skills = uploadData.extracted_skills || [];
+            resumeText.value = text;
+        } else if (resumeText.value.trim()) {
+            text = resumeText.value.trim();
+            const extractResp = await fetch('/api/v2/extract-skills', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text })
+            });
+            if (!extractResp.ok) throw new Error('Extraction failed');
+            const extractData = await extractResp.json();
+            skills = extractData.skills || [];
+        } else {
+            throw new Error('Please upload a PDF or paste resume text');
+        }
+
+        if (skills.length) {
+            document.getElementById('skillsContainer').classList.add('show');
+            document.getElementById('skillsList').innerHTML = skills.map(s => `<span class="skill-tag">${s}</span>`).join('');
+        }
+
+        statusEl.className = 'status show success';
+        statusEl.textContent = '✅ Resume analyzed! Finding best-fit jobs...';
+
+        await fetchJobs(text, skills);
+    } catch (e) {
+        statusEl.className = 'status show error';
+        statusEl.textContent = '❌ Error: ' + e.message;
+    }
+}
+
 async function handleAnalyze() {
     const resumeFile = document.getElementById('resumeFile');
     const resumeText = document.getElementById('resumeText');
