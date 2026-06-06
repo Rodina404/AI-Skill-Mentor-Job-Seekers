@@ -136,8 +136,8 @@ class ProfessionalRecommender:
             # On connection error, timeout, etc., we assume false to be safe
             return False
 
-    def recommend_jobs(self, user_profile: str, top_n: int = 5) -> List[Dict[str, Any]]:
-        """Recommends live jobs using Adzuna API based on user profile skills."""
+    def recommend_jobs(self, user_profile: str, target_role: str = None, top_n: int = 5) -> List[Dict[str, Any]]:
+        """Provides professional job recommendations with readiness scores."""
         import os
         import requests
         import pandas as pd
@@ -151,7 +151,11 @@ class ProfessionalRecommender:
         
         if app_id and app_key:
             data = {}
-            search_query = "+".join([s.replace(' ', '+') for s in user_skills[:3]])
+            if target_role:
+                search_query = target_role.replace(' ', '+') + "+" + "+".join([s.replace(' ', '+') for s in user_skills[:2]])
+            else:
+                search_query = "+".join([s.replace(' ', '+') for s in user_skills[:3]])
+                
             url = f"https://api.adzuna.com/v1/api/jobs/us/search/1?app_id={app_id}&app_key={app_key}&results_per_page=50&what={search_query}"
             try:
                 resp = requests.get(url, timeout=5)
@@ -184,7 +188,13 @@ class ProfessionalRecommender:
                 job_skills = self.skill_processor.extract_skills(job_description)
                 readiness = self.skill_processor.calculate_readiness_score(user_skills, job_skills)
                 skill_score = readiness['score']
-                hybrid_score = round((0.7 * skill_score) + (0.3 * recency_boost), 3)
+                
+                # Bonus if the target role matches the job title
+                role_match_bonus = 0.0
+                if target_role and target_role.lower() in job_title.lower():
+                    role_match_bonus = 0.2
+                    
+                hybrid_score = round((0.7 * skill_score) + (0.3 * recency_boost) + role_match_bonus, 3)
                 
                 results.append({
                     'job_title': job_title,
@@ -203,14 +213,8 @@ class ProfessionalRecommender:
                     'missing_skills': readiness['missing']
                 })
             
-            def job_sort_key(x):
-                r = x['readiness_score']
-                # Boost jobs that have SOME missing skills (e.g. 50% to 99% readiness) 
-                # so the user can see skill gaps and get course recommendations.
-                gap_boost = 0.25 if 0.5 <= r < 1.0 else 0.0
-                return (x['hybrid_score'] + gap_boost, -(x['recent_days'] if x['recent_days'] is not None else 999))
-
-            results.sort(key=job_sort_key, reverse=True)
+            # Reverted to normal sort: highest hybrid score first (100% matched will be at the top)
+            results.sort(key=lambda x: (x['hybrid_score'], x['recent_days'] if x['recent_days'] is not None else 999), reverse=True)
             return results[:top_n]
 
         

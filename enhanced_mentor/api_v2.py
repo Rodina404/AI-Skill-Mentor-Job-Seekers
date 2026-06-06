@@ -15,6 +15,7 @@ processor = SkillProcessor(model=recommender.model)
 # Models
 class JobRecommendationRequest(BaseModel):
     user_profile: str = Field(..., description="Resume text or list of skills")
+    target_role: Optional[str] = Field(None, description="Specific job role the user is targeting")
     top_n: int = Field(5, ge=1, le=20)
 
 class CourseRecommendationRequest(BaseModel):
@@ -76,7 +77,7 @@ async def extract_skills(request: SkillExtractionRequest):
 async def recommend_jobs(request: JobRecommendationRequest):
     """Provides professional job recommendations with readiness scores."""
     try:
-        recommendations = recommender.recommend_jobs(request.user_profile, request.top_n)
+        recommendations = recommender.recommend_jobs(request.user_profile, request.target_role, request.top_n)
         return {
             "success": True,
             "count": len(recommendations),

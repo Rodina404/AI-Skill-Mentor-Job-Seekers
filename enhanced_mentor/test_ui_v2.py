@@ -302,7 +302,14 @@ async def get_test_ui_v2():
 
         <div class="section">
             <div class="section-title">📝 Step 2: Resume Content</div>
-            <textarea id="resumeText" placeholder="Resume text will appear here after upload..."></textarea>
+            <textarea id="resumeText" placeholder="Or paste your resume text here..."></textarea>
+        
+            <div style="margin-bottom: 15px;">
+                <label for="targetRole" style="display:block; margin-bottom:5px; font-weight:600; color:var(--text-dark);">Target Role (Optional):</label>
+                <input type="text" id="targetRole" placeholder="e.g. Data Scientist, Frontend Developer" style="width:100%; padding:10px; border:1px solid #e2e8f0; border-radius:8px;">
+            </div>
+
+            <button onclick="processResume()" class="btn">Analyze & Find Matches</button>
             <div id="skillsContainer" class="skills-container">
                 <strong>🎯 Intelligent Skill Extraction:</strong>
                 <div id="skillsList" class="skill-tags"></div>
@@ -389,12 +396,14 @@ async function fetchJobs(text, skills) {
     const jobsResults = document.getElementById('jobsResults');
     jobsLoading.classList.add('show');
     jobsResults.innerHTML = '';
+    
+    const targetRole = document.getElementById('targetRole').value.trim();
 
     try {
         const resp = await fetch('/api/v2/recommend-jobs', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ user_profile: text, top_n: 10 })
+            body: JSON.stringify({ user_profile: text, target_role: targetRole || null, top_n: 10 })
         });
         if (!resp.ok) throw new Error('Job fetch failed');
         const data = await resp.json();
