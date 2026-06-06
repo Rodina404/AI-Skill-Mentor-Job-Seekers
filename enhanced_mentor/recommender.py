@@ -150,19 +150,15 @@ class ProfessionalRecommender:
         app_key = os.getenv("ADZUNA_APP_KEY")
         
         if app_id and app_key:
-            # Try searching with top 3 skills, fallback to 2, then 1 if no results
             data = {}
-            for num_skills in [3, 2, 1]:
-                search_query = "+".join([s.replace(' ', '+') for s in user_skills[:num_skills]]) + "+remote"
-                url = f"https://api.adzuna.com/v1/api/jobs/us/search/1?app_id={app_id}&app_key={app_key}&results_per_page={top_n*4}&what={search_query}"
-                try:
-                    resp = requests.get(url, timeout=5)
-                    if resp.status_code == 200:
-                        data = resp.json()
-                        if data.get('results'):
-                            break
-                except Exception as e:
-                    print(f"Adzuna API Error: {e}")
+            search_query = "+".join([s.replace(' ', '+') for s in user_skills[:3]]) + "+remote"
+            url = f"https://api.adzuna.com/v1/api/jobs/us/search/1?app_id={app_id}&app_key={app_key}&results_per_page={top_n*4}&what={search_query}"
+            try:
+                resp = requests.get(url, timeout=5)
+                if resp.status_code == 200:
+                    data = resp.json()
+            except Exception as e:
+                print(f"Adzuna API Error: {e}")
                     
             results = []
             for job in data.get('results', []):
