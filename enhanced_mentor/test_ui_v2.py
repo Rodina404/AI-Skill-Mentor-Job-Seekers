@@ -463,7 +463,7 @@ async function fetchCourses(userSkills, targetSkills) {
         const resp = await fetch('/api/v2/ai/recommend/courses', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ missingSkills: targetSkills, top_n: 10 })
+            body: JSON.stringify({ missingSkills: targetSkills, top_n: 20 })
         });
         if (!resp.ok) throw new Error('Course fetch failed');
         const data = await resp.json();

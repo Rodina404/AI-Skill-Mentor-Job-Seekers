@@ -152,7 +152,7 @@ class ProfessionalRecommender:
         if app_id and app_key:
             data = {}
             search_query = "+".join([s.replace(' ', '+') for s in user_skills[:3]])
-            url = f"https://api.adzuna.com/v1/api/jobs/us/search/1?app_id={app_id}&app_key={app_key}&results_per_page={top_n*4}&what={search_query}"
+            url = f"https://api.adzuna.com/v1/api/jobs/us/search/1?app_id={app_id}&app_key={app_key}&results_per_page=50&what={search_query}"
             try:
                 resp = requests.get(url, timeout=5)
                 if resp.status_code == 200:
@@ -203,7 +203,14 @@ class ProfessionalRecommender:
                     'missing_skills': readiness['missing']
                 })
             
-            results.sort(key=lambda x: (x['hybrid_score'], x['recent_days'] if x['recent_days'] is not None else 999), reverse=True)
+            def job_sort_key(x):
+                r = x['readiness_score']
+                # Boost jobs that have SOME missing skills (e.g. 50% to 99% readiness) 
+                # so the user can see skill gaps and get course recommendations.
+                gap_boost = 0.25 if 0.5 <= r < 1.0 else 0.0
+                return (x['hybrid_score'] + gap_boost, -(x['recent_days'] if x['recent_days'] is not None else 999))
+
+            results.sort(key=job_sort_key, reverse=True)
             return results[:top_n]
 
         
