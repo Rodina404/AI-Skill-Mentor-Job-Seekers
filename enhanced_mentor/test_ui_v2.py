@@ -29,6 +29,19 @@ async def get_test_ui_v2():
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             overflow: hidden;
         }
+        .tab-btn {
+            padding: 8px 16px;
+            border: none;
+            background: #e2e8f0;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #4a5568;
+        }
+        .tab-btn.active {
+            background: #667eea;
+            color: white;
+        }
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -460,19 +473,19 @@ async function fetchJobs(text, skills) {
         const resp = await fetch('/api/v2/recommend-jobs', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ user_profile: text, target_role: targetRole || null, top_n: 10 })
+            body: JSON.stringify({ user_profile: text, target_role: targetRole || null, top_n: 50 })
         });
         if (!resp.ok) throw new Error('Job fetch failed');
         const data = await resp.json();
 
         if (!data.success || !data.data || data.data.length === 0) {
             jobsResults.innerHTML = '<div class="no-results">No matching jobs found. Try uploading a different resume.</div>';
-            jobsResults.classList.add('show'); // Ensure message is visible
+            jobsResults.classList.add('show');
             jobsLoading.classList.remove('show');
             return;
         }
 
-        jobsResults.innerHTML = data.data.map((job, idx) => `
+        const renderJobCard = (job, idx) => `
             <div class="item-card">
                 <div style="display:flex; justify-content:space-between; align-items:start;">
                     <div style="flex:1;">
@@ -497,9 +510,27 @@ async function fetchJobs(text, skills) {
                     ${job.linkedin_url ? `<a href="${job.linkedin_url}" target="_blank">LinkedIn</a>` : ''}
                 </div>
             </div>
-        `).join('');
+        `;
 
-        jobsResults.classList.add('show'); // <-- BUG FIX: Display the results
+        const jobs100 = data.data.filter(j => j.readiness_score === 1.0);
+        const jobs90 = data.data.filter(j => j.readiness_score >= 0.90 && j.readiness_score < 1.0);
+        const jobs70 = data.data.filter(j => j.readiness_score >= 0.70 && j.readiness_score < 0.90);
+        const jobsLess70 = data.data.filter(j => j.readiness_score < 0.70);
+
+        jobsResults.innerHTML = `
+            <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
+                <button onclick="window.showTab('tab100', this)" class="tab-btn active">100% (${jobs100.length})</button>
+                <button onclick="window.showTab('tab90', this)" class="tab-btn">90-99% (${jobs90.length})</button>
+                <button onclick="window.showTab('tab70', this)" class="tab-btn">70-89% (${jobs70.length})</button>
+                <button onclick="window.showTab('tabLess70', this)" class="tab-btn">&lt;70% (${jobsLess70.length})</button>
+            </div>
+            <div id="tab100" class="tab-content">${jobs100.length ? jobs100.map(renderJobCard).join('') : '<p>No jobs.</p>'}</div>
+            <div id="tab90" class="tab-content" style="display:none;">${jobs90.length ? jobs90.map(renderJobCard).join('') : '<p>No jobs.</p>'}</div>
+            <div id="tab70" class="tab-content" style="display:none;">${jobs70.length ? jobs70.map(renderJobCard).join('') : '<p>No jobs.</p>'}</div>
+            <div id="tabLess70" class="tab-content" style="display:none;">${jobsLess70.length ? jobsLess70.map(renderJobCard).join('') : '<p>No jobs.</p>'}</div>
+        `;
+
+        jobsResults.classList.add('show');
 
         let targetJob = data.data.find(j => j.missing_skills && j.missing_skills.length > 0);
         let targetSkills = targetJob ? targetJob.missing_skills : [];
@@ -508,7 +539,7 @@ async function fetchJobs(text, skills) {
             await fetchCourses(skills, targetSkills);
         } else {
             document.getElementById('coursesLoading').classList.remove('show');
-            document.getElementById('coursesResults').innerHTML = '<div class="no-results">You are a 100% match for the top jobs! No critical skill gaps found to recommend courses for.</div>';
+            document.getElementById('coursesResults').innerHTML = '<div class="no-results">You are a 100% match! No critical skill gaps found.</div>';
             document.getElementById('coursesResults').classList.add('show');
         }
     } catch (e) {
@@ -572,15 +603,22 @@ async function fetchCourses(userSkills, targetSkills) {
         });
 
         coursesResults.innerHTML = html;
-        
-        coursesResults.classList.add('show'); // <-- BUG FIX: Display the results
-    } catch (e) {
-        coursesResults.innerHTML = `<div class="no-results">Error: ${e.message}</div>`;
         coursesResults.classList.add('show');
+    } catch (e) {
+        coursesResults.innerHTML = `<div class="status show error">❌ Failed to load courses: ${e.message}</div>`;
+        coursesLoading.classList.remove('show');
     } finally {
         coursesLoading.classList.remove('show');
     }
 }
+
+window.showTab = function(tabId, btn) {
+    const parent = btn.closest('.section');
+    parent.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+    parent.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    parent.querySelector('#' + tabId).style.display = 'block';
+    btn.classList.add('active');
+};
 </script>
 
 </body>
