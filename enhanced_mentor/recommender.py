@@ -150,61 +150,66 @@ class ProfessionalRecommender:
         app_key = os.getenv("ADZUNA_APP_KEY")
         
         if app_id and app_key:
-            # We use the top 3 extracted skills as keywords to search Adzuna
-            search_query = "+".join([s.replace(' ', '+') for s in user_skills[:3]])
-            url = f"https://api.adzuna.com/v1/api/jobs/us/search/1?app_id={app_id}&app_key={app_key}&results_per_page={top_n*4}&what={search_query}"
-            
-            try:
-                resp = requests.get(url, timeout=5)
-                if resp.status_code == 200:
-                    data = resp.json()
-                    results = []
-                    for job in data.get('results', []):
-                        job_title = job.get('title', '')
-                        company = job.get('company', {}).get('display_name', 'Unknown')
-                        location = job.get('location', {}).get('display_name', 'Remote')
-                        job_description = job.get('description', '')
-                        primary_url = job.get('redirect_url', '')
-                        posted_date_str = job.get('created', '')
-                        
-                        recent_days = None
-                        recency_boost = 0.0
-                        if posted_date_str:
-                            try:
-                                posted_date = pd.to_datetime(posted_date_str)
-                                recent_days = max(0, int((pd.Timestamp.now(tz='UTC') - posted_date).days))
-                                if recent_days <= 7: recency_boost = 0.3
-                                elif recent_days <= 30: recency_boost = 0.15
-                                else: recency_boost = 0.05
-                            except:
-                                pass
-                        
-                        job_skills = self.skill_processor.extract_skills(job_description)
-                        readiness = self.skill_processor.calculate_readiness_score(user_skills, job_skills)
-                        skill_score = readiness['score']
-                        hybrid_score = round((0.7 * skill_score) + (0.3 * recency_boost), 3)
-                        
-                        results.append({
-                            'job_title': job_title,
-                            'company': company,
-                            'location': location,
-                            'url': primary_url,
-                            'linkedin_url': '',
-                            'description': job_description[:200] if job_description else '',
-                            'requirements': '',
-                            'posted_date': str(posted_date.date()) if 'posted_date' in locals() and pd.notna(posted_date) else None,
-                            'recent_days': recent_days,
-                            'semantic_score': round(skill_score, 3),
-                            'readiness_score': skill_score,
-                            'hybrid_score': hybrid_score,
-                            'matched_skills': readiness['matched'],
-                            'missing_skills': readiness['missing']
-                        })
+            # Try searching with top 3 skills, fallback to 2, then 1 if no results
+            data = {}
+            for num_skills in [3, 2, 1]:
+                search_query = "+".join([s.replace(' ', '+') for s in user_skills[:num_skills]]) + "+remote"
+                url = f"https://api.adzuna.com/v1/api/jobs/us/search/1?app_id={app_id}&app_key={app_key}&results_per_page={top_n*4}&what={search_query}"
+                try:
+                    resp = requests.get(url, timeout=5)
+                    if resp.status_code == 200:
+                        data = resp.json()
+                        if data.get('results'):
+                            break
+                except Exception as e:
+                    print(f"Adzuna API Error: {e}")
                     
-                    results.sort(key=lambda x: (x['hybrid_score'], x['recent_days'] if x['recent_days'] is not None else 999), reverse=True)
-                    return results[:top_n]
-            except Exception as e:
-                print(f"Adzuna API Error: {e}")
+            results = []
+            for job in data.get('results', []):
+                job_title = job.get('title', '')
+                company = job.get('company', {}).get('display_name', 'Unknown')
+                location = job.get('location', {}).get('display_name', 'Remote')
+                job_description = job.get('description', '')
+                primary_url = job.get('redirect_url', '')
+                posted_date_str = job.get('created', '')
+                
+                recent_days = None
+                recency_boost = 0.0
+                if posted_date_str:
+                    try:
+                        posted_date = pd.to_datetime(posted_date_str)
+                        recent_days = max(0, int((pd.Timestamp.now(tz='UTC') - posted_date).days))
+                        if recent_days <= 7: recency_boost = 0.3
+                        elif recent_days <= 30: recency_boost = 0.15
+                        else: recency_boost = 0.05
+                    except:
+                        pass
+                
+                job_skills = self.skill_processor.extract_skills(job_description)
+                readiness = self.skill_processor.calculate_readiness_score(user_skills, job_skills)
+                skill_score = readiness['score']
+                hybrid_score = round((0.7 * skill_score) + (0.3 * recency_boost), 3)
+                
+                results.append({
+                    'job_title': job_title,
+                    'company': company,
+                    'location': location,
+                    'url': primary_url,
+                    'linkedin_url': '',
+                    'description': job_description[:200] if job_description else '',
+                    'requirements': '',
+                    'posted_date': str(posted_date.date()) if 'posted_date' in locals() and pd.notna(posted_date) else None,
+                    'recent_days': recent_days,
+                    'semantic_score': round(skill_score, 3),
+                    'readiness_score': skill_score,
+                    'hybrid_score': hybrid_score,
+                    'matched_skills': readiness['matched'],
+                    'missing_skills': readiness['missing']
+                })
+            
+            results.sort(key=lambda x: (x['hybrid_score'], x['recent_days'] if x['recent_days'] is not None else 999), reverse=True)
+            return results[:top_n]
+
         
         return []
 
