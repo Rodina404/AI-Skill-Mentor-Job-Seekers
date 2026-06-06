@@ -22,6 +22,16 @@ class CourseRecommendationRequest(BaseModel):
     target_job_skills: List[str] = Field(..., description="Required skills for the target job")
     top_n: int = Field(5, ge=1, le=20)
 
+class UserConstraints(BaseModel):
+    level: Optional[str] = Field(None, description="Preferred course level (e.g., Beginner, Intermediate)")
+    language: Optional[str] = Field(None, description="Preferred language")
+    hoursPerWeek: Optional[int] = Field(None, description="Hours available per week")
+
+class AdvancedCourseRequest(BaseModel):
+    missingSkills: List[str] = Field(..., description="List of missing skills to fill")
+    userConstraints: Optional[UserConstraints] = None
+    top_n: int = Field(10, ge=1, le=20)
+
 class SkillExtractionRequest(BaseModel):
     text: str = Field(..., description="Text to analyze")
 
@@ -89,6 +99,20 @@ async def recommend_courses(request: CourseRecommendationRequest):
             "count": len(recommendations),
             "data": recommendations
         }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/ai/recommend/courses")
+async def advanced_recommend_courses(request: AdvancedCourseRequest):
+    """Advanced grouped course recommendation using hybrid reranking and user constraints."""
+    try:
+        constraints = request.userConstraints.dict() if request.userConstraints else {}
+        grouped_courses = recommender.advanced_recommend_courses_grouped(
+            missing_skills=request.missingSkills,
+            constraints=constraints,
+            top_n=request.top_n
+        )
+        return grouped_courses
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

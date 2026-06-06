@@ -394,7 +394,7 @@ async function fetchJobs(text, skills) {
         const resp = await fetch('/api/v2/recommend-jobs', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ user_profile: text, top_n: 6 })
+            body: JSON.stringify({ user_profile: text, top_n: 10 })
         });
         if (!resp.ok) throw new Error('Job fetch failed');
         const data = await resp.json();
@@ -460,46 +460,52 @@ async function fetchCourses(userSkills, targetSkills) {
     coursesResults.innerHTML = '';
 
     try {
-        const resp = await fetch('/api/v2/recommend-courses', {
+        const resp = await fetch('/api/v2/ai/recommend/courses', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ user_skills: userSkills, target_job_skills: targetSkills, top_n: 6 })
+            body: JSON.stringify({ missingSkills: targetSkills, top_n: 10 })
         });
         if (!resp.ok) throw new Error('Course fetch failed');
         const data = await resp.json();
 
-        if (!data.success || !data.data || data.data.length === 0) {
+        if (!data || data.length === 0) {
             coursesResults.innerHTML = '<div class="no-results">No courses found. Your skills already match requirements!</div>';
-            coursesResults.classList.add('show'); // Ensure message is visible
+            coursesResults.classList.add('show');
             coursesLoading.classList.remove('show');
             return;
         }
 
-        coursesResults.innerHTML = data.data.map((course, idx) => {
-            const levelEmoji = {'1': '🌱', '2': '🌿', '3': '🌳'}[course.level_score] || '📚';
-            const levelName = ['', 'Beginner', 'Intermediate', 'Advanced'][course.level_score] || course.level;
-            return `
-                <div class="item-card">
-                    <div style="display:flex; justify-content:space-between; align-items:start;">
-                        <div style="flex:1;">
-                            <div class="item-title">${idx + 1}. ${course.title || 'Unknown'}</div>
-                            <div class="item-meta">
-                                <span>📚 ${course.provider}</span>
-                                <span>${levelEmoji} ${levelName}</span>
-                                <span>⭐ ${course.rating || 'N/A'}</span>
+        let html = '';
+        data.forEach(skillGroup => {
+            html += `<h3 style="margin-top: 20px; color: var(--text-dark); font-size: 1.2em; font-weight: 600;">📚 Recommended for: ${skillGroup.skillName}</h3>`;
+            html += skillGroup.courses.map((course, idx) => {
+                const levelEmoji = {'All Levels': '📚', 'Beginner': '🌱', 'Intermediate': '🌿', 'Advanced': '🌳'}[course.level] || '📚';
+                return `
+                    <div class="item-card">
+                        <div style="display:flex; justify-content:space-between; align-items:start;">
+                            <div style="flex:1;">
+                                <div class="item-title">${idx + 1}. ${course.title || 'Unknown'}</div>
+                                <div class="item-meta">
+                                    <span>📚 ${course.provider}</span>
+                                    <span>${levelEmoji} ${course.level}</span>
+                                    <span>⭐ ${course.rating || 'N/A'}</span>
+                                    <span>⏱️ ${course.duration}</span>
+                                </div>
+                            </div>
+                            <div style="font-size:1.5em; font-weight:700; color:#48bb78; min-width:50px; text-align:right;">
+                                ${Math.round((course.score || 0) * 100)}%
                             </div>
                         </div>
+                        <div class="item-desc">${course.description || 'Course details available'}</div>
+                        <div class="item-links">
+                            <a href="${course.url || '#'}" target="_blank">View Course</a>
+                        </div>
                     </div>
-                    <div class="item-desc">${course.description || 'Course details available'}</div>
-                    <div style="margin-bottom:12px;">
-                        ${(course.missing_skills || []).map(s => `<span class="badge missing">Covers: ${s}</span>`).join('')}
-                    </div>
-                    <div class="item-links">
-                        <a href="${course.udemy_url || course.url || '#'}" target="_blank">Search on Udemy</a>
-                    </div>
-                </div>
-            `;
-        }).join('');
+                `;
+            }).join('');
+        });
+
+        coursesResults.innerHTML = html;
         
         coursesResults.classList.add('show'); // <-- BUG FIX: Display the results
     } catch (e) {

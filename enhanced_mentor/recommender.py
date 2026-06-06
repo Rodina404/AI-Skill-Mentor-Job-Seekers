@@ -287,6 +287,129 @@ class ProfessionalRecommender:
         
         return unique_results[:top_n]
 
+    def advanced_recommend_courses_grouped(self, missing_skills: List[str], constraints: Dict[str, Any], top_n: int = 10) -> List[Dict[str, Any]]:
+        """Advanced grouped course recommendation using hybrid reranking and user constraints."""
+        if self.courses_index is None or self.courses_metadata is None or not missing_skills:
+            return []
+
+        import faiss
+        target_level = constraints.get("level", "").lower() if constraints.get("level") else None
+        target_lang = constraints.get("language", "").lower() if constraints.get("language") else None
+        target_hours = float(constraints.get("hoursPerWeek", 0)) if constraints.get("hoursPerWeek") else None
+
+        grouped_results = []
+
+        for skill in missing_skills:
+            # L1-1: SkillQueryBuilder
+            query_text = f"Learn {skill} comprehensive course"
+            
+            # L1-2: Embedding E1
+            query_vector = self.model.encode([query_text], convert_to_numpy=True)
+            faiss.normalize_L2(query_vector)
+
+            # L1-3: Course Vector DB Search
+            distances, indices = self.courses_index.search(query_vector, top_n * 3)
+            
+            skill_courses = []
+            seen_titles = set()
+            
+            for i, idx in enumerate(indices[0]):
+                if idx == -1:
+                    continue
+
+                course = self.courses_metadata.iloc[idx]
+                if not self._validate_course_data(course):
+                    continue
+
+                course_title = course.get('title') or course.get('course_name') or 'Unknown Course'
+                if course_title.lower() in seen_titles:
+                    continue
+                seen_titles.add(course_title.lower())
+
+                lang_val = course.get('language') or 'english' 
+                if target_lang and target_lang not in lang_val.lower():
+                    if course.get('language'): 
+                        continue
+                        
+                level = course.get('instructional_level') or course.get('level') or 'All Levels'
+                level_score = self._get_course_level_score(level)
+                
+                # L1-4: Constraint Filter
+                if target_level:
+                    if target_level == "beginner" and level_score > 1:
+                        continue
+                    if target_level == "advanced" and level_score < 3:
+                        continue
+                
+                # Duration constraint
+                duration_val = course.get('duration')
+                course_duration_hours = 0
+                if duration_val:
+                    try:
+                        import re
+                        match = re.search(r'(\d+(\.\d+)?)', str(duration_val))
+                        if match:
+                            course_duration_hours = float(match.group(1))
+                    except:
+                        course_duration_hours = 10
+                else:
+                    course_duration_hours = 10
+
+                if target_hours and course_duration_hours > target_hours:
+                    if duration_val: 
+                        continue
+
+                # L1-5: Hybrid Rerank Engine
+                rating = float(course.get('rating') or 0.0)
+                subscribers = float(course.get('num_subscribers') or 0.0)
+                
+                semantic_score = float(1.0 / (1.0 + distances[0][i])) # Convert L2 to similarity
+                rating_score = min(rating / 5.0, 1.0)
+                popularity_score = min(subscribers / 10000.0, 1.0)
+                
+                level_match_score = 1.0
+                if target_level:
+                    if target_level == "beginner" and level_score == 1: level_match_score = 1.0
+                    elif target_level == "advanced" and level_score == 3: level_match_score = 1.0
+                    elif target_level == "intermediate" and level_score == 2: level_match_score = 1.0
+                    elif level == "All Levels": level_match_score = 0.8
+                    else: level_match_score = 0.4
+                
+                duration_fit_score = 1.0
+                if target_hours and course_duration_hours > 0:
+                    duration_fit_score = min(target_hours / course_duration_hours, 1.0)
+
+                final_score = round((0.4 * semantic_score) + (0.2 * rating_score) + (0.1 * popularity_score) + (0.2 * level_match_score) + (0.1 * duration_fit_score), 3)
+
+                course_link = self._normalize_link(course.get('url') or course.get('course_url') or course.get('course_link'))
+                if not course_link:
+                    course_link = self._build_course_search_url(course_title, provider='udemy')
+
+                course_description = str(course.get('description') or course.get('headline') or '').strip()[:150]
+
+                skill_courses.append({
+                    "courseId": str(course.get('id', idx)),
+                    "title": course_title,
+                    "description": course_description,
+                    "score": final_score,
+                    "duration": f"{course_duration_hours} hours" if duration_val else "Self-paced",
+                    "provider": course.get('instructor_names') or course.get('instructor') or 'Udemy',
+                    "level": level,
+                    "url": course_link,
+                    "semanticScore": round(semantic_score, 3),
+                    "rating": rating
+                })
+
+            # Sort by final hybrid score
+            skill_courses.sort(key=lambda x: x["score"], reverse=True)
+
+            grouped_results.append({
+                "skillId": f"S_{skill.lower().replace(' ', '_')}",
+                "skillName": skill,
+                "courses": skill_courses[:top_n]
+            })
+
+        return grouped_results
 if __name__ == "__main__":
     # Quick test if artifacts exist
     recommender = ProfessionalRecommender()
