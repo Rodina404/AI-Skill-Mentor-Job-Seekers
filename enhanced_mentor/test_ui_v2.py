@@ -435,9 +435,16 @@ async function fetchJobs(text, skills) {
 
         jobsResults.classList.add('show'); // <-- BUG FIX: Display the results
 
-        const topJob = data.data[0];
-        const targetSkills = (topJob.missing_skills && topJob.missing_skills.length) ? topJob.missing_skills : (topJob.matched_skills || []);
-        await fetchCourses(skills, targetSkills);
+        let targetJob = data.data.find(j => j.missing_skills && j.missing_skills.length > 0);
+        let targetSkills = targetJob ? targetJob.missing_skills : [];
+        
+        if (targetSkills.length > 0) {
+            await fetchCourses(skills, targetSkills);
+        } else {
+            document.getElementById('coursesLoading').classList.remove('show');
+            document.getElementById('coursesResults').innerHTML = '<div class="no-results">You are a 100% match for the top jobs! No critical skill gaps found to recommend courses for.</div>';
+            document.getElementById('coursesResults').classList.add('show');
+        }
     } catch (e) {
         jobsResults.innerHTML = `<div class="no-results">Error: ${e.message}</div>`;
         jobsResults.classList.add('show');
