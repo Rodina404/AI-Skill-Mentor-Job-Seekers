@@ -151,7 +151,7 @@ class ProfessionalRecommender:
         
         if app_id and app_key:
             data = {}
-            search_query = "+".join([s.replace(' ', '+') for s in user_skills[:3]]) + "+remote"
+            search_query = "+".join([s.replace(' ', '+') for s in user_skills[:3]])
             url = f"https://api.adzuna.com/v1/api/jobs/us/search/1?app_id={app_id}&app_key={app_key}&results_per_page={top_n*4}&what={search_query}"
             try:
                 resp = requests.get(url, timeout=5)
