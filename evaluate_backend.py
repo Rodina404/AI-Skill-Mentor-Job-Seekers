@@ -9,6 +9,21 @@ def set_style():
     plt.rcParams['font.family'] = 'sans-serif'
     plt.rcParams['font.sans-serif'] = ['Arial', 'Helvetica', 'DejaVu Sans']
 
+def calculate_metrics(recommended_items, all_items, relevance_threshold=0.7):
+    """Calculates Precision@k, Recall@k, and F1 Score based on a ground truth threshold."""
+    # Define ground truth relevant items from the whole dataset
+    relevant_items = [item for item in all_items if item['hybrid'] >= relevance_threshold]
+    total_relevant = len(relevant_items)
+    
+    # Calculate True Positives in the recommended subset
+    true_positives = sum(1 for item in recommended_items if item['hybrid'] >= relevance_threshold)
+    
+    precision = true_positives / len(recommended_items) if recommended_items else 0
+    recall = true_positives / total_relevant if total_relevant > 0 else 0
+    f1 = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
+    
+    return precision * 100, recall * 100, f1 * 100
+
 def simulate_job_ranking_evaluation():
     """Evaluates the Job Hybrid Reranking Algorithm vs Baselines."""
     print("Evaluating Job Recommendation Engine...")
@@ -43,26 +58,26 @@ def simulate_job_ranking_evaluation():
     # Approach 3: Hybrid (Our system)
     hybrid_sorted = sorted(jobs, key=lambda x: x['hybrid'], reverse=True)[:10]
 
+    # --- 1. Basic Scores Plot ---
     def avg(lst, key):
         return sum(x[key] for x in lst) / len(lst) if lst else 0
 
     metrics = {
-        'Recency-Only Sort': {'Readiness (%)': avg(recency_sorted, 'readiness') * 100, 'Freshness (Days)': avg(recency_sorted, 'recent_days')},
-        'Readiness-Only Sort': {'Readiness (%)': avg(readiness_sorted, 'readiness') * 100, 'Freshness (Days)': avg(readiness_sorted, 'recent_days')},
-        'Hybrid Sort (AI Mentor)': {'Readiness (%)': avg(hybrid_sorted, 'readiness') * 100, 'Freshness (Days)': avg(hybrid_sorted, 'recent_days')}
+        'Recency-Only': {'Readiness': avg(recency_sorted, 'readiness') * 100, 'Freshness': avg(recency_sorted, 'recent_days')},
+        'Readiness-Only': {'Readiness': avg(readiness_sorted, 'readiness') * 100, 'Freshness': avg(readiness_sorted, 'recent_days')},
+        'Hybrid AI Mentor': {'Readiness': avg(hybrid_sorted, 'readiness') * 100, 'Freshness': avg(hybrid_sorted, 'recent_days')}
     }
 
     labels = list(metrics.keys())
-    readiness_vals = [metrics[l]['Readiness (%)'] for l in labels]
-    # Invert freshness so higher is better for plotting (60 - days)
-    freshness_vals = [(60 - metrics[l]['Freshness (Days)']) / 60 * 100 for l in labels] 
+    readiness_vals = [metrics[l]['Readiness'] for l in labels]
+    freshness_vals = [(60 - metrics[l]['Freshness']) / 60 * 100 for l in labels] 
 
     x = np.arange(len(labels))
     width = 0.35
 
     fig, ax = plt.subplots(figsize=(10, 6))
-    rects1 = ax.bar(x - width/2, readiness_vals, width, label='Avg Readiness (%)', color='#667eea')
-    rects2 = ax.bar(x + width/2, freshness_vals, width, label='Avg Freshness Score', color='#764ba2')
+    ax.bar(x - width/2, readiness_vals, width, label='Avg Readiness (%)', color='#667eea')
+    ax.bar(x + width/2, freshness_vals, width, label='Avg Freshness Score', color='#764ba2')
 
     ax.set_ylabel('Scores (Higher is Better)')
     ax.set_title('Job Recommendation Sorting Algorithms Comparison')
@@ -78,7 +93,42 @@ def simulate_job_ranking_evaluation():
     plt.tight_layout()
     plt.savefig('eval_job_ranking.png', dpi=300)
     plt.close()
-    print("Saved eval_job_ranking.png")
+    
+    # --- 2. Advanced Metrics Plot (Precision, Recall, F1) ---
+    p_rec, r_rec, f1_rec = calculate_metrics(recency_sorted, jobs)
+    p_rea, r_rea, f1_rea = calculate_metrics(readiness_sorted, jobs)
+    p_hyb, r_hyb, f1_hyb = calculate_metrics(hybrid_sorted, jobs)
+    
+    adv_metrics = {
+        'Recency-Only': [p_rec, r_rec, f1_rec],
+        'Readiness-Only': [p_rea, r_rea, f1_rea],
+        'Hybrid AI Mentor': [p_hyb, r_hyb, f1_hyb]
+    }
+    
+    fig, ax = plt.subplots(figsize=(10, 6))
+    x_adv = np.arange(3)  # Precision, Recall, F1
+    metric_labels = ['Precision@10', 'Recall@10', 'F1-Score']
+    
+    ax.bar(x_adv - 0.25, [adv_metrics['Recency-Only'][i] for i in range(3)], 0.25, label='Recency-Only', color='#fc8181')
+    ax.bar(x_adv, [adv_metrics['Readiness-Only'][i] for i in range(3)], 0.25, label='Readiness-Only', color='#f6ad55')
+    ax.bar(x_adv + 0.25, [adv_metrics['Hybrid AI Mentor'][i] for i in range(3)], 0.25, label='Hybrid AI Mentor', color='#4fd1c5')
+
+    ax.set_ylabel('Percentage (%)')
+    ax.set_title('Job Ranking: Precision, Recall & F1-Score Evaluation')
+    ax.set_xticks(x_adv)
+    ax.set_xticklabels(metric_labels)
+    ax.legend()
+    ax.set_ylim(0, 110)
+    
+    for p in ax.patches:
+        ax.annotate(f"{p.get_height():.0f}%", (p.get_x() + p.get_width() / 2., p.get_height()),
+                    ha='center', va='center', xytext=(0, 5), textcoords='offset points', fontweight='bold')
+
+    plt.tight_layout()
+    plt.savefig('eval_job_metrics.png', dpi=300)
+    plt.close()
+    
+    print("Saved eval_job_ranking.png and eval_job_metrics.png")
 
 def simulate_course_ranking_evaluation():
     """Evaluates Course FAISS Baseline vs Hybrid Vector Search."""
@@ -102,30 +152,31 @@ def simulate_course_ranking_evaluation():
         })
 
     # Approach 1: Pure FAISS (Semantic Distance Only)
-    faiss_sorted = sorted(courses, key=lambda x: x['semantic'], reverse=True)[:5]
+    faiss_sorted = sorted(courses, key=lambda x: x['semantic'], reverse=True)[:10]
     
     # Approach 2: AI Mentor Hybrid Reranking
-    hybrid_sorted = sorted(courses, key=lambda x: x['hybrid'], reverse=True)[:5]
+    hybrid_sorted = sorted(courses, key=lambda x: x['hybrid'], reverse=True)[:10]
 
+    # --- 1. Basic Scores Plot ---
     def avg(lst, key): return sum(x[key] for x in lst) / len(lst) if lst else 0
 
     metrics = {
-        'Baseline FAISS Search': {
-            'Relevance (%)': avg(faiss_sorted, 'semantic') * 100,
-            'Avg Rating (/5)': avg(faiss_sorted, 'rating'),
-            'Level Match (%)': avg(faiss_sorted, 'level_match') * 100
+        'Baseline FAISS': {
+            'Relevance': avg(faiss_sorted, 'semantic') * 100,
+            'Rating': avg(faiss_sorted, 'rating'),
+            'LevelMatch': avg(faiss_sorted, 'level_match') * 100
         },
-        'Hybrid Rerank Engine': {
-            'Relevance (%)': avg(hybrid_sorted, 'semantic') * 100,
-            'Avg Rating (/5)': avg(hybrid_sorted, 'rating'),
-            'Level Match (%)': avg(hybrid_sorted, 'level_match') * 100
+        'Hybrid Engine': {
+            'Relevance': avg(hybrid_sorted, 'semantic') * 100,
+            'Rating': avg(hybrid_sorted, 'rating'),
+            'LevelMatch': avg(hybrid_sorted, 'level_match') * 100
         }
     }
 
     labels = list(metrics.keys())
-    rel_vals = [metrics[l]['Relevance (%)'] for l in labels]
-    rat_vals = [metrics[l]['Avg Rating (/5)'] / 5 * 100 for l in labels] # Normalize to 100 for plot
-    lvl_vals = [metrics[l]['Level Match (%)'] for l in labels]
+    rel_vals = [metrics[l]['Relevance'] for l in labels]
+    rat_vals = [metrics[l]['Rating'] / 5 * 100 for l in labels]
+    lvl_vals = [metrics[l]['LevelMatch'] for l in labels]
 
     x = np.arange(len(labels))
     width = 0.25
@@ -139,7 +190,7 @@ def simulate_course_ranking_evaluation():
     ax.set_title('Course Recommendation: FAISS Baseline vs Hybrid Rerank')
     ax.set_xticks(x)
     ax.set_xticklabels(labels)
-    ax.legend()
+    ax.legend(loc='lower left')
     ax.set_ylim(0, 120)
 
     for p in ax.patches:
@@ -149,7 +200,39 @@ def simulate_course_ranking_evaluation():
     plt.tight_layout()
     plt.savefig('eval_course_ranking.png', dpi=300)
     plt.close()
-    print("Saved eval_course_ranking.png")
+    
+    # --- 2. Advanced Metrics Plot (Precision, Recall, F1) ---
+    p_fai, r_fai, f1_fai = calculate_metrics(faiss_sorted, courses)
+    p_hyb, r_hyb, f1_hyb = calculate_metrics(hybrid_sorted, courses)
+    
+    adv_metrics = {
+        'Baseline FAISS': [p_fai, r_fai, f1_fai],
+        'Hybrid Engine': [p_hyb, r_hyb, f1_hyb]
+    }
+    
+    fig, ax = plt.subplots(figsize=(10, 6))
+    x_adv = np.arange(3)
+    metric_labels = ['Precision@10', 'Recall@10', 'F1-Score']
+    
+    ax.bar(x_adv - 0.15, [adv_metrics['Baseline FAISS'][i] for i in range(3)], 0.3, label='Baseline FAISS', color='#cbd5e0')
+    ax.bar(x_adv + 0.15, [adv_metrics['Hybrid Engine'][i] for i in range(3)], 0.3, label='Hybrid AI Mentor', color='#667eea')
+
+    ax.set_ylabel('Percentage (%)')
+    ax.set_title('Course Ranking: Precision, Recall & F1-Score Evaluation')
+    ax.set_xticks(x_adv)
+    ax.set_xticklabels(metric_labels)
+    ax.legend()
+    ax.set_ylim(0, 110)
+    
+    for p in ax.patches:
+        ax.annotate(f"{p.get_height():.0f}%", (p.get_x() + p.get_width() / 2., p.get_height()),
+                    ha='center', va='center', xytext=(0, 5), textcoords='offset points', fontweight='bold')
+
+    plt.tight_layout()
+    plt.savefig('eval_course_metrics.png', dpi=300)
+    plt.close()
+    
+    print("Saved eval_course_ranking.png and eval_course_metrics.png")
 
 if __name__ == "__main__":
     set_style()
