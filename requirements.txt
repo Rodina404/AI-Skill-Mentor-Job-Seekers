@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+pandas
+numpy
+spacy
+sentence-transformers
+transformers
+faiss-cpu
+pdfplumber
+plotly
+streamlit
+torch
+torchvision
+torchaudio

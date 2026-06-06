@@ -1,0 +1,25 @@
+# Environments
+.env
+.venv/
+venv/
+env/
+__pycache__/
+*.pyc
+
+# Massive Data Files
+*.csv
+*.tar.gz
+*.zip
+ResumesPDF/
+
+# Models & Heavy Pickles
+models/
+graduation_project/models/
+*processed.pkl
+*matrix.pkl
+*mapper.pkl
+
+# Keep specific artifacts
+!artifacts/courses.pkl
+!artifacts/courses.index
+!artifacts/jobs.index
