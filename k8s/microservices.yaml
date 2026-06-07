@@ -1,0 +1,384 @@
+# ============================================================
+# m1-extraction-service  (port 8001)
+# ============================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: m1-extraction-deployment
+  labels:
+    app: m1-extraction
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: m1-extraction
+  template:
+    metadata:
+      labels:
+        app: m1-extraction
+    spec:
+      containers:
+        - name: m1-extraction
+          image: ai-skill-mentor/m1-extraction:latest
+          imagePullPolicy: IfNotPresent   # use local image in Minikube
+          ports:
+            - containerPort: 8001
+          env:
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: ai-skill-mentor-secrets
+                  key: OPENAI_API_KEY
+            - name: ANTHROPIC_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: ai-skill-mentor-secrets
+                  key: ANTHROPIC_API_KEY
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8001
+            initialDelaySeconds: 15
+            periodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: m1-extraction-service
+spec:
+  selector:
+    app: m1-extraction
+  ports:
+    - port: 8001
+      targetPort: 8001
+  type: ClusterIP
+
+---
+# ============================================================
+# skill-normalization-service  (port 8002)
+# ============================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: skill-normalization-deployment
+  labels:
+    app: skill-normalization
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: skill-normalization
+  template:
+    metadata:
+      labels:
+        app: skill-normalization
+    spec:
+      containers:
+        - name: skill-normalization
+          image: ai-skill-mentor/skill-normalization:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8002
+          resources:
+            requests:
+              memory: "1Gi"    # sentence-transformers needs more RAM
+              cpu: "500m"
+            limits:
+              memory: "2Gi"
+              cpu: "1000m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8002
+            initialDelaySeconds: 30   # model loading takes time
+            periodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: skill-normalization-service
+spec:
+  selector:
+    app: skill-normalization
+  ports:
+    - port: 8002
+      targetPort: 8002
+  type: ClusterIP
+
+---
+# ============================================================
+# cv-matching-service  (port 8003)
+# ============================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cv-matching-deployment
+  labels:
+    app: cv-matching
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cv-matching
+  template:
+    metadata:
+      labels:
+        app: cv-matching
+    spec:
+      containers:
+        - name: cv-matching
+          image: ai-skill-mentor/cv-matching:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8003
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "500m"
+            limits:
+              memory: "2Gi"
+              cpu: "1000m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8003
+            initialDelaySeconds: 30
+            periodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cv-matching-service
+spec:
+  selector:
+    app: cv-matching
+  ports:
+    - port: 8003
+      targetPort: 8003
+  type: ClusterIP
+
+---
+# ============================================================
+# gap-engine-service  (port 8004)
+# ============================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gap-engine-deployment
+  labels:
+    app: gap-engine
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gap-engine
+  template:
+    metadata:
+      labels:
+        app: gap-engine
+    spec:
+      containers:
+        - name: gap-engine
+          image: ai-skill-mentor/gap-engine:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8004
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8004
+            initialDelaySeconds: 15
+            periodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gap-engine-service
+spec:
+  selector:
+    app: gap-engine
+  ports:
+    - port: 8004
+      targetPort: 8004
+  type: ClusterIP
+
+---
+# ============================================================
+# m5-roadmap-service  (port 8005)
+# ============================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: m5-roadmap-deployment
+  labels:
+    app: m5-roadmap
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: m5-roadmap
+  template:
+    metadata:
+      labels:
+        app: m5-roadmap
+    spec:
+      containers:
+        - name: m5-roadmap
+          image: ai-skill-mentor/m5-roadmap:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8005
+          env:
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: ai-skill-mentor-secrets
+                  key: OPENAI_API_KEY
+            - name: ANTHROPIC_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: ai-skill-mentor-secrets
+                  key: ANTHROPIC_API_KEY
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8005
+            initialDelaySeconds: 15
+            periodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: m5-roadmap-service
+spec:
+  selector:
+    app: m5-roadmap
+  ports:
+    - port: 8005
+      targetPort: 8005
+  type: ClusterIP
+
+---
+# ============================================================
+# course-recommendation-service  (port 8006)
+# ============================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: course-recommendation-deployment
+  labels:
+    app: course-recommendation
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: course-recommendation
+  template:
+    metadata:
+      labels:
+        app: course-recommendation
+    spec:
+      containers:
+        - name: course-recommendation
+          image: ai-skill-mentor/course-recommendation:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8006
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8006
+            initialDelaySeconds: 15
+            periodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: course-recommendation-service
+spec:
+  selector:
+    app: course-recommendation
+  ports:
+    - port: 8006
+      targetPort: 8006
+  type: ClusterIP
+
+---
+# ============================================================
+# job-recommendation-service  (port 8007)
+# ============================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: job-recommendation-deployment
+  labels:
+    app: job-recommendation
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: job-recommendation
+  template:
+    metadata:
+      labels:
+        app: job-recommendation
+    spec:
+      containers:
+        - name: job-recommendation
+          image: ai-skill-mentor/job-recommendation:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8007
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8007
+            initialDelaySeconds: 15
+            periodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: job-recommendation-service
+spec:
+  selector:
+    app: job-recommendation
+  ports:
+    - port: 8007
+      targetPort: 8007
+  type: ClusterIP
