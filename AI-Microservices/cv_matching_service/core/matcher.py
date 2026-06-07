@@ -1,0 +1,35 @@
+import logging
+from utils.helpers import candidate_to_text
+from core.vector_store import build_vector_store
+from core.scorer import compute_score_detailed
+from core.job_parser import parse_job
+
+logger = logging.getLogger(__name__)
+
+def match_candidates(job_text, candidates):
+    logger.info(f"Matching {len(candidates)} candidates against job description")
+    
+    if not candidates:
+        logger.warning("No candidates provided for matching")
+        return []
+        
+    job_requirements = parse_job(job_text)
+    texts = [candidate_to_text(c) for c in candidates]
+    vector_db = build_vector_store(texts, candidates)
+    
+    docs = vector_db.similarity_search_with_score(job_text, k=len(candidates))
+    results = []
+    for doc, similarity_score in docs:
+        candidate = doc.metadata
+        score_detail = compute_score_detailed(job_text, candidate, similarity_score)
+        results.append({
+            "name": candidate.get("name", "Unknown"),
+            "score": score_detail["score"],
+            "experience": candidate.get("experience", 0),
+            "skills": candidate.get("skills", []),
+            "matching_skills": score_detail["matching_skills"],
+            "missing_skills": score_detail["missing_skills"],
+            "skill_match_count": score_detail["skill_match_count"],
+            "skill_total_required": score_detail["skill_total_required"]
+        })
+    return sorted(results, key=lambda x: x["score"], reverse=True)
