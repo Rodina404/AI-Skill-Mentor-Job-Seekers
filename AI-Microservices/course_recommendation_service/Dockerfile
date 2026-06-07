@@ -12,7 +12,7 @@ COPY . .
 # Create data and models directories
 RUN mkdir -p ./data ./models
 
-EXPOSE 8003
+EXPOSE 8006
 
 ENV PORT=8003
 ENV DATA_PATH=./data

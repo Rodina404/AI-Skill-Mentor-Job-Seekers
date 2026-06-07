@@ -1,0 +1,101 @@
+I need to migrate the course_recommendation and job_recommendation services
+from the graduation_project folder on march-clean into proper standalone
+microservice folders on main. Follow these steps EXACTLY and report after each one.
+
+=== STEP 1 — Create the folder structure on main ===
+
+git checkout main
+
+New-Item -ItemType Directory -Force -Path "AI-Microservices/course_recommendation_service/routes"
+New-Item -ItemType Directory -Force -Path "AI-Microservices/course_recommendation_service/core"
+New-Item -ItemType Directory -Force -Path "AI-Microservices/course_recommendation_service/data"
+New-Item -ItemType Directory -Force -Path "AI-Microservices/job_recommendation_service/routes"
+New-Item -ItemType Directory -Force -Path "AI-Microservices/job_recommendation_service/core"
+New-Item -ItemType Directory -Force -Path "AI-Microservices/job_recommendation_service/data"
+
+=== STEP 2 — Copy core logic files from graduation_project on march-clean ===
+
+git checkout march-clean -- graduation_project/
+
+# Copy course service core files
+Copy-Item "graduation_project\course_recommendation\core\course_recommender.py" `
+    "AI-Microservices\course_recommendation_service\core\course_recommender.py" -Force
+Copy-Item "graduation_project\course_recommendation\core\data_preprocessor.py" `
+    "AI-Microservices\course_recommendation_service\core\data_preprocessor.py" -Force
+
+# Copy job service core files
+Copy-Item "graduation_project\job_recommendation\core\job_recommender.py" `
+    "AI-Microservices\job_recommendation_service\core\job_recommender.py" -Force
+Copy-Item "graduation_project\job_recommendation\core\data_preprocessor.py" `
+    "AI-Microservices\job_recommendation_service\core\data_preprocessor.py" -Force
+
+# Copy artifacts data files
+Copy-Item "artifacts\courses.pkl" "AI-Microservices\course_recommendation_service\data\courses.pkl" -Force
+Copy-Item "artifacts\courses.index" "AI-Microservices\course_recommendation_service\data\courses.index" -Force
+
+=== STEP 3 — Fix the data_path import in both copied core files ===
+
+In AI-Microservices/course_recommendation_service/core/course_recommender.py:
+- Find the line with data_path = "../../data" or similar hardcoded path
+- Replace it with: data_path = os.getenv("DATA_PATH", "./data")
+- Add "import os" at the top if not present
+- Fix the relative import: change "from .data_preprocessor import" to keep as-is (relative imports are fine)
+
+Do the same for AI-Microservices/job_recommendation_service/core/job_recommender.py
+
+=== STEP 4 — Create __init__.py files ===
+
+New-Item -ItemType File -Force -Path "AI-Microservices/course_recommendation_service/__init__.py"
+New-Item -ItemType File -Force -Path "AI-Microservices/course_recommendation_service/core/__init__.py"
+New-Item -ItemType File -Force -Path "AI-Microservices/course_recommendation_service/routes/__init__.py"
+New-Item -ItemType File -Force -Path "AI-Microservices/job_recommendation_service/__init__.py"
+New-Item -ItemType File -Force -Path "AI-Microservices/job_recommendation_service/core/__init__.py"
+New-Item -ItemType File -Force -Path "AI-Microservices/job_recommendation_service/routes/__init__.py"
+
+=== STEP 5 — Remove the graduation_project folder from staging (don't delete it, just unstage) ===
+
+git restore --staged graduation_project/
+git restore graduation_project/
+
+=== STEP 6 — Verify the final structure ===
+
+Get-ChildItem "AI-Microservices/course_recommendation_service" -Recurse -File |
+    Where-Object { $_.FullName -notlike "*__pycache__*" } |
+    Select-Object Name
+
+Get-ChildItem "AI-Microservices/job_recommendation_service" -Recurse -File |
+    Where-Object { $_.FullName -notlike "*__pycache__*" } |
+    Select-Object Name
+
+=== STEP 7 — Commit and push to service branches ===
+
+git add "AI-Microservices/course_recommendation_service/"
+git add "AI-Microservices/job_recommendation_service/"
+git commit -m "feat: add course and job recommendation services migrated from graduation_project"
+git push origin main
+
+# Push to service branches
+git checkout service/course-recommendation
+git checkout main -- "AI-Microservices/course_recommendation_service/"
+git add "AI-Microservices/course_recommendation_service/"
+git commit -m "feat: add course recommendation service"
+git push origin service/course-recommendation
+git checkout main
+
+git checkout service/job-recommendation
+git checkout main -- "AI-Microservices/job_recommendation_service/"
+git add "AI-Microservices/job_recommendation_service/"
+git commit -m "feat: add job recommendation service"
+git push origin service/job-recommendation
+git checkout main
+
+=== STEP 8 — Final check ===
+
+git status --short
+git log --oneline -3
+
+=== REPORT BACK ===
+After each step tell me:
+1. Did it succeed or fail?
+2. Any error messages?
+3. After step 6, paste the full file list of both service folders
