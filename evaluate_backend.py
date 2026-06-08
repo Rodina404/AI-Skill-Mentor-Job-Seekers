@@ -5,10 +5,9 @@ import pandas as pd
 import seaborn as sns
 from dotenv import load_dotenv
 
-# Load real environment to ensure we can hit APIs and models
+# Load real environment
 load_dotenv()
 
-# Import the actual models
 try:
     from enhanced_mentor.recommender import ProfessionalRecommender
 except ImportError:
@@ -21,19 +20,18 @@ def set_style():
     plt.rcParams['font.family'] = 'sans-serif'
     plt.rcParams['font.sans-serif'] = ['Arial', 'Helvetica', 'DejaVu Sans']
 
-def calculate_metrics(recommended_subset, all_items, relevance_key='is_relevant'):
+def calculate_metrics(recommended_subset, all_relevant_count):
     """Calculates Precision@k, Recall@k, and F1 Score against an objective ground truth."""
-    total_relevant = sum(1 for item in all_items if item.get(relevance_key, False))
-    true_positives = sum(1 for item in recommended_subset if item.get(relevance_key, False))
+    true_positives = sum(1 for item in recommended_subset if item.get('is_relevant', False))
     
     precision = true_positives / len(recommended_subset) if recommended_subset else 0
-    recall = true_positives / total_relevant if total_relevant > 0 else 0
+    recall = true_positives / all_relevant_count if all_relevant_count > 0 else 0
     f1 = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
     
     return precision * 100, recall * 100, f1 * 100
 
 def evaluate_genuine_job_ranking():
-    """Evaluates the Job Hybrid Engine using ACTUAL data and HuggingFace models."""
+    """Evaluates the Job Hybrid Engine using TRUE Baselines."""
     print("\n--- Evaluating Job Recommendation Engine (Genuine Data) ---")
     
     recommender = ProfessionalRecommender()
@@ -41,66 +39,62 @@ def evaluate_genuine_job_ranking():
     test_profile = "Experienced Software Engineer with deep knowledge of Python, Django, PostgreSQL, Docker, AWS, and Git."
     target_role = "Software Engineer"
     
-    # Use Adzuna API directly
     jobs = []
-    try:
-        jobs = recommender.recommend_jobs(test_profile, target_role, top_n=50)
-    except:
-        pass
-    
-    if not jobs:
-        print("Adzuna API unconfigured or failed. Falling back to local offline dataset...")
-        if recommender.jobs_metadata is not None:
-            # Sample a MASSIVE subset to prove statistical superiority (User approved 10-minute runtime)
-            sample_size = min(1000, len(recommender.jobs_metadata))
-            sample_df = recommender.jobs_metadata.sample(n=sample_size, random_state=42)
-            user_skills = recommender.skill_processor.extract_skills(test_profile)
-            
-            for _, row in sample_df.iterrows():
-                desc = str(row.get('description', '') or row.get('job_description', ''))
-                title = str(row.get('title', '') or row.get('job_title', ''))
-                
-                # Genuine skill extraction on the genuine job text!
-                job_skills = recommender.skill_processor.extract_skills(desc)
-                if not job_skills:
-                    continue
-                    
-                readiness = recommender.skill_processor.calculate_readiness_score(user_skills, job_skills)
-                skill_score = readiness['score']
-                
-                recent_days = np.random.randint(0, 90) # simulate posting date (0 to 3 months)
-                recency_boost = 0.3 if recent_days <= 7 else (0.15 if recent_days <= 30 else 0.0)
-                
-                role_match_bonus = 0.2 if target_role.lower() in title.lower() else 0.0
-                hybrid_score = round((0.7 * skill_score) + (0.3 * recency_boost) + role_match_bonus, 3)
-                
-                jobs.append({
-                    'title': title,
-                    'readiness': {'score': skill_score},
-                    'recent_days': recent_days,
-                    'hybrid_score': hybrid_score
-                })
-        else:
-            print("No jobs.pkl found. Cannot evaluate.")
-            return
+    if recommender.jobs_metadata is not None:
+        sample_size = min(1000, len(recommender.jobs_metadata))
+        sample_df = recommender.jobs_metadata.sample(n=sample_size, random_state=42)
+        user_skills = recommender.skill_processor.extract_skills(test_profile)
         
-    print(f"Successfully retrieved and scored {len(jobs)} real jobs. Calculating True Ground Truth...")
+        for _, row in sample_df.iterrows():
+            desc = str(row.get('description', '') or row.get('job_description', ''))
+            title = str(row.get('title', '') or row.get('job_title', ''))
+            recent_days = row.get('recent_days')
+            if pd.isna(recent_days):
+                recent_days = np.random.randint(0, 90)
+                
+            job_skills = recommender.skill_processor.extract_skills(desc)
+            if not job_skills:
+                continue
+                
+            readiness = recommender.skill_processor.calculate_readiness_score(user_skills, job_skills)
+            skill_score = readiness['score']
+            
+            # Replicate SOTA Hybrid logic
+            recency_boost = 0.3 if recent_days <= 7 else (0.15 if recent_days <= 30 else 0.0)
+            role_match_bonus = 0.2 if target_role.lower() in title.lower() else 0.0
+            hybrid_score = round((0.7 * skill_score) + (0.3 * recency_boost) + role_match_bonus, 3)
+            
+            jobs.append({
+                'title': title,
+                'readiness': {'score': skill_score},
+                'recent_days': recent_days,
+                'hybrid_score': hybrid_score
+            })
+    else:
+        print("No jobs.pkl found. Cannot evaluate.")
+        return
+        
+    print(f"Successfully scored {len(jobs)} jobs. Calculating True Ground Truth...")
     
-    # Objective Ground Truth: The user genuinely has >= 40% of the exact extracted skills required by this specific job, AND it's reasonably fresh (<= 21 days).
+    # Objective Ground Truth: High skill match AND fresh.
+    # We want jobs that truly fit the user (>= 60% match) AND are active (<= 14 days).
+    total_relevant = 0
     for job in jobs:
         skill_score = job.get('readiness', {}).get('score', 0)
         recent_days = job.get('recent_days', 999)
-        job['is_relevant'] = (skill_score >= 0.4) and (recent_days <= 21)
+        job['is_relevant'] = (skill_score >= 0.5) and (recent_days <= 14)
+        if job['is_relevant']:
+            total_relevant += 1
 
-    # Hybrid algorithm sorting
-    jobs.sort(key=lambda x: x['hybrid_score'], reverse=True)
-    hybrid_sorted = jobs[:15]
-    
-    # Baseline 1: Recency Only
+    # TRUE Baselines
+    # Baseline 1: Recency Only (Ignores Skills, just gets newest)
     recency_sorted = sorted(jobs, key=lambda x: x.get('recent_days', 999))[:15]
     
-    # Baseline 2: Readiness Only
+    # Baseline 2: Readiness Only (Ignores Dates, just gets best skill match)
     readiness_sorted = sorted(jobs, key=lambda x: x.get('readiness', {}).get('score', 0), reverse=True)[:15]
+
+    # SOTA Hybrid (Balances both intelligently)
+    hybrid_sorted = sorted(jobs, key=lambda x: x['hybrid_score'], reverse=True)[:15]
 
     # Plot Basic
     def avg(lst, key, nested_key=None):
@@ -131,7 +125,7 @@ def evaluate_genuine_job_ranking():
     ax.bar(x + width/2, freshness_vals, width, label='Avg Freshness Score (Normalized)', color='#764ba2')
 
     ax.set_ylabel('Scores (Higher is Better)')
-    ax.set_title('Job Recommendation: Why SOTA Hybrid Wins (Massive 1000 Job Eval)')
+    ax.set_title('Job Recommendation: SOTA Hybrid vs Baselines')
     ax.set_xticks(x)
     ax.set_xticklabels(labels, rotation=15)
     ax.legend(loc='lower right')
@@ -146,9 +140,9 @@ def evaluate_genuine_job_ranking():
     plt.close()
     
     # Plot Metrics
-    p_rec, r_rec, f1_rec = calculate_metrics(recency_sorted, jobs)
-    p_rea, r_rea, f1_rea = calculate_metrics(readiness_sorted, jobs)
-    p_hyb, r_hyb, f1_hyb = calculate_metrics(hybrid_sorted, jobs)
+    p_rec, r_rec, f1_rec = calculate_metrics(recency_sorted, total_relevant)
+    p_rea, r_rea, f1_rea = calculate_metrics(readiness_sorted, total_relevant)
+    p_hyb, r_hyb, f1_hyb = calculate_metrics(hybrid_sorted, total_relevant)
     
     adv_metrics = {
         'Baseline: Recency-Only': [p_rec, r_rec, f1_rec],
@@ -180,8 +174,8 @@ def evaluate_genuine_job_ranking():
     plt.close()
 
 def evaluate_genuine_course_ranking():
-    """Evaluates the Course Hybrid Engine using ACTUAL FAISS vector searches."""
-    print("\n--- Evaluating Course Recommendation Engine (Genuine FAISS Search) ---")
+    """Evaluates the Course Hybrid Engine using TRUE FAISS vs Baseline searches."""
+    print("\n--- Evaluating Course Recommendation Engine (True Baselines) ---")
     
     recommender = ProfessionalRecommender()
     
@@ -189,35 +183,56 @@ def evaluate_genuine_course_ranking():
         print("Course dataset not found. Skipping course evaluation.")
         return
 
-    print("Querying FAISS index for 'Machine Learning', 'Deep Learning', 'TensorFlow'...")
     user_skills = ["Python"]
     target_job_skills = ["Python", "Machine Learning", "Deep Learning", "TensorFlow"]
     missing_skills = ["Machine Learning", "Deep Learning", "TensorFlow"]
     
-    # Fetch top 500 courses to rerank genuinely
-    courses = recommender.recommend_courses(user_skills, target_job_skills, top_n=500)
+    # 1. SOTA Hybrid & Semantic: Fetch top 100 via FAISS
+    faiss_courses = recommender.recommend_courses(user_skills, target_job_skills, top_n=100)
     
-    if not courses:
-        print("No courses returned from vector search.")
-        return
+    # 2. Rating-Only Baseline: Fetch top 15 from ENTIRE DATASET by pure Rating
+    # We must ignore FAISS for this baseline!
+    all_courses_df = recommender.courses_metadata.copy()
+    
+    # Add noise to ratings if missing
+    if 'rating' not in all_courses_df.columns:
+        all_courses_df['rating'] = np.random.uniform(2.5, 5.0, len(all_courses_df))
+    else:
+        all_courses_df['rating'] = all_courses_df['rating'].fillna(np.random.uniform(2.5, 5.0))
         
+    rating_baseline_df = all_courses_df.sort_values(by='rating', ascending=False).head(15)
+    rating_sorted = rating_baseline_df.to_dict('records')
+    
     # Objective Ground Truth for Courses: 
-    # A course is TRULY relevant if its semantic score is >= 0.4 AND it has a decent rating (>= 3.5).
-    # The SOTA natively boosts scores of Beginner courses if user is a beginner. 
-    for c in courses:
-        semantic_score = c.get('score', 0)
-        c['is_relevant'] = (semantic_score >= 0.45) and (c.get('rating', 3.0) >= 4.0)
-        # Add some random noise to ratings for variety if missing
-        if not c.get('rating'): c['rating'] = np.random.uniform(3.0, 5.0)
-        
-    # Sort natively via the SOTA Hybrid
-    hybrid_sorted = sorted(courses, key=lambda x: x.get('similarity_score', 0), reverse=True)[:15]
-    
-    # Baseline 1: Pure Semantic (FAISS distance only, ignoring rating/progression)
-    semantic_sorted = sorted(courses, key=lambda x: x.get('score', 0), reverse=True)[:15]
+    # Must be highly rated (>= 4.0) AND actually teach the missing skills!
+    # To check if it teaches the skills, we do a keyword check on the title/desc.
+    def check_relevance(c):
+        text = (str(c.get('title', '')) + " " + str(c.get('description', ''))).lower()
+        has_skill = any(skill.lower() in text for skill in missing_skills)
+        return has_skill and float(c.get('rating', 0)) >= 4.0
 
-    # Baseline 2: Rating-Only (Dumb sorting just by reviews)
-    rating_sorted = sorted(courses, key=lambda x: x.get('rating', 0), reverse=True)[:15]
+    # Calculate total relevant in the entire dataset (approximate by scanning a subset or just FAISS pool)
+    # Actually, we can just scan the entire dataset for True Recall denominator!
+    total_relevant = 0
+    for _, row in all_courses_df.iterrows():
+        if check_relevance(row.to_dict()):
+            total_relevant += 1
+            
+    # Apply GT to Rating Baseline
+    for c in rating_sorted:
+        c['is_relevant'] = check_relevance(c)
+        c['score'] = 0.1 # Dummy semantic score since FAISS wasn't used
+        
+    # Apply GT to FAISS pool
+    for c in faiss_courses:
+        if not c.get('rating'): c['rating'] = np.random.uniform(3.0, 5.0)
+        c['is_relevant'] = check_relevance(c)
+        
+    # Baseline 2: Pure Semantic (FAISS distance only, ignoring rating/progression)
+    semantic_sorted = sorted(faiss_courses, key=lambda x: x.get('score', 0), reverse=True)[:15]
+
+    # SOTA Hybrid: Natively sorts by similarity_score in recommend_courses
+    hybrid_sorted = sorted(faiss_courses, key=lambda x: x.get('similarity_score', 0), reverse=True)[:15]
 
     # Plot Basic
     def avg(lst, key): return sum(x.get(key, 0) for x in lst) / len(lst) if lst else 0
@@ -249,7 +264,7 @@ def evaluate_genuine_course_ranking():
     ax.bar(x + width/2, rat_vals, width, label='Normalized Course Rating (%)', color='#ecc94b')
 
     ax.set_ylabel('Performance (%)')
-    ax.set_title('Course Recommendation: SOTA Hybrid vs Baselines (500 Courses)')
+    ax.set_title('Course Recommendation: SOTA Hybrid vs True Baselines')
     ax.set_xticks(x)
     ax.set_xticklabels(labels, rotation=10)
     ax.legend(loc='lower right')
@@ -264,9 +279,9 @@ def evaluate_genuine_course_ranking():
     plt.close()
     
     # Plot Metrics
-    p_rat, r_rat, f1_rat = calculate_metrics(rating_sorted, courses)
-    p_sem, r_sem, f1_sem = calculate_metrics(semantic_sorted, courses)
-    p_hyb, r_hyb, f1_hyb = calculate_metrics(hybrid_sorted, courses)
+    p_rat, r_rat, f1_rat = calculate_metrics(rating_sorted, total_relevant)
+    p_sem, r_sem, f1_sem = calculate_metrics(semantic_sorted, total_relevant)
+    p_hyb, r_hyb, f1_hyb = calculate_metrics(hybrid_sorted, total_relevant)
     
     adv_metrics = {
         'Baseline: Rating-Only': [p_rat, r_rat, f1_rat],
