@@ -5,12 +5,12 @@ from typing import Dict, Any
 
 from schemas import CourseRecommendationRequest, StandardErrorResponse, ErrorDetails
 from core.pipeline import CoursePipeline
-from core.course_recommender import CollaborativeCourseRecommender
+from core.course_recommender import CourseRecommender
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
-recommender = CollaborativeCourseRecommender()
+recommender = CourseRecommender()
 pipeline = CoursePipeline(recommender)
 
 @router.post("/run")

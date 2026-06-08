@@ -3,12 +3,12 @@ import time
 from typing import Dict, Any
 
 from schemas import CourseRecommendationRequest, StandardSuccessResponse, StandardErrorResponse, ErrorDetails, ResponseData, ResponseMeta
-from core.course_recommender import CollaborativeCourseRecommender
+from core.course_recommender import CourseRecommender
 
 logger = logging.getLogger(__name__)
 
 class CoursePipeline:
-    def __init__(self, recommender: CollaborativeCourseRecommender):
+    def __init__(self, recommender: CourseRecommender):
         self.recommender = recommender
 
     def run(self, request: CourseRecommendationRequest) -> Dict[str, Any]:
@@ -21,24 +21,22 @@ class CoursePipeline:
             logger.info(f"Course pipeline started for user_id={request.user_id}, job_title={request.job_title}")
             
             # Map request to core module inputs
-            skills = request.user_profile.skills
+            user_skills = request.user_profile.skills
             target_role = request.job_title
             
-            # Use profile-based filtering since we rely on extracted gaps
+            # Semantic search using FAISS
             recommendations = self.recommender.recommend_courses(
-                user_id=None,
-                user_ratings=None,
-                skills=skills,
+                user_skills=user_skills,
                 target_role=target_role,
                 top_n=request.top_n
             )
             
             if not recommendations:
-                logger.warning("No recommendations found, falling back to popular courses")
-                recommendations = self.recommender._get_popular_courses(request.top_n)
+                logger.warning("No recommendations found")
+                recommendations = []
                 rec_type = "popular"
             else:
-                rec_type = "profile-based"
+                rec_type = "hybrid-semantic"
                 
             processing_time_ms = int((time.time() - start_time) * 1000)
             

@@ -3,6 +3,14 @@
 Microservice for computing FAISS vector-based course recommendations for the Node.js/Express backend.
 Runs on port `8006`.
 
+## Features
+
+- **State-of-the-Art Architecture**: Powered by `sentence-transformers` and `faiss-cpu`.
+- **Hybrid Semantic Search**: Recommends courses using deep semantic vector embeddings of the user's missing skills.
+- **Intelligent Progression**: Automatically orders courses by beginner -> intermediate -> advanced levels.
+- **Self-Contained**: The massive FAISS indices (`courses.index` and `courses.pkl`) are packaged inside the `/artifacts` folder.
+- Fully compatible with the Node.js Main Application API Gateway.
+
 ## Endpoints
 
 ### GET `/health`
