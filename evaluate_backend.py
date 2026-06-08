@@ -190,8 +190,8 @@ def evaluate_genuine_course_ranking():
     # 1. SOTA Hybrid & Semantic: Fetch top 100 via FAISS
     faiss_courses = recommender.recommend_courses(user_skills, target_job_skills, top_n=100)
     
-    # 2. Rating-Only Baseline: Fetch top 15 from ENTIRE DATASET by pure Rating
-    # We must ignore FAISS for this baseline!
+    # 2. Keyword+Rating Baseline: Fetch top 15 from ENTIRE DATASET by Keyword Search + Rating
+    # We must ignore FAISS for this baseline, representing a primitive standard database search.
     all_courses_df = recommender.courses_metadata.copy()
     
     # Add noise to ratings if missing
@@ -200,7 +200,15 @@ def evaluate_genuine_course_ranking():
     else:
         all_courses_df['rating'] = all_courses_df['rating'].fillna(np.random.uniform(2.5, 5.0))
         
-    rating_baseline_df = all_courses_df.sort_values(by='rating', ascending=False).head(15)
+    # Primitive keyword search filter
+    keyword_mask = all_courses_df['title'].str.contains('Data|Machine|Python', case=False, na=False)
+    keyword_filtered_df = all_courses_df[keyword_mask]
+    
+    # If keyword search fails, fallback to general
+    if len(keyword_filtered_df) < 15:
+        keyword_filtered_df = all_courses_df
+        
+    rating_baseline_df = keyword_filtered_df.sort_values(by='rating', ascending=False).head(15)
     rating_sorted = rating_baseline_df.to_dict('records')
     
     # Objective Ground Truth for Courses: 
@@ -238,7 +246,7 @@ def evaluate_genuine_course_ranking():
     def avg(lst, key): return sum(x.get(key, 0) for x in lst) / len(lst) if lst else 0
 
     metrics = {
-        'Baseline: Rating-Only': {
+        'Baseline: Keyword + Rating': {
             'Relevance (FAISS)': avg(rating_sorted, 'score') * 100,
             'Rating Quality': avg(rating_sorted, 'rating')
         },
@@ -284,7 +292,7 @@ def evaluate_genuine_course_ranking():
     p_hyb, r_hyb, f1_hyb = calculate_metrics(hybrid_sorted, total_relevant)
     
     adv_metrics = {
-        'Baseline: Rating-Only': [p_rat, r_rat, f1_rat],
+        'Baseline: Keyword + Rating': [p_rat, r_rat, f1_rat],
         'Baseline: Semantic-Only': [p_sem, r_sem, f1_sem],
         'SOTA Hybrid Engine': [p_hyb, r_hyb, f1_hyb]
     }
@@ -293,7 +301,7 @@ def evaluate_genuine_course_ranking():
     x_adv = np.arange(3)
     metric_labels = ['Precision@15', 'Recall@15', 'F1-Score']
     
-    ax.bar(x_adv - 0.25, [adv_metrics['Baseline: Rating-Only'][i] for i in range(3)], 0.25, label='Rating-Only', color='#cbd5e0')
+    ax.bar(x_adv - 0.25, [adv_metrics['Baseline: Keyword + Rating'][i] for i in range(3)], 0.25, label='Keyword + Rating', color='#cbd5e0')
     ax.bar(x_adv, [adv_metrics['Baseline: Semantic-Only'][i] for i in range(3)], 0.25, label='Semantic-Only', color='#a0aec0')
     ax.bar(x_adv + 0.25, [adv_metrics['SOTA Hybrid Engine'][i] for i in range(3)], 0.25, label='SOTA Hybrid', color='#667eea')
 
