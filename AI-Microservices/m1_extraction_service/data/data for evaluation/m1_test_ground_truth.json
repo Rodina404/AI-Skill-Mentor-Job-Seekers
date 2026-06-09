@@ -1,0 +1,316 @@
+[
+  {
+    "id": "cv_001",
+    "difficulty": "clean",
+    "raw_text": "Ahmed Hassan Kamal\nCairo, Egypt\n01012345678 | ahmed.hassan@gmail.com | linkedin.com/in/ahmedhassan\n\nObjectives\nPassionate Computer Science student specializing in Backend Development with hands-on experience in Python and Django. Seeking a backend development internship to apply REST API design, database management, and software engineering principles in a real-world environment.\n\nEducation\nBachelor's Degree in Computer Science – Faculty of Computers and Information\nCairo University, Cairo, Egypt | Oct 2020 – Expected June 2024\nThanaweya Amma, El Nasr Language School, Cairo, Egypt | Sep 2017 – June 2020\n\nExperience\nBackend Development Intern – Vodafone Egypt, Cairo | July 2023 – September 2023\n• Built and documented REST APIs using Django REST Framework serving 10k+ daily requests.\n• Optimized PostgreSQL queries, reducing average response time by 30%.\n• Integrated third-party payment gateway (Paymob) into existing e-commerce backend.\n• Participated in daily standups and sprint planning using Agile/Scrum methodology.\n\nCourses and Training\nDjango REST Framework – Udemy (Completed)\nPostgreSQL for Developers – Coursera (Completed)\nData Structures and Algorithms – Coursera (Completed)\nDocker and Containerization – Udemy (Completed)\n\nProjects\nE-Commerce Platform – Django + PostgreSQL\nBuilt a full e-commerce backend with product listings, cart, orders, and payment integration. Implemented JWT authentication and role-based access control.\n\nStudent Portal API – Django REST Framework\nDeveloped a REST API for a university student portal supporting course registration, grades, and attendance.\n\nSkills\nTechnical Skills: Backend Development, REST APIs, Database Design, System Design\nProgramming Languages: Python, SQL, JavaScript, Bash\nFrameworks & Tools: Django, Django REST Framework, PostgreSQL, Redis, Docker, Git & GitHub, Postman\nSoft Skills: Problem-Solving, Teamwork, Time Management, Communication",
+    "ground_truth": {
+      "name": "Ahmed Hassan Kamal",
+      "email": "ahmed.hassan@gmail.com",
+      "phone": "01012345678",
+      "location": "Cairo, Egypt",
+      "education": [
+        {"degree": "B.Sc.", "field": "Computer Science", "institution": "Cairo University", "start": "Oct 2020", "end": "June 2024 (Expected)"},
+        {"degree": "Thanaweya Amma", "field": null, "institution": "El Nasr Language School", "start": "Sep 2017", "end": "June 2020"}
+      ],
+      "experience": [
+        {
+          "title": "Backend Development Intern",
+          "company": "Vodafone Egypt",
+          "location": "Cairo",
+          "duration": "July 2023 – September 2023",
+          "description": "Built REST APIs using Django REST Framework, optimized PostgreSQL queries, integrated Paymob payment gateway, worked in Agile/Scrum team."
+        }
+      ],
+      "courses": ["Django REST Framework", "PostgreSQL for Developers", "Data Structures and Algorithms", "Docker and Containerization"],
+      "projects": ["E-Commerce Platform", "Student Portal API"],
+      "skills": ["Python", "SQL", "JavaScript", "Bash", "Django", "Django REST Framework", "PostgreSQL", "Redis", "Docker", "Git", "GitHub", "Postman", "REST APIs", "Backend Development", "Database Design", "System Design"],
+      "soft_skills": ["Problem-Solving", "Teamwork", "Time Management", "Communication"]
+    }
+  },
+  {
+    "id": "cv_002",
+    "difficulty": "clean",
+    "raw_text": "Sara Mostafa El-Sayed\nAlexandria, Egypt\n01198765432 | sara.mostafa@outlook.com | linkedin.com/in/saramostafa\n\nObjectives\nAmbitious Data Science student with strong analytical skills and practical experience in data analysis and machine learning. Looking to join a data-driven company as a Data Analyst intern to contribute to impactful business decisions.\n\nEducation\nBachelor's Degree in Computer Science and Engineering – Data Science Track\nAlamein International University (AIU), Alamein, Egypt | Oct 2021 – Expected June 2025\nThanaweya Amma, Alexandria Language School, Alexandria, Egypt | Sep 2018 – June 2021\n\nExperience\nData Analysis Intern – Jumia Egypt, Cairo | June 2024 – August 2024\n• Analyzed sales data across 15 product categories using Python (Pandas, NumPy).\n• Built interactive dashboards in Power BI tracking KPIs for the operations team.\n• Automated weekly reporting pipeline, saving 6 hours of manual work per week.\n• Collaborated with marketing team to identify customer churn patterns.\n\nCourses and Training\nMachine Learning Specialization – Coursera (Andrew Ng, Completed)\nData Analysis with Python – Coursera (Completed)\nSQL for Data Science – Coursera (Completed)\nTableau for Beginners – Udemy (Completed)\n\nProjects\nCustomer Churn Prediction – Machine Learning | Python\nBuilt classification models (Logistic Regression, Random Forest, XGBoost) to predict customer churn with 87% accuracy. Applied SMOTE for class imbalance handling.\n\nSales Dashboard – Power BI\nDesigned an interactive Power BI dashboard for a retail dataset visualizing revenue trends, top products, and regional performance.\n\nSkills\nTechnical Skills: Data Analysis, Machine Learning, Data Visualization, Statistical Analysis\nProgramming Languages: Python, R, SQL\nTools & Libraries: Pandas, NumPy, Scikit-learn, Matplotlib, Seaborn, Power BI, Tableau, Excel, Jupyter Notebook\nSoft Skills: Analytical Thinking, Attention to Detail, Communication, Research",
+    "ground_truth": {
+      "name": "Sara Mostafa El-Sayed",
+      "email": "sara.mostafa@outlook.com",
+      "phone": "01198765432",
+      "location": "Alexandria, Egypt",
+      "education": [
+        {"degree": "B.Sc.", "field": "Computer Science and Engineering – Data Science Track", "institution": "Alamein International University (AIU)", "start": "Oct 2021", "end": "June 2025 (Expected)"},
+        {"degree": "Thanaweya Amma", "field": null, "institution": "Alexandria Language School", "start": "Sep 2018", "end": "June 2021"}
+      ],
+      "experience": [
+        {
+          "title": "Data Analysis Intern",
+          "company": "Jumia Egypt",
+          "location": "Cairo",
+          "duration": "June 2024 – August 2024",
+          "description": "Analyzed sales data using Pandas and NumPy, built Power BI dashboards, automated weekly reporting, identified customer churn patterns."
+        }
+      ],
+      "courses": ["Machine Learning Specialization", "Data Analysis with Python", "SQL for Data Science", "Tableau for Beginners"],
+      "projects": ["Customer Churn Prediction", "Sales Dashboard"],
+      "skills": ["Python", "R", "SQL", "Pandas", "NumPy", "Scikit-learn", "Matplotlib", "Seaborn", "Power BI", "Tableau", "Excel", "Jupyter Notebook", "Data Analysis", "Machine Learning", "Data Visualization", "Statistical Analysis"],
+      "soft_skills": ["Analytical Thinking", "Attention to Detail", "Communication", "Research"]
+    }
+  },
+  {
+    "id": "cv_003",
+    "difficulty": "medium",
+    "raw_text": "Omar Khaled Abdelfattah\nGiza, Egypt\n00201067891234 | o.khaled.dev@yahoo.com\n\nObjectives\nFull Stack Developer with 2 years of professional experience building scalable web applications. Seeking a senior frontend role to leverage my React.js expertise and contribute to product-focused engineering teams.\n\nEducation\nBachelor's Degree in Computer Engineering\nFaculty of Engineering, Alexandria University, Alexandria | Sep 2018 – June 2022\n\nExperience\nFull Stack Developer – Instabug, Cairo | Jan 2023 – Present\n• Developed and maintained React.js frontend components used by 500k+ active users.\n• Designed and implemented Node.js microservices with Express, improving API response time by 40%.\n• Managed MongoDB Atlas clusters and optimized aggregation pipelines.\n• Wrote unit and integration tests using Jest and React Testing Library achieving 85% code coverage.\n• Conducted code reviews and mentored 2 junior developers.\n\nJunior Frontend Developer – Halan, Cairo | July 2022 – Dec 2022\n• Built responsive UI components in React.js following Figma designs pixel-perfectly.\n• Integrated RESTful APIs and implemented state management using Redux Toolkit.\n• Fixed critical bugs reducing production error rate by 20%.\n\nCourses and Training\nAdvanced React & Redux – Udemy (Completed)\nNode.js Microservices – Udemy (Completed)\nAWS Cloud Practitioner – AWS (Completed)\n\nProjects\nOpen Source: React Component Library\nPublished an npm package of reusable React components with TypeScript, Storybook documentation, and 200+ GitHub stars.\n\nSkills\nTechnical Skills: Frontend Development, Backend Development, Microservices, Cloud Deployment\nProgramming Languages: JavaScript, TypeScript, Python\nFrameworks & Tools: React.js, Node.js, Express.js, MongoDB, Docker, AWS, Redis, Jest, Git & GitHub\nSoft Skills: Leadership, Code Review, Mentoring, Problem-Solving",
+    "ground_truth": {
+      "name": "Omar Khaled Abdelfattah",
+      "email": "o.khaled.dev@yahoo.com",
+      "phone": "00201067891234",
+      "location": "Giza, Egypt",
+      "education": [
+        {"degree": "B.Sc.", "field": "Computer Engineering", "institution": "Alexandria University", "start": "Sep 2018", "end": "June 2022"}
+      ],
+      "experience": [
+        {
+          "title": "Full Stack Developer",
+          "company": "Instabug",
+          "location": "Cairo",
+          "duration": "Jan 2023 – Present",
+          "description": "Developed React.js frontend, designed Node.js microservices, managed MongoDB Atlas, wrote tests with Jest, conducted code reviews."
+        },
+        {
+          "title": "Junior Frontend Developer",
+          "company": "Halan",
+          "location": "Cairo",
+          "duration": "July 2022 – Dec 2022",
+          "description": "Built responsive React.js UI components, integrated RESTful APIs, implemented Redux Toolkit state management."
+        }
+      ],
+      "courses": ["Advanced React & Redux", "Node.js Microservices", "AWS Cloud Practitioner"],
+      "projects": ["React Component Library (npm package)"],
+      "skills": ["JavaScript", "TypeScript", "Python", "React.js", "Node.js", "Express.js", "MongoDB", "Docker", "AWS", "Redis", "Jest", "Git", "GitHub", "Frontend Development", "Backend Development", "Microservices"],
+      "soft_skills": ["Leadership", "Code Review", "Mentoring", "Problem-Solving"]
+    }
+  },
+  {
+    "id": "cv_004",
+    "difficulty": "medium",
+    "raw_text": "Nour El-Din Mahmoud Ibrahim\nCairo, Egypt\nnour.eldin@protonmail.com | +2 010-9988-7766 | github.com/noureldin\n\nObjectives\nAI/ML Engineer with M.Sc. in Artificial Intelligence, specializing in NLP and deep learning. Seeking a research or applied ML role to work on large-scale language models and production AI systems.\n\nEducation\nMaster's Degree in Artificial Intelligence\nGerman University in Cairo (GUC), Cairo, Egypt | Sep 2021 – June 2023\nGPA: 3.8/4.0 | Thesis: Transformer-based Arabic NER using domain-adapted BERT\n\nBachelor's Degree in Computer Science\nGerman University in Cairo (GUC), Cairo, Egypt | Sep 2017 – June 2021\nGPA: 3.7/4.0\n\nExperience\nML Engineer Intern – Microsoft Egypt, Cairo | July 2022 – September 2022\n• Built end-to-end NLP pipelines for Arabic text classification using HuggingFace Transformers.\n• Fine-tuned AraBERT model on custom dataset achieving 92% F1 on NER task.\n• Deployed model as REST API using FastAPI and Docker on Azure.\n\nResearch Assistant – GUC AI Lab, Cairo | Sep 2022 – June 2023\n• Co-authored paper: 'Domain Adaptation for Low-Resource Arabic NLP' (under review, ACL 2023).\n• Benchmarked 6 Arabic language models on 3 downstream tasks.\n• Managed team of 3 research students.\n\nCourses and Training\nDeep Learning Specialization – Coursera (Andrew Ng, Completed)\nNLP with Transformers – HuggingFace Course (Completed)\nMLOps Fundamentals – Google Cloud (Completed)\n\nProjects\nArabic Sentiment Analysis API\nFine-tuned CAMeLBERT on Egyptian Arabic Twitter data. Deployed as FastAPI service with 94% accuracy.\n\nSkills\nTechnical Skills: NLP, Deep Learning, Machine Learning, MLOps, Research\nProgramming Languages: Python, R, SQL, Bash\nFrameworks & Tools: TensorFlow, PyTorch, HuggingFace Transformers, Scikit-learn, FastAPI, Docker, Azure, Git\nSoft Skills: Research, Academic Writing, Presentation, Mentoring",
+    "ground_truth": {
+      "name": "Nour El-Din Mahmoud Ibrahim",
+      "email": "nour.eldin@protonmail.com",
+      "phone": "+2 010-9988-7766",
+      "location": "Cairo, Egypt",
+      "education": [
+        {"degree": "M.Sc.", "field": "Artificial Intelligence", "institution": "German University in Cairo (GUC)", "start": "Sep 2021", "end": "June 2023"},
+        {"degree": "B.Sc.", "field": "Computer Science", "institution": "German University in Cairo (GUC)", "start": "Sep 2017", "end": "June 2021"}
+      ],
+      "experience": [
+        {
+          "title": "ML Engineer Intern",
+          "company": "Microsoft Egypt",
+          "location": "Cairo",
+          "duration": "July 2022 – September 2022",
+          "description": "Built NLP pipelines for Arabic text classification, fine-tuned AraBERT, deployed FastAPI service on Azure."
+        },
+        {
+          "title": "Research Assistant",
+          "company": "GUC AI Lab",
+          "location": "Cairo",
+          "duration": "Sep 2022 – June 2023",
+          "description": "Co-authored Arabic NLP paper, benchmarked Arabic language models, managed research team of 3."
+        }
+      ],
+      "courses": ["Deep Learning Specialization", "NLP with Transformers", "MLOps Fundamentals"],
+      "projects": ["Arabic Sentiment Analysis API"],
+      "skills": ["Python", "R", "SQL", "Bash", "TensorFlow", "PyTorch", "HuggingFace Transformers", "Scikit-learn", "FastAPI", "Docker", "Azure", "Git", "NLP", "Deep Learning", "Machine Learning", "MLOps"],
+      "soft_skills": ["Research", "Academic Writing", "Presentation", "Mentoring"]
+    }
+  },
+  {
+    "id": "cv_005",
+    "difficulty": "medium",
+    "raw_text": "Mariam Youssef Taha\nCairo, Egypt\nmariam_y@gmail.com | 01123456789\n\nObjectives\nProduct-focused professional with 4 years experience bridging technical and business teams. Seeking a Senior Product Manager role in a tech company to drive data-informed product decisions and build user-centric solutions.\n\nEducation\nBachelor of Business Administration – Management Information Systems\nThe American University in Cairo (AUC), Cairo, Egypt | Sep 2016 – June 2020\n\nExperience\nProduct Manager – Fawry, Cairo | August 2020 – Present\n• Owned end-to-end product roadmap for Fawry's B2B payments platform serving 3,000+ merchants.\n• Defined product requirements, wrote PRDs, and coordinated with engineering and design teams.\n• Launched 3 major features resulting in 25% increase in merchant retention.\n• Ran A/B tests and analyzed funnel metrics using Mixpanel and SQL.\n\nProduct Analyst – Swvl, Cairo | Jan 2020 – July 2020\n• Conducted user research and competitive analysis for route optimization feature.\n• Translated business needs into user stories and acceptance criteria.\n\nCourses and Training\nProduct Management Fundamentals – Product School (Completed)\nSQL for Product Managers – Mode Analytics (Completed)\nAgile Product Management – Coursera (Completed)\n\nProjects\nB2B Payments Dashboard Redesign\nLed UX research and product spec for merchant dashboard redesign, reducing support tickets by 35%.\n\nSkills\nTechnical Skills: Product Management, Data Analysis, A/B Testing, User Research, Roadmapping\nTools: JIRA, Confluence, Mixpanel, Amplitude, SQL, Figma, Notion, Excel\nSoft Skills: Stakeholder Management, Cross-functional Leadership, Strategic Thinking, Communication",
+    "ground_truth": {
+      "name": "Mariam Youssef Taha",
+      "email": "mariam_y@gmail.com",
+      "phone": "01123456789",
+      "location": "Cairo, Egypt",
+      "education": [
+        {"degree": "B.B.A.", "field": "Management Information Systems", "institution": "The American University in Cairo (AUC)", "start": "Sep 2016", "end": "June 2020"}
+      ],
+      "experience": [
+        {
+          "title": "Product Manager",
+          "company": "Fawry",
+          "location": "Cairo",
+          "duration": "August 2020 – Present",
+          "description": "Owned B2B payments product roadmap, wrote PRDs, launched features increasing merchant retention 25%, ran A/B tests."
+        },
+        {
+          "title": "Product Analyst",
+          "company": "Swvl",
+          "location": "Cairo",
+          "duration": "Jan 2020 – July 2020",
+          "description": "Conducted user research and competitive analysis, translated business needs into user stories."
+        }
+      ],
+      "courses": ["Product Management Fundamentals", "SQL for Product Managers", "Agile Product Management"],
+      "projects": ["B2B Payments Dashboard Redesign"],
+      "skills": ["SQL", "JIRA", "Confluence", "Mixpanel", "Amplitude", "Figma", "Notion", "Excel", "Product Management", "Data Analysis", "A/B Testing", "User Research", "Roadmapping"],
+      "soft_skills": ["Stakeholder Management", "Cross-functional Leadership", "Strategic Thinking", "Communication"]
+    }
+  },
+  {
+    "id": "cv_006",
+    "difficulty": "hard",
+    "raw_text": "Youssef Ibrahim El-Shafei\nAlexandria, Egypt\nyoussef.ibrahim.dev@gmail.com | +201155443322 | linkedin.com/in/youssefibrahim\n\nObjectives\nEmbedded Systems Engineer with 5 years of automotive software experience. Seeking a senior embedded role in the automotive or industrial sector to work on safety-critical real-time systems.\n\nالتعليم / Education\nBachelor of Science in Electrical Engineering – Electronics and Communications\nFaculty of Engineering, Mansoura University, Mansoura, Egypt | Sep 2014 – June 2019\n\nالخبرة / Experience\nSenior Embedded Systems Engineer – Siemens Cairo | Jan 2022 – Present\n• Led team of 4 embedded engineers on AUTOSAR Classic platform for automotive ECU development.\n• Enforced MISRA C 2012 compliance across codebase; reduced critical violations by 70%.\n• Developed BSW (Basic Software) modules: COM, DCM, DEM for CAN/LIN communication stacks.\n• Introduced FreeRTOS task scheduling architecture reducing CPU load by 15%.\n\nEmbedded Systems Engineer – Valeo Egypt, Alexandria | July 2019 – Dec 2021\n• Developed firmware for ADAS camera module using C on ARM Cortex-M4 processor.\n• Implemented CAN bus drivers from scratch following ISO 11898 specification.\n• Performed hardware debugging using oscilloscope, logic analyzer, and JTAG.\n\nCourses and Training\nAUTOSAR Architecture – Vector Academy (Completed)\nFunctional Safety ISO 26262 – TÜV Rheinland (Completed)\nFreeRTOS Fundamentals – Udemy (Completed)\n\nProjects\nCustom RTOS Scheduler – C / ARM Cortex-M3\nImplemented a preemptive round-robin scheduler from scratch on STM32. Supported 8 concurrent tasks with mutex and semaphore primitives.\n\nSkills\nالمهارات التقنية / Technical Skills: Embedded Systems, AUTOSAR, Real-Time OS, Automotive Software, Firmware Development\nProgramming Languages: C, C++, Python\nTools: AUTOSAR, CAN, LIN, MISRA C, FreeRTOS, JTAG, Oscilloscope, CANalyzer, MATLAB, Git\nSoft Skills: Technical Leadership, Team Management, Documentation, Problem-Solving",
+    "ground_truth": {
+      "name": "Youssef Ibrahim El-Shafei",
+      "email": "youssef.ibrahim.dev@gmail.com",
+      "phone": "+201155443322",
+      "location": "Alexandria, Egypt",
+      "education": [
+        {"degree": "B.Sc.", "field": "Electrical Engineering – Electronics and Communications", "institution": "Mansoura University", "start": "Sep 2014", "end": "June 2019"}
+      ],
+      "experience": [
+        {
+          "title": "Senior Embedded Systems Engineer",
+          "company": "Siemens Cairo",
+          "location": "Cairo",
+          "duration": "Jan 2022 – Present",
+          "description": "Led team on AUTOSAR Classic platform, enforced MISRA C 2012, developed BSW modules for CAN/LIN, introduced FreeRTOS scheduling."
+        },
+        {
+          "title": "Embedded Systems Engineer",
+          "company": "Valeo Egypt",
+          "location": "Alexandria",
+          "duration": "July 2019 – Dec 2021",
+          "description": "Developed firmware for ADAS camera module on ARM Cortex-M4, implemented CAN bus drivers, performed hardware debugging."
+        }
+      ],
+      "courses": ["AUTOSAR Architecture", "Functional Safety ISO 26262", "FreeRTOS Fundamentals"],
+      "projects": ["Custom RTOS Scheduler"],
+      "skills": ["C", "C++", "Python", "AUTOSAR", "CAN", "LIN", "MISRA C", "FreeRTOS", "JTAG", "CANalyzer", "MATLAB", "Git", "Embedded Systems", "Real-Time OS", "Automotive Software", "Firmware Development"],
+      "soft_skills": ["Technical Leadership", "Team Management", "Documentation", "Problem-Solving"]
+    }
+  },
+  {
+    "id": "cv_007",
+    "difficulty": "hard",
+    "raw_text": "Fatma Ali Hassan\nCairo, Egypt\nfatma.ali.2020@eng.asu.edu.eg\nNo phone provided\n\nObjectives\nFresh Computer Engineering graduate passionate about cybersecurity and ethical hacking. Seeking an entry-level penetration testing or SOC analyst role to apply hands-on security skills from CTF competitions and lab practice.\n\nEducation\nBachelor's Degree in Computer Engineering\nFaculty of Engineering, Ain Shams University, Cairo, Egypt | Sep 2020 – June 2024\nGPA: 3.7/4.0 | Graduation Project: Network Intrusion Detection System using ML (Grade: Excellent)\n\nThanaweya Amma, Cairo Language School, Cairo | Sep 2017 – June 2020\n\nExperience\nNo formal work experience.\n\nCertifications\nCompTIA Security+\nCertified Ethical Hacker (CEH) – EC-Council\nGoogle Cybersecurity Professional Certificate – Coursera\n\nCourses and Training\nEthical Hacking – Udemy (Completed)\nNetwork Security Fundamentals – Cisco NetAcad (Completed)\nLinux Fundamentals – Linux Foundation (Completed)\n\nProjects\nNetwork Intrusion Detection System – Python | ML\nGraduation project: Built ML-based IDS using Random Forest and XGBoost on NSL-KDD dataset achieving 96.4% detection accuracy.\n\nCTF Achievements\n• HackTheBox: Pro Hacker rank (top 5% globally)\n• PicoCTF 2023: Top 200 worldwide\n• EGCERT CTF 2023: 3rd place nationally\n\nPenetration Testing Home Lab – Kali Linux\nSet up virtualized lab with Metasploitable, DVWA targets. Practiced web app pentesting (SQLi, XSS, IDOR) and network attacks.\n\nSkills\nTechnical Skills: Penetration Testing, Network Security, Web Application Security, Malware Analysis, SIEM\nProgramming Languages: Python, Bash, C\nTools: Kali Linux, Metasploit, Burp Suite, Wireshark, Nmap, Nessus, Splunk\nSoft Skills: Analytical Thinking, Attention to Detail, Report Writing, Continuous Learning",
+    "ground_truth": {
+      "name": "Fatma Ali Hassan",
+      "email": "fatma.ali.2020@eng.asu.edu.eg",
+      "phone": null,
+      "location": "Cairo, Egypt",
+      "education": [
+        {"degree": "B.Sc.", "field": "Computer Engineering", "institution": "Ain Shams University", "start": "Sep 2020", "end": "June 2024"},
+        {"degree": "Thanaweya Amma", "field": null, "institution": "Cairo Language School", "start": "Sep 2017", "end": "June 2020"}
+      ],
+      "experience": [],
+      "courses": ["Ethical Hacking", "Network Security Fundamentals", "Linux Fundamentals"],
+      "projects": ["Network Intrusion Detection System", "Penetration Testing Home Lab"],
+      "skills": ["Python", "Bash", "C", "Kali Linux", "Metasploit", "Burp Suite", "Wireshark", "Nmap", "Nessus", "Splunk", "Penetration Testing", "Network Security", "Web Application Security", "Malware Analysis", "SIEM"],
+      "soft_skills": ["Analytical Thinking", "Attention to Detail", "Report Writing", "Continuous Learning"]
+    }
+  },
+  {
+    "id": "cv_008",
+    "difficulty": "hard",
+    "raw_text": "Layla Samir Abdelnasser\nAlexandria, Egypt\nlayla.samir@hotmail.com | 0020-122-333-4455\n\nObjectives\nUI/UX Designer transitioning to Frontend Development, combining 3 years of design expertise with self-taught React skills. Looking for a Frontend Developer or Design Engineer role where both design thinking and coding are valued.\n\nEducation\nBachelor of Fine Arts – Graphic Design and Multimedia\nFaculty of Fine Arts, Helwan University, Cairo, Egypt | Sep 2015 – June 2019\n\nExperience\nUI/UX Designer – Swvl, Cairo | March 2020 – August 2022\n• Redesigned core mobile app flows improving user retention by 18% (2M+ active users).\n• Conducted 40+ user interviews and usability testing sessions.\n• Created design system with 200+ components used across 3 product teams.\n• Collaborated with frontend engineers for design handoff via Figma + Zeplin.\n\nFreelance UI/UX Designer | Jan 2019 – Feb 2020\n• Delivered branding, logo, and UI design for 15+ startups and SMEs.\n• Built no-code websites using Webflow for 5 clients.\n\nCourses and Training\nHTML, CSS & JavaScript – Udemy Bootcamp (Completed)\nReact.js for Beginners – Udemy (Completed)\nTailwind CSS – Scrimba (Completed)\nFrontend Mentor Challenges – 20+ completed challenges\n\nProjects\nPersonal Portfolio – React + Tailwind CSS\nBuilt fully responsive personal portfolio with dark mode, animations, and contact form integrated with EmailJS.\n\nClone Projects: Airbnb, Netflix, Amazon – React.js\nBuilt pixel-perfect clones of major web apps practicing component architecture and API integration.\n\nSkills\nDesign Tools: Figma, Adobe XD, Sketch, Adobe Illustrator, Zeplin\nFrontend: HTML, CSS, JavaScript, React.js, Tailwind CSS\nOther: Webflow, Git, GitHub, User Research, Prototyping, Design Systems\nSoft Skills: Creativity, Communication, Empathy, Attention to Detail, Collaboration",
+    "ground_truth": {
+      "name": "Layla Samir Abdelnasser",
+      "email": "layla.samir@hotmail.com",
+      "phone": "0020-122-333-4455",
+      "location": "Alexandria, Egypt",
+      "education": [
+        {"degree": "B.F.A.", "field": "Graphic Design and Multimedia", "institution": "Helwan University", "start": "Sep 2015", "end": "June 2019"}
+      ],
+      "experience": [
+        {
+          "title": "UI/UX Designer",
+          "company": "Swvl",
+          "location": "Cairo",
+          "duration": "March 2020 – August 2022",
+          "description": "Redesigned mobile app flows, conducted 40+ user interviews, created design system with 200+ components, collaborated with engineers via Figma and Zeplin."
+        },
+        {
+          "title": "Freelance UI/UX Designer",
+          "company": "Self-employed",
+          "location": null,
+          "duration": "Jan 2019 – Feb 2020",
+          "description": "Delivered branding and UI for 15+ clients, built Webflow websites."
+        }
+      ],
+      "courses": ["HTML, CSS & JavaScript Bootcamp", "React.js for Beginners", "Tailwind CSS", "Frontend Mentor Challenges"],
+      "projects": ["Personal Portfolio", "Airbnb Clone", "Netflix Clone", "Amazon Clone"],
+      "skills": ["HTML", "CSS", "JavaScript", "React.js", "Tailwind CSS", "Figma", "Adobe XD", "Sketch", "Adobe Illustrator", "Zeplin", "Webflow", "Git", "GitHub", "User Research", "Prototyping", "Design Systems"],
+      "soft_skills": ["Creativity", "Communication", "Empathy", "Attention to Detail", "Collaboration"]
+    }
+  },
+  {
+    "id": "cv_009",
+    "difficulty": "hard",
+    "raw_text": "K. Mostafa Abdelsalam\nCairo, Egypt\nPhone: 01234567890\nNo email listed\n\nObjectives\nSenior DevOps Engineer with 5 years experience designing CI/CD pipelines and managing Kubernetes infrastructure at scale. Seeking a DevOps Lead or Platform Engineer role to drive cloud-native transformation.\n\nEducation\nNot mentioned.\n\nExperience\nDevOps Engineer – Orange Egypt, Cairo | March 2023 – Present\n• Architected CI/CD pipelines using Jenkins and GitHub Actions for 20+ microservices.\n• Managed production Kubernetes cluster (EKS) of 80+ nodes serving 500k daily users.\n• Implemented Infrastructure as Code using Terraform and Ansible, reducing provisioning time by 60%.\n• Set up observability stack: Prometheus, Grafana, ELK for real-time monitoring.\n\nLinux System Administrator – Telecom Egypt, Cairo | Jan 2021 – Feb 2023\n• Administered 200+ Linux servers (RHEL, Ubuntu) in hybrid cloud environment.\n• Automated routine tasks using Bash and Python scripts, reducing manual ops by 40%.\n• Managed network security policies, firewalls, and VPN configurations.\n\nJunior SysAdmin – Raya Holding, Cairo | June 2019 – Dec 2020\n• First IT role: handled server provisioning, backups, and user access management.\n\nCertifications\nAWS Solutions Architect – Professional\nCKA (Certified Kubernetes Administrator)\nHashiCorp Terraform Associate\n\nCourses and Training\nKubernetes Advanced – Linux Foundation (Completed)\nAWS Advanced Networking – AWS (Completed)\n\nProjects\nInternal Developer Platform\nBuilt self-service IDP using Backstage.io enabling developers to provision environments in <5 minutes.\n\nSkills\nTechnical Skills: DevOps, Cloud Infrastructure, CI/CD, Container Orchestration, Site Reliability Engineering\nProgramming Languages: Bash, Python, Go (basic)\nTools: Kubernetes, Terraform, Ansible, Jenkins, GitHub Actions, Docker, AWS, Prometheus, Grafana, ELK Stack, Helm, ArgoCD, Linux\nSoft Skills: Problem-Solving, Documentation, On-call Incident Response, Cross-team Collaboration",
+    "ground_truth": {
+      "name": "K. Mostafa Abdelsalam",
+      "email": null,
+      "phone": "01234567890",
+      "location": "Cairo, Egypt",
+      "education": [],
+      "experience": [
+        {
+          "title": "DevOps Engineer",
+          "company": "Orange Egypt",
+          "location": "Cairo",
+          "duration": "March 2023 – Present",
+          "description": "Built CI/CD pipelines with Jenkins and GitHub Actions, managed EKS Kubernetes cluster of 80+ nodes, used Terraform and Ansible IaC, set up Prometheus/Grafana/ELK observability."
+        },
+        {
+          "title": "Linux System Administrator",
+          "company": "Telecom Egypt",
+          "location": "Cairo",
+          "duration": "Jan 2021 – Feb 2023",
+          "description": "Administered 200+ Linux servers, automated tasks with Bash and Python, managed firewalls and VPN."
+        },
+        {
+          "title": "Junior SysAdmin",
+          "company": "Raya Holding",
+          "location": "Cairo",
+          "duration": "June 2019 – Dec 2020",
+          "description": "Server provisioning, backups, user access management."
+        }
+      ],
+      "courses": ["Kubernetes Advanced", "AWS Advanced Networking"],
+      "projects": ["Internal Developer Platform"],
+      "skills": ["Bash", "Python", "Go", "Kubernetes", "Terraform", "Ansible", "Jenkins", "GitHub Actions", "Docker", "AWS", "Prometheus", "Grafana", "ELK Stack", "Helm", "ArgoCD", "Linux", "DevOps", "CI/CD", "Cloud Infrastructure", "Site Reliability Engineering"],
+      "soft_skills": ["Problem-Solving", "Documentation", "On-call Incident Response", "Cross-team Collaboration"]
+    }
+  },
+  {
+    "id": "cv_010",
+    "difficulty": "hard",
+    "raw_text": "Rodina Mohamed Saeed\nAlexandria, Egypt\n01205662316 | rodinamo2003@gmail.com | LinkedIn\n\nObjectives\nMotivated and technically proficient Artificial Intelligence Science student with strong skills in Machine Learning, Frontend Development, and Database Management (MySQL, MongoDB). Seeking an AI/ML internship to apply my knowledge in model development, data analysis, and innovative problem-solving. Passionate about leveraging AI to create intelligent and efficient solutions while contributing to a dynamic team environment.\n\nEducation\nBachelor's Degree in Computer Science and Engineering – Artificial Intelligence Department\nAlamein International University (AIU), Alamein, Egypt | Oct 2022 – Expected June 2026\nThanaweya Amma, Mahmoud Samy ElBaroudy School, Alexandria, Egypt | Sep 2020 – June 2022\n\nExperience\nJava Programming Intern – Information Technology Institute (ITI), Egypt | July 2024 – August 2024\n• Developed a desktop chat application using Java Swing for the UI, utilizing NetBeans IDE.\n• Designed and implemented a MySQL database to store messages, timestamps, user accounts, and admin details.\n• Followed OOP principles to structure the application for scalability and maintainability.\n• Collaborated with a team on user authentication and real-time message synchronization.\n\nCourses and Training\nCommunication Skills Workshop – UCCD, AIU | Dec 2024\nPresentation Skills Workshop – UCCD, AIU | April 2025\nInterviewing Skills Workshop – UCCD, AIU | Dec 2024\nCCNA Course 1: Networking – Cisco (Completed) | Jan 2025\nFull-Stack Development Diploma – MEC Academy (Ongoing) | Topics: HTML, CSS, JavaScript, Bootstrap, Vue.js, PHP, MySQL, Laravel, SDLC, MVC, Design Patterns, Git & GitHub, API\nJava Programming, OOP & Data Structures – Coursera\nAI, Machine Learning and Artificial Neural Networks using Python – Coursera\nMySQL Database Management – Coursera\nSoftware Engineering & Agile Methodology – Coursera\nMERN Stack Development – Coursera\n\nProjects\nSmart Home Network – Cisco Packet Tracer\nDesigned and implemented a smart home network. Configured static IPs, VLANs, MLC & AAA security.\n\nHome Management System – Software Engineering\nDocumented a housing platform for AIU students with property listings, filters, roommate selection, payments.\n\nLoan Prediction – Machine Learning | Python\nBuilt a Streamlit web app to predict loan approval using Logistic Regression, Naïve Bayes, and SVM.\n\nMultithreading Snake Game – Java\nCreated a Snake Game using Java Threads & JavaFX with mutex locks for concurrency control.\n\nMental Health Prediction – ANN | Python\nDeep learning model to predict depression built from scratch using Neural Networks.\n\nExtracurricular Activities\nIEEE AIU – Web Community Member | Feb 2025 – Present\nIEEE AIU – AI Community Member | April 2025 – Present\n\nSkills\nTechnical Skills: Artificial Intelligence, Machine Learning, Neural Networks, Digital Image Processing, Computer Networks, Data Mining, MERN Stack Development, Database Management\nProgramming Languages: Java, JavaScript, Python, R, MongoDB, MySQL, HTML, CSS, Node.js\nDeveloper Tools: VS Code, IntelliJ IDEA, Google Colab, Anaconda, Jupyter Notebook, MySQL Workbench, Mongosh, Weka, Microsoft Office\nSoft Skills: Leadership, Communication, Presentation, Research, Problem-Solving, Critical Thinking, Time Management",
+    "ground_truth": {
+      "name": "Rodina Mohamed Saeed",
+      "email": "rodinamo2003@gmail.com",
+      "phone": "01205662316",
+      "location": "Alexandria, Egypt",
+      "education": [
+        {"degree": "B.Sc.", "field": "Computer Science and Engineering – Artificial Intelligence", "institution": "Alamein International University (AIU)", "start": "Oct 2022", "end": "June 2026 (Expected)"},
+        {"degree": "Thanaweya Amma", "field": null, "institution": "Mahmoud Samy ElBaroudy School", "start": "Sep 2020", "end": "June 2022"}
+      ],
+      "experience": [
+        {
+          "title": "Java Programming Intern",
+          "company": "Information Technology Institute (ITI)",
+          "location": "Egypt",
+          "duration": "July 2024 – August 2024",
+          "description": "Built desktop chat app with Java Swing, designed MySQL database, applied OOP principles, worked on user authentication and real-time message sync."
+        }
+      ],
+      "courses": ["Communication Skills Workshop", "Presentation Skills Workshop", "Interviewing Skills Workshop", "CCNA Course 1: Networking", "Full-Stack Development Diploma", "Java Programming OOP & Data Structures", "AI Machine Learning and Artificial Neural Networks using Python", "MySQL Database Management", "Software Engineering & Agile Methodology", "MERN Stack Development"],
+      "projects": ["Smart Home Network", "Home Management System", "Loan Prediction", "Multithreading Snake Game", "Mental Health Prediction"],
+      "skills": ["Java", "JavaScript", "Python", "R", "MongoDB", "MySQL", "HTML", "CSS", "Node.js", "VS Code", "IntelliJ IDEA", "Google Colab", "Anaconda", "Jupyter Notebook", "MySQL Workbench", "Weka", "Artificial Intelligence", "Machine Learning", "Neural Networks", "Digital Image Processing", "Computer Networks", "Data Mining", "MERN Stack Development", "Database Management"],
+      "soft_skills": ["Leadership", "Communication", "Presentation", "Research", "Problem-Solving", "Critical Thinking", "Time Management"]
+    }
+  }
+]
