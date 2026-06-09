@@ -26,7 +26,7 @@ def _make_pdf_bytes(text: str) -> bytes:
     pdf.set_font("Helvetica", size=11)
     for line in text.split("\n"):
         safe = "".join(c if ord(c) < 256 else "?" for c in line)
-        pdf.multi_cell(0, 6, txt=safe)
+        pdf.multi_cell(pdf.epw, 6, txt=safe)
     buf = io.BytesIO()
     pdf.output(buf)
     return buf.getvalue()

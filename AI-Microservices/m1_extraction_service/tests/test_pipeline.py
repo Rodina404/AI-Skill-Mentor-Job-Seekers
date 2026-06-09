@@ -12,7 +12,7 @@ def _make_pdf_bytes(text: str) -> bytes:
     pdf.set_font("Helvetica", size=11)
     for line in text.split("\n"):
         safe = "".join(c if ord(c) < 256 else "?" for c in line)
-        pdf.multi_cell(0, 6, txt=safe)
+        pdf.multi_cell(pdf.epw, 6, txt=safe)
     buf = io.BytesIO()
     pdf.output(buf)
     return buf.getvalue()
@@ -41,7 +41,7 @@ class TestL1Parsing:
 
     def test_unsupported_file_type_raises(self, sample_resume_text: str):
         with pytest.raises(ValueError, match="[Uu]nsupported"):
-            parse_resume_bytes(sample_resume_text.encode("utf-8"), "resume.txt")
+            parse_resume_bytes(sample_resume_text.encode("utf-8"), "resume.xyz")
 
 class TestL2Chunking:
     def test_long_text_produces_multiple_chunks(self):

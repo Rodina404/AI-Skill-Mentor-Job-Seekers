@@ -79,17 +79,7 @@ async def extract_resume(
             "success": True,
             "version": "1.0",
             "userId": userId or None,
-            "extractedData": {
-                "fullName": result.full_name,
-                "email": result.email,
-                "summary": result.summary,
-                "cleanSkills": result.skills,
-                "education": [e.model_dump() for e in result.education],
-                "experience": [e.model_dump() for e in result.experience],
-                "projects": [e.model_dump() for e in result.projects],
-                "coursesAndCertifications": result.courses_and_certifications,
-                "languages": result.languages,
-            },
+            "extractedData": result.model_dump(),
             "meta": {
                 "charsProcessed": len(chunked_text),
                 "processingTimeMs": elapsed_ms,

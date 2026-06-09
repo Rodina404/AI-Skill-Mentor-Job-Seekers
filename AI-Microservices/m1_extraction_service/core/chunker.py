@@ -12,7 +12,7 @@ def chunk_if_needed(text: str, max_chars: int = 6000) -> str:
 
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=max_chars,
-        chunk_overlap=200,
+        chunk_overlap=min(200, max_chars // 2),
         separators=["\n\n", "\n", " "]
     )
     chunks = splitter.split_text(text)

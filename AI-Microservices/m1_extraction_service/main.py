@@ -11,7 +11,7 @@ load_dotenv()
 
 app = FastAPI(title="Resume Extraction API", version="1.0.0")
 
-# CORS — allow React dev server and any configured production origin
+_ALLOWED_ORIGINS = ["http://localhost:3000", "http://localhost:5173", "http://localhost:8000"]
 _PROD_ORIGIN = os.getenv("ALLOWED_ORIGIN", "")
 if _PROD_ORIGIN:
     _ALLOWED_ORIGINS.append(_PROD_ORIGIN)
