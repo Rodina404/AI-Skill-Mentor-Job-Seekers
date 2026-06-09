@@ -1,0 +1,7 @@
+# Local directories
+farah_outputs/
+skill_mentor_data/
+.env
+venv/
+.pytest_cache/
+__pycache__/

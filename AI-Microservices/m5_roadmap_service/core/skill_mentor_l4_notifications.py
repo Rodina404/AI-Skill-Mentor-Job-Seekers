@@ -74,12 +74,16 @@ class NotificationSystem:
             List of notification dictionaries
         """
         now = datetime.fromisoformat(current_date) if current_date else datetime.now()
+        if now.tzinfo is not None:
+            now = now.replace(tzinfo=None)
         
         last_act = (
             datetime.fromisoformat(last_activity_date)
             if last_activity_date
             else now - timedelta(days=1)
         )
+        if last_act.tzinfo is not None:
+            last_act = last_act.replace(tzinfo=None)
         
         days_inactive = (now - last_act).days
         overall_pct = progress_status.get("overall_pct", 0.0)
@@ -133,6 +137,8 @@ class NotificationSystem:
         """Generate weekly reminder notification."""
         try:
             roadmap_start = datetime.fromisoformat(self.roadmap["generated_at"])
+            if roadmap_start.tzinfo is not None:
+                roadmap_start = roadmap_start.replace(tzinfo=None)
         except (KeyError, ValueError):
             return None
         
@@ -274,6 +280,8 @@ class NotificationSystem:
         """Generate deadline approaching notification."""
         try:
             roadmap_start = datetime.fromisoformat(self.roadmap["generated_at"])
+            if roadmap_start.tzinfo is not None:
+                roadmap_start = roadmap_start.replace(tzinfo=None)
         except (KeyError, ValueError):
             return None
         
