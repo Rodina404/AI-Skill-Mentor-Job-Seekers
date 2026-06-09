@@ -1,14 +1,16 @@
-"""
-Course Recommendation Service — Standalone FastAPI application
-"""
 import logging
 import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from dotenv import load_dotenv
 
-from routes.course_routes import router, recommender
+from routes.run import router as run_router
+from routes.run import recommender
+from routes.health import router as health_router
+
+load_dotenv()
 
 logging.basicConfig(
     level=logging.INFO,
@@ -16,47 +18,41 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Initialize recommender on startup, release on shutdown."""
-    logger.info("Starting Course Recommendation Service...")
+    logger.info("Initializing Course Recommendation AI modules...")
     if not recommender.initialize():
-        logger.error("Failed to initialize course recommender — check DATA_PATH")
+        logger.error("Failed to initialize course recommender - missing data/model files")
     else:
-        logger.info("Course recommender ready.")
+        logger.info("Course recommender fully initialized.")
     yield
-    logger.info("Course Recommendation Service shutting down.")
-
+    logger.info("Shutting down Course Recommendation Service.")
 
 app = FastAPI(
     title="Course Recommendation Service",
-    description="AI-powered collaborative filtering course recommender",
+    description="Microservice providing FAISS vector search course recommendations for Node backend",
     version="1.0.0",
-    lifespan=lifespan,
+    lifespan=lifespan
 )
+
+allowed_origins = [
+    "http://localhost:3000",
+]
+if os.getenv("ALLOWED_ORIGIN"):
+    allowed_origins.append(os.getenv("ALLOWED_ORIGIN"))
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=os.getenv("ALLOWED_ORIGINS", "*").split(","),
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-app.include_router(router, prefix="/api/courses", tags=["Course Recommendations"])
-
-
-@app.get("/health")
-async def root_health():
-    return {"status": "ok", "service": "course-recommendation"}
-
+app.include_router(run_router)
+app.include_router(health_router)
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(
-        "main:app",
-        host="0.0.0.0",
-        port=int(os.getenv("PORT", "8006")),
-        reload=os.getenv("ENV", "production") == "development"
-    )
+    port = int(os.getenv("PORT", "8006"))
+    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)
