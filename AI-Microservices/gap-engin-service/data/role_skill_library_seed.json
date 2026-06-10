@@ -1,0 +1,35 @@
+{
+  "version": "1.0",
+  "description": "Reference seed data for role-skill library initialization",
+  "roles": [
+    {
+      "roleId": "R_001",
+      "jobTitle": "Data Analyst",
+      "skillIds": ["S_sql", "S_python", "S_statistics", "S_data_analysis", "S_data_visualization"]
+    },
+    {
+      "roleId": "R_002",
+      "jobTitle": "Machine Learning Engineer",
+      "skillIds": ["S_python", "S_machine_learning", "S_deep_learning", "S_pytorch", "S_mlops"]
+    },
+    {
+      "roleId": "R_003",
+      "jobTitle": "Data Scientist",
+      "skillIds": ["S_python", "S_machine_learning", "S_statistics", "S_pandas", "S_data_analysis"]
+    },
+    {
+      "roleId": "R_004",
+      "jobTitle": "Backend Engineer",
+      "skillIds": ["S_python", "S_sql", "S_api_design", "S_git", "S_docker"]
+    },
+    {
+      "roleId": "R_005",
+      "jobTitle": "DevOps Engineer",
+      "skillIds": ["S_docker", "S_kubernetes", "S_cicd", "S_terraform", "S_linux"]
+    }
+  ],
+  "metadata": {
+    "source": "curated",
+    "last_updated": "2026-06-01"
+  }
+}

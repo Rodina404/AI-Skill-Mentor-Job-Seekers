@@ -1,0 +1,44 @@
+[
+  {
+    "roleId": "R_data_analyst",
+    "roleTitle": "Data Analyst",
+    "aliases": ["Junior Data Analyst", "Business Data Analyst", "BI Analyst"],
+    "seniority": ["junior", "mid", "senior"],
+    "requiredSkills": [
+      {"skillId": "S_sql", "weight": 0.22},
+      {"skillId": "S_python", "weight": 0.20},
+      {"skillId": "S_excel", "weight": 0.12},
+      {"skillId": "S_statistics", "weight": 0.16},
+      {"skillId": "S_data_viz", "weight": 0.15},
+      {"skillId": "S_powerbi", "weight": 0.15}
+    ]
+  },
+  {
+    "roleId": "R_backend_engineer",
+    "roleTitle": "Backend Engineer",
+    "aliases": ["Backend Developer", "Server-side Engineer", "API Engineer"],
+    "seniority": ["junior", "mid", "senior"],
+    "requiredSkills": [
+      {"skillId": "S_python", "weight": 0.20},
+      {"skillId": "S_java", "weight": 0.14},
+      {"skillId": "S_nodejs", "weight": 0.14},
+      {"skillId": "S_sql", "weight": 0.16},
+      {"skillId": "S_rest_apis", "weight": 0.18},
+      {"skillId": "S_system_design", "weight": 0.18}
+    ]
+  },
+  {
+    "roleId": "R_data_scientist",
+    "roleTitle": "Data Scientist",
+    "aliases": ["Machine Learning Scientist", "ML Scientist", "Applied Data Scientist"],
+    "seniority": ["junior", "mid", "senior"],
+    "requiredSkills": [
+      {"skillId": "S_python", "weight": 0.20},
+      {"skillId": "S_sql", "weight": 0.14},
+      {"skillId": "S_machine_learning", "weight": 0.22},
+      {"skillId": "S_statistics", "weight": 0.14},
+      {"skillId": "S_feature_engineering", "weight": 0.15},
+      {"skillId": "S_pytorch", "weight": 0.15}
+    ]
+  }
+]

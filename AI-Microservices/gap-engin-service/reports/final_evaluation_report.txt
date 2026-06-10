@@ -1,0 +1,67 @@
+GradRAG Final Evaluation Report
+===============================
+
+Overall: 20/20 thresholds passed
+
+Core Metrics
+------------
+Normalization precision: 1.000
+Normalization recall: 1.000
+Normalization specificity: 1.000
+Mode A role accuracy: 1.000
+Mode A precision: 0.633
+Mode A recall: 0.960
+Mode A F1: 0.759
+Mode B live Groq availability: 1.000
+Mode B precision: 0.667
+Mode B recall: 0.722
+Mode B F1: 0.689
+Mode B Precision@5: 0.733
+Mode B Recall@5: 0.722
+Mode B MRR: 1.000
+Mode B nDCG@5: 0.835
+Offline Mode B F1: 1.000
+Offline Mode B nDCG@5: 1.000
+RAG availability: 1.000
+RAG relevance: 0.783
+Mode A consistency: 1.000
+Mode B consistency: 0.833
+Mode B stability: 0.889
+Mode A p95 speed: 15.0 ms
+Mode B p95 speed: 4789.9 ms
+
+Achieved Results Compared With Targets
+--------------------------------------
+Metric                             Achieved       Target   Result
+-------------------------------- ---------- ------------ --------
+Normalization precision               1.000     >= 0.950     PASS
+Normalization recall                  1.000     >= 0.950     PASS
+Normalization specificity             1.000     >= 0.950     PASS
+Mode A role accuracy                  1.000     >= 0.950     PASS
+Mode A F1                             0.759     >= 0.700     PASS
+Mode A p95 speed (ms)                15.041      < 500.0     PASS
+RAG availability                      1.000     >= 0.950     PASS
+RAG relevance                         0.783     >= 0.700     PASS
+Live Groq availability                1.000     >= 1.000     PASS
+Mode B precision                      0.667     >= 0.650     PASS
+Mode B recall                         0.722     >= 0.650     PASS
+Mode B F1                             0.689     >= 0.650     PASS
+Mode B Precision@5                    0.733     >= 0.700     PASS
+Mode B nDCG@5                         0.835     >= 0.700     PASS
+Offline Mode B F1                     1.000     >= 0.900     PASS
+Offline Mode B nDCG@5                 1.000     >= 0.900     PASS
+Mode B p95 speed (ms)              4789.921     < 5000.0     PASS
+Mode A consistency                    1.000     >= 0.950     PASS
+Mode B consistency                    0.833     >= 0.800     PASS
+Mode B stability                      0.889     >= 0.800     PASS
+
+Generated Images
+----------------
+mode_quality_comparison.png
+mode_speed_comparison.png
+rag_evidence_quality.png
+consistency_comparison.png
+normalization_quality.png
+mode_b_ranking_quality.png
+
+Detailed machine-readable results: evaluation_results.json

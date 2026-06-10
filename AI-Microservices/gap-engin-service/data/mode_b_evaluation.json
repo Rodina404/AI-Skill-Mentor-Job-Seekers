@@ -1,0 +1,62 @@
+[
+  {
+    "title": "cloud automation specialist",
+    "evidence": "The role requires AWS, Terraform, Docker, Kubernetes, Linux, and CI/CD automation.",
+    "expected_skills": ["S_aws", "S_terraform", "S_docker", "S_kubernetes", "S_linux", "S_cicd"]
+  },
+  {
+    "title": "machine intelligence specialist",
+    "evidence": "Required skills include Python, machine learning, deep learning, PyTorch, and TensorFlow.",
+    "expected_skills": ["S_python", "S_machine_learning", "S_deep_learning", "S_pytorch", "S_tensorflow"]
+  },
+  {
+    "title": "analytics platform specialist",
+    "evidence": "Required technologies are SQL, Python, Tableau, statistics, and data analysis.",
+    "expected_skills": ["S_sql", "S_python", "S_tableau", "S_statistics", "S_data_analysis"]
+  },
+  {
+    "title": "backend platform specialist",
+    "evidence": "The role requires Python, FastAPI, PostgreSQL, Docker, REST APIs, and Git.",
+    "expected_skills": ["S_python", "S_fastapi", "S_postgresql", "S_docker", "S_rest_api", "S_git"]
+  },
+  {
+    "title": "frontend platform specialist",
+    "evidence": "The role requires JavaScript, TypeScript, React, HTML and CSS, and Git.",
+    "expected_skills": ["S_javascript", "S_typescript", "S_react", "S_html_css", "S_git"]
+  },
+  {
+    "title": "data pipeline specialist",
+    "evidence": "Required skills include Python, SQL, Spark, Kafka, AWS, and data engineering.",
+    "expected_skills": ["S_python", "S_sql", "S_spark", "S_kafka", "S_aws", "S_data_engineering"]
+  },
+  {
+    "title": "security operations specialist",
+    "evidence": "The role requires cybersecurity, Linux, networking, AWS, Python, and monitoring.",
+    "expected_skills": ["S_security", "S_linux", "S_networking", "S_aws", "S_python", "S_monitoring"]
+  },
+  {
+    "title": "mobile application specialist",
+    "evidence": "Required skills are Kotlin, Swift, mobile development, Git, and REST APIs.",
+    "expected_skills": ["S_kotlin", "S_swift", "S_git", "S_rest_api"]
+  },
+  {
+    "title": "database platform specialist",
+    "evidence": "Required technologies are SQL, PostgreSQL, MySQL, MongoDB, Redis, and database design.",
+    "expected_skills": ["S_sql", "S_postgresql", "S_mysql", "S_mongodb", "S_redis", "S_database_design"]
+  },
+  {
+    "title": "robotics software specialist",
+    "evidence": "The role requires Python, C++, ROS, embedded systems, Linux, and computer vision.",
+    "expected_skills": ["S_python", "S_cpp", "S_ros", "S_embedded", "S_linux", "S_computer_vision"]
+  },
+  {
+    "title": "llm application specialist",
+    "evidence": "Required skills include Python, LLMs, LangChain, prompt engineering, FastAPI, and vector databases.",
+    "expected_skills": ["S_python", "S_llm", "S_langchain", "S_fastapi"]
+  },
+  {
+    "title": "observability platform specialist",
+    "evidence": "Required skills include monitoring, Linux, Kubernetes, Docker, AWS, and automation.",
+    "expected_skills": ["S_monitoring", "S_linux", "S_kubernetes", "S_docker", "S_aws", "S_automation"]
+  }
+]

@@ -1,0 +1,199 @@
+[
+  {"role_title":"Data Analyst","description":"Analyzes datasets to generate insights and support business decisions.","required_skills":["SQL","Python","Excel","Statistics","Data Visualization","Data Cleaning"],"tools":["Power BI","Tableau","Excel","Python"]},
+
+  {"role_title":"Data Scientist","description":"Builds predictive models and analyzes complex datasets using statistics and machine learning.","required_skills":["Python","Machine Learning","Statistics","SQL","Feature Engineering"],"tools":["Python","Scikit-learn","Jupyter","Tableau"]},
+
+  {"role_title":"Machine Learning Engineer","description":"Designs and deploys machine learning models into production systems.","required_skills":["Python","Machine Learning","Deep Learning","Data Engineering","Model Deployment"],"tools":["TensorFlow","PyTorch","Docker","MLflow"]},
+
+  {"role_title":"AI Engineer","description":"Builds AI-powered systems using machine learning, NLP, and deep learning.","required_skills":["Python","Machine Learning","Deep Learning","Natural Language Processing"],"tools":["TensorFlow","PyTorch","Hugging Face"]},
+
+  {"role_title":"NLP Engineer","description":"Develops systems that process and analyze human language.","required_skills":["Python","Natural Language Processing","Machine Learning","Text Processing"],"tools":["SpaCy","NLTK","Hugging Face"]},
+
+  {"role_title":"Computer Vision Engineer","description":"Builds image and video recognition systems.","required_skills":["Python","Deep Learning","Computer Vision","Image Processing"],"tools":["OpenCV","PyTorch","TensorFlow"]},
+
+  {"role_title":"MLOps Engineer","description":"Manages machine learning pipelines and deployment infrastructure.","required_skills":["Machine Learning","CI/CD","Data Engineering","Automation"],"tools":["MLflow","Kubeflow","Docker","Kubernetes"]},
+
+  {"role_title":"Backend Engineer","description":"Develops server-side applications and APIs.","required_skills":["Java","Python","Node.js","SQL","REST APIs","System Design"],"tools":["Spring Boot","Django","Express.js","PostgreSQL"]},
+
+  {"role_title":"Frontend Engineer","description":"Builds user interfaces for web applications.","required_skills":["JavaScript","HTML","CSS","React","UI Design"],"tools":["React","Next.js","Tailwind CSS"]},
+
+  {"role_title":"Full Stack Engineer","description":"Develops both frontend and backend components of applications.","required_skills":["JavaScript","React","Node.js","SQL","System Design"],"tools":["React","Node.js","MongoDB"]},
+
+  {"role_title":"Software Engineer","description":"Designs and builds software applications.","required_skills":["Programming","Algorithms","Data Structures","System Design"],"tools":["Git","Docker","Linux"]},
+
+  {"role_title":"Mobile Developer","description":"Develops mobile apps for Android and iOS.","required_skills":["Java","Kotlin","Swift","Mobile UI Development"],"tools":["Android Studio","Xcode","Firebase"]},
+
+  {"role_title":"DevOps Engineer","description":"Automates deployment pipelines and infrastructure.","required_skills":["Linux","CI/CD","Cloud Computing","Infrastructure Automation"],"tools":["Docker","Kubernetes","Terraform","Jenkins"]},
+
+  {"role_title":"Cloud Engineer","description":"Designs and manages cloud infrastructure.","required_skills":["Cloud Architecture","Networking","Security","Automation"],"tools":["AWS","Azure","Google Cloud"]},
+
+  {"role_title":"Site Reliability Engineer","description":"Ensures system reliability and scalability.","required_skills":["Linux","Monitoring","Automation","Distributed Systems"],"tools":["Prometheus","Grafana","Kubernetes"]},
+
+  {"role_title":"Cybersecurity Analyst","description":"Protects systems and networks from cyber threats.","required_skills":["Network Security","Risk Analysis","Cryptography","Incident Response"],"tools":["Wireshark","Metasploit","SIEM"]},
+
+  {"role_title":"Penetration Tester","description":"Tests systems for vulnerabilities through ethical hacking.","required_skills":["Ethical Hacking","Network Security","Vulnerability Assessment"],"tools":["Kali Linux","Metasploit","Burp Suite"]},
+
+  {"role_title":"Security Engineer","description":"Builds and maintains secure systems and infrastructure.","required_skills":["Security Architecture","Encryption","Threat Modeling"],"tools":["SIEM","Firewall Systems"]},
+
+  {"role_title":"Database Administrator","description":"Manages databases and ensures data integrity and performance.","required_skills":["SQL","Database Design","Performance Tuning"],"tools":["MySQL","PostgreSQL","Oracle"]},
+
+  {"role_title":"Data Engineer","description":"Builds data pipelines and data infrastructure.","required_skills":["Python","SQL","Data Pipelines","Big Data"],"tools":["Apache Spark","Airflow","Kafka"]},
+
+  {"role_title":"Business Intelligence Developer","description":"Creates dashboards and analytics systems.","required_skills":["SQL","Data Modeling","Reporting","Data Visualization"],"tools":["Power BI","Tableau","Looker"]},
+
+  {"role_title":"Game Developer","description":"Builds video games and interactive experiences.","required_skills":["C++","Game Physics","Graphics Programming"],"tools":["Unity","Unreal Engine"]},
+
+  {"role_title":"Embedded Systems Engineer","description":"Develops software for hardware devices.","required_skills":["C","C++","Embedded Systems","Microcontrollers"],"tools":["Arduino","RTOS"]},
+
+  {"role_title":"Blockchain Developer","description":"Builds decentralized applications and smart contracts.","required_skills":["Blockchain","Cryptography","Smart Contracts"],"tools":["Ethereum","Solidity"]},
+
+  {"role_title":"AR/VR Developer","description":"Develops augmented and virtual reality applications.","required_skills":["3D Programming","Game Development","Computer Graphics"],"tools":["Unity","Unreal Engine"]},
+
+  {"role_title":"Robotics Engineer","description":"Designs and builds robotic systems.","required_skills":["Control Systems","Robotics","Embedded Programming"],"tools":["ROS","Python","C++"]},
+
+  {"role_title":"QA Engineer","description":"Tests software to ensure quality and reliability.","required_skills":["Software Testing","Automation Testing","Test Design"],"tools":["Selenium","JUnit"]},
+
+  {"role_title":"Automation Engineer","description":"Builds automated systems for testing or infrastructure.","required_skills":["Automation","Scripting","System Integration"],"tools":["Python","Selenium","Jenkins"]},
+
+  {"role_title":"Technical Product Manager","description":"Manages development of technical products.","required_skills":["Product Strategy","Agile","Technical Communication"],"tools":["Jira","Confluence"]},
+
+  {"role_title":"IT Support Specialist","description":"Maintains and troubleshoots IT systems.","required_skills":["Troubleshooting","Networking","System Administration"],"tools":["Windows Server","Linux"]},
+
+  {"role_title":"Network Engineer","description":"Designs and manages computer networks.","required_skills":["Networking","Routing","Network Security"],"tools":["Cisco","Wireshark"]},
+
+  {"role_title":"Systems Administrator","description":"Manages servers and operating systems.","required_skills":["Linux","System Administration","Networking"],"tools":["Linux","Docker"]},
+
+  {"role_title":"Big Data Engineer","description":"Builds large-scale data processing systems.","required_skills":["Big Data","Distributed Systems","Data Engineering"],"tools":["Hadoop","Spark","Kafka"]},
+
+  {"role_title":"AI Researcher","description":"Conducts research on artificial intelligence algorithms.","required_skills":["Machine Learning","Mathematics","Deep Learning"],"tools":["PyTorch","TensorFlow"]},
+
+  {"role_title":"Prompt Engineer","description":"Designs prompts and workflows for large language models.","required_skills":["Prompt Engineering","NLP","AI Systems"],"tools":["OpenAI API","LangChain"]},
+
+  {"role_title":"AI Product Manager","description":"Manages AI-powered products and systems.","required_skills":["AI Strategy","Product Management","Machine Learning Basics"],"tools":["Jira","Analytics Tools"]},
+
+  {"role_title":"Cloud Solutions Architect","description":"Designs end-to-end cloud solutions that are scalable, secure, and cost-efficient.","required_skills":["Cloud Architecture","System Design","Networking","Security","Cost Optimization"],"tools":["AWS","Azure","Google Cloud","Terraform"]},
+
+  {"role_title":"Solutions Architect","description":"Designs technical solutions that align business needs with software and infrastructure systems.","required_skills":["System Design","Architecture Patterns","Technical Communication","Integration Design"],"tools":["UML","Draw.io","Cloud Platforms"]},
+
+  {"role_title":"API Engineer","description":"Designs, builds, documents, and secures APIs for internal and external services.","required_skills":["REST APIs","API Design","Authentication","Backend Development","Testing"],"tools":["Postman","Swagger","FastAPI","Spring Boot"]},
+
+  {"role_title":"Platform Engineer","description":"Builds internal developer platforms and reusable infrastructure for engineering teams.","required_skills":["Infrastructure Automation","CI/CD","Cloud Computing","Containers","Developer Experience"],"tools":["Kubernetes","Terraform","Docker","GitHub Actions"]},
+
+  {"role_title":"Release Engineer","description":"Manages build, release, and deployment workflows for software systems.","required_skills":["CI/CD","Build Automation","Version Control","Scripting"],"tools":["Jenkins","Git","GitHub Actions","Maven"]},
+
+  {"role_title":"Build Engineer","description":"Creates and maintains reliable software build systems and dependency pipelines.","required_skills":["Build Systems","Automation","Scripting","Dependency Management"],"tools":["Gradle","Maven","Bazel","Jenkins"]},
+
+  {"role_title":"Firmware Engineer","description":"Develops low-level software that runs directly on hardware devices and embedded systems.","required_skills":["C","C++","Embedded Systems","Debugging","Microcontrollers"],"tools":["RTOS","JTAG","Arduino","STM32"]},
+
+  {"role_title":"IoT Engineer","description":"Builds connected device systems that combine hardware, networking, and cloud services.","required_skills":["Embedded Systems","Networking","Cloud Integration","Sensor Data Processing"],"tools":["MQTT","Arduino","Raspberry Pi","AWS IoT"]},
+
+  {"role_title":"GIS Developer","description":"Builds geographic information systems and location-based applications.","required_skills":["Spatial Data","Python","Web Mapping","Database Management"],"tools":["ArcGIS","QGIS","PostGIS","Leaflet"]},
+
+  {"role_title":"ERP Developer","description":"Customizes and develops enterprise resource planning systems for business operations.","required_skills":["Business Process Analysis","Backend Development","Database Management","Integration"],"tools":["SAP","Oracle ERP","SQL"]},
+
+  {"role_title":"CRM Developer","description":"Develops and customizes customer relationship management systems and integrations.","required_skills":["CRM Customization","Automation","API Integration","Database Management"],"tools":["Salesforce","HubSpot","Dynamics 365"]},
+
+  {"role_title":"Salesforce Developer","description":"Builds custom applications, workflows, and integrations on the Salesforce platform.","required_skills":["Apex","CRM Development","Automation","API Integration"],"tools":["Salesforce","SOQL","Lightning"]},
+
+  {"role_title":"SAP Consultant","description":"Implements and configures SAP systems to support enterprise processes.","required_skills":["ERP Systems","Business Process Mapping","Configuration","Technical Communication"],"tools":["SAP","ABAP"]},
+
+  {"role_title":"SAP ABAP Developer","description":"Develops custom programs and reports inside SAP enterprise systems.","required_skills":["ABAP","ERP Development","Database Programming","Debugging"],"tools":["SAP","ABAP Workbench"]},
+
+  {"role_title":"Oracle Developer","description":"Builds database-driven enterprise applications using Oracle technologies.","required_skills":["SQL","PL/SQL","Database Design","Performance Tuning"],"tools":["Oracle Database","Oracle Forms","Oracle APEX"]},
+
+  {"role_title":"PHP Developer","description":"Builds web applications and backend services using PHP frameworks and databases.","required_skills":["PHP","SQL","Backend Development","Web Development"],"tools":["Laravel","Symfony","MySQL"]},
+
+  {"role_title":"Python Developer","description":"Builds backend systems, automation scripts, and data-driven applications using Python.","required_skills":["Python","Backend Development","APIs","Scripting","Testing"],"tools":["Django","FastAPI","Flask","Pytest"]},
+
+  {"role_title":"Java Developer","description":"Builds enterprise applications and backend services using Java technologies.","required_skills":["Java","Object-Oriented Programming","SQL","Backend Development"],"tools":["Spring Boot","Hibernate","Maven"]},
+
+  {"role_title":"C++ Developer","description":"Builds high-performance applications, systems software, and engine-level components.","required_skills":["C++","Algorithms","Memory Management","Debugging"],"tools":["CMake","GDB","Visual Studio"]},
+
+  {"role_title":"Go Developer","description":"Builds scalable backend services and concurrent systems using Go.","required_skills":["Go","Backend Development","Concurrency","REST APIs"],"tools":["Go","Gin","Docker"]},
+
+  {"role_title":"Rust Developer","description":"Builds secure and high-performance systems software with strong memory safety guarantees.","required_skills":["Rust","Systems Programming","Concurrency","Debugging"],"tools":["Cargo","Rust","Docker"]},
+
+  {"role_title":"Unity Developer","description":"Builds games and interactive simulations using the Unity engine.","required_skills":["C#","Game Development","3D Programming","UI Development"],"tools":["Unity","Blender"]},
+
+  {"role_title":"Unreal Engine Developer","description":"Builds advanced games and immersive simulations using Unreal Engine.","required_skills":["C++","Game Development","3D Graphics","Blueprints"],"tools":["Unreal Engine","Visual Studio"]},
+
+  {"role_title":"Bioinformatics Engineer","description":"Develops computational pipelines to analyze biological and genomic data.","required_skills":["Python","Data Analysis","Algorithms","Statistics","Pipeline Development"],"tools":["Python","R","Bioconductor","Linux"]},
+
+  {"role_title":"Research Engineer","description":"Transforms research ideas into working technical prototypes and experimental systems.","required_skills":["Python","Machine Learning","Experimentation","Software Engineering"],"tools":["PyTorch","TensorFlow","Jupyter"]},
+
+  {"role_title":"Search Engineer","description":"Builds search systems, indexing pipelines, and relevance ranking solutions.","required_skills":["Information Retrieval","Backend Development","Ranking","Data Structures"],"tools":["Elasticsearch","Solr","Python","Java"]},
+
+  {"role_title":"Recommendation Engineer","description":"Builds personalized recommendation systems for products, content, or users.","required_skills":["Machine Learning","Data Analysis","Ranking","Python"],"tools":["Python","Spark","Scikit-learn"]},
+
+  {"role_title":"RAG Engineer","description":"Builds retrieval-augmented generation systems using vector search, embeddings, and LLM orchestration.","required_skills":["Python","Information Retrieval","Embeddings","Prompt Engineering","LLM Integration"],"tools":["LangChain","FAISS","Chroma","OpenAI API"]},
+
+  {"role_title":"LLM Engineer","description":"Builds applications powered by large language models, including agents, retrieval systems, and prompt pipelines.","required_skills":["Python","Prompt Engineering","LLM Integration","Evaluation","API Development"],"tools":["OpenAI API","LangChain","LlamaIndex","Weights & Biases"]},
+
+  {"role_title":"Data Governance Analyst","description":"Defines policies and processes for data quality, compliance, and metadata management.","required_skills":["Data Governance","Data Quality","Documentation","Compliance"],"tools":["Collibra","Excel","SQL"]},
+
+  {"role_title":"Data Quality Engineer","description":"Builds checks and validation pipelines to ensure data reliability and consistency.","required_skills":["SQL","Python","Data Validation","ETL Testing"],"tools":["Great Expectations","Airflow","dbt"]},
+
+  {"role_title":"ETL Developer","description":"Designs and implements extract-transform-load workflows across data systems.","required_skills":["SQL","ETL Pipelines","Data Transformation","Scripting"],"tools":["Informatica","SSIS","Airflow","dbt"]},
+
+  {"role_title":"Analytics Engineer","description":"Transforms raw data into analytics-ready models for dashboards and business reporting.","required_skills":["SQL","Data Modeling","Transformation Pipelines","Analytics"],"tools":["dbt","BigQuery","Snowflake","Looker"]},
+
+  {"role_title":"Observability Engineer","description":"Builds monitoring, logging, and tracing systems for production environments.","required_skills":["Monitoring","Distributed Systems","Incident Response","Automation"],"tools":["Prometheus","Grafana","OpenTelemetry","ELK Stack"]},
+
+  {"role_title":"Identity and Access Management Engineer","description":"Designs and manages authentication, authorization, and access control systems.","required_skills":["Authentication","Authorization","Security","Identity Management"],"tools":["Okta","Azure AD","OAuth","SAML"]},
+
+  {"role_title":"SOC Analyst","description":"Monitors security events, investigates alerts, and responds to cyber incidents.","required_skills":["Security Monitoring","Incident Response","Threat Detection","Log Analysis"],"tools":["SIEM","Splunk","Wireshark"]},
+
+  {"role_title":"Digital Forensics Analyst","description":"Investigates security breaches and analyzes digital evidence from systems and devices.","required_skills":["Digital Forensics","Incident Investigation","Evidence Handling","Operating Systems"],"tools":["Autopsy","EnCase","Volatility"]},
+
+  {"role_title":"Malware Analyst","description":"Analyzes malicious software to understand behavior, impact, and defense strategies.","required_skills":["Reverse Engineering","Operating Systems","Threat Analysis","Security Research"],"tools":["IDA Pro","Ghidra","Wireshark","YARA"]},
+
+  {"role_title":"Network Security Engineer","description":"Designs and secures enterprise network infrastructure against attacks and misuse.","required_skills":["Network Security","Firewalls","Routing","Threat Prevention"],"tools":["Cisco","Palo Alto","Wireshark"]},
+
+  {"role_title":"Storage Engineer","description":"Designs and manages enterprise storage systems, backup strategies, and data availability.","required_skills":["Storage Systems","System Administration","Disaster Recovery","Networking"],"tools":["NetApp","VMware","Linux"]},
+
+  {"role_title":"Virtualization Engineer","description":"Builds and manages virtualized server and desktop infrastructure.","required_skills":["Virtualization","System Administration","Networking","Infrastructure Management"],"tools":["VMware","Hyper-V","Linux"]},
+
+  {"role_title":"Linux Engineer","description":"Manages, automates, and optimizes Linux-based systems and infrastructure.","required_skills":["Linux","Shell Scripting","System Administration","Networking"],"tools":["Linux","Bash","Ansible","Docker"]},
+
+  {"role_title":"Windows Systems Engineer","description":"Builds and supports Windows-based server environments and enterprise services.","required_skills":["Windows Server","System Administration","Active Directory","Troubleshooting"],"tools":["Windows Server","PowerShell","Active Directory"]},
+
+  {"role_title":"Application Support Engineer","description":"Supports production applications, troubleshoots issues, and coordinates fixes with engineering teams.","required_skills":["Troubleshooting","SQL","System Monitoring","Technical Communication"],"tools":["Splunk","SQL","Jira"]},
+
+  {"role_title":"Technical Support Engineer","description":"Solves customer and system technical issues related to software products and services.","required_skills":["Troubleshooting","Customer Support","Networking","Documentation"],"tools":["Zendesk","Jira","Linux"]},
+
+  {"role_title":"E-commerce Developer","description":"Builds and customizes online commerce platforms, checkout flows, and storefront systems.","required_skills":["Web Development","API Integration","Frontend Development","Backend Development"],"tools":["Shopify","WooCommerce","Magento"]},
+
+  {"role_title":"Web Performance Engineer","description":"Optimizes application speed, rendering efficiency, and frontend performance metrics.","required_skills":["JavaScript","Web Performance","Profiling","Frontend Optimization"],"tools":["Lighthouse","Chrome DevTools","Webpack"]},
+
+  {"role_title":"Accessibility Engineer","description":"Ensures digital products are usable by people with different abilities and comply with accessibility standards.","required_skills":["Accessibility Standards","HTML","CSS","UI Testing"],"tools":["axe","Lighthouse","Screen Readers"]},
+
+  {"role_title":"Low-Code Developer","description":"Builds business applications and workflows using low-code or no-code platforms.","required_skills":["Workflow Automation","Business Logic","Integration","Problem Solving"],"tools":["Power Apps","OutSystems","Zapier"]},
+
+  {"role_title":"Integration Engineer","description":"Connects software systems and data flows across platforms and services.","required_skills":["API Integration","Messaging Systems","Data Mapping","Troubleshooting"],"tools":["MuleSoft","Postman","Kafka"]},
+
+  {"role_title":"Middleware Engineer","description":"Builds and manages middleware services that connect enterprise applications and backend systems.","required_skills":["Integration Patterns","Messaging","Backend Systems","System Administration"],"tools":["Kafka","RabbitMQ","IBM MQ"]},
+
+  {"role_title":"Test Automation Engineer","description":"Designs and maintains automated test suites for software quality assurance.","required_skills":["Automation Testing","Scripting","Test Design","Quality Assurance"],"tools":["Selenium","Cypress","Pytest","JUnit"]},
+
+  {"role_title":"Performance Test Engineer","description":"Evaluates software scalability, throughput, and stability under load.","required_skills":["Performance Testing","Load Testing","Analysis","Scripting"],"tools":["JMeter","LoadRunner","Grafana"]},
+
+  {"role_title":"Reliability Engineer","description":"Improves service stability, fault tolerance, and operational resilience across systems.","required_skills":["Distributed Systems","Incident Management","Monitoring","Automation"],"tools":["Prometheus","Grafana","Kubernetes"]},
+
+  {"role_title":"Computational Linguist","description":"Designs language-processing models and resources using linguistic and machine learning methods.","required_skills":["Linguistics","Natural Language Processing","Python","Data Annotation"],"tools":["SpaCy","Python","NLTK"]},
+
+  {"role_title":"Knowledge Graph Engineer","description":"Builds graph-based knowledge systems for semantic search, reasoning, and linked data applications.","required_skills":["Graph Modeling","Data Integration","Semantic Web","Python"],"tools":["Neo4j","RDF","SPARQL"]},
+
+  {"role_title":"Information Retrieval Engineer","description":"Builds indexing, search, ranking, and retrieval systems for text and document collections.","required_skills":["Information Retrieval","Ranking","Python","Backend Development"],"tools":["Elasticsearch","Solr","FAISS"]},
+
+  {"role_title":"Geospatial Data Engineer","description":"Builds pipelines and storage systems for spatial and location-based datasets.","required_skills":["Spatial Data","SQL","ETL Pipelines","Python"],"tools":["PostGIS","QGIS","Python"]},
+
+  {"role_title":"Scientific Software Engineer","description":"Builds reliable software for scientific simulations, experiments, and computational analysis.","required_skills":["Python","C++","Numerical Computing","Software Engineering"],"tools":["NumPy","SciPy","MATLAB"]},
+
+  {"role_title":"HPC Engineer","description":"Designs and manages high-performance computing systems for large-scale scientific and technical workloads.","required_skills":["Linux","Parallel Computing","System Administration","Performance Optimization"],"tools":["Slurm","MPI","Linux"]},
+
+  {"role_title":"Quantum Software Developer","description":"Builds software and simulations for quantum computing algorithms and workflows.","required_skills":["Python","Linear Algebra","Quantum Algorithms","Research Skills"],"tools":["Qiskit","Python"]},
+
+  {"role_title":"Semiconductor Test Engineer","description":"Develops software-driven testing workflows for electronic chips and hardware validation.","required_skills":["Testing","Electronics","Automation","Data Analysis"],"tools":["LabVIEW","Python","C"]},
+
+  {"role_title":"CAD Automation Engineer","description":"Builds scripts and tools that automate computer-aided design workflows.","required_skills":["Automation","Scripting","CAD Systems","Problem Solving"],"tools":["AutoCAD","Python","MATLAB"]}
+]

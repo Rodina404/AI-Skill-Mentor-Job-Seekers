@@ -1,0 +1,59 @@
+{
+  "roles": [
+    {
+      "title": "research scientist",
+      "aliases": ["ai research scientist", "machine learning research scientist"],
+      "requiredSkills": [
+        {"skillId": "S_python", "weight": 0.2},
+        {"skillId": "S_machine_learning", "weight": 0.25},
+        {"skillId": "S_deep_learning", "weight": 0.2},
+        {"skillId": "S_statistics", "weight": 0.2},
+        {"skillId": "S_pytorch", "weight": 0.15}
+      ]
+    },
+    {
+      "title": "quantitative analyst",
+      "aliases": ["quant analyst", "quant"],
+      "requiredSkills": [
+        {"skillId": "S_python", "weight": 0.25},
+        {"skillId": "S_statistics", "weight": 0.3},
+        {"skillId": "S_sql", "weight": 0.2},
+        {"skillId": "S_machine_learning", "weight": 0.15},
+        {"skillId": "S_data_analysis", "weight": 0.1}
+      ]
+    },
+    {
+      "title": "technical lead",
+      "aliases": ["tech lead", "software technical lead"],
+      "requiredSkills": [
+        {"skillId": "S_system_design", "weight": 0.3},
+        {"skillId": "S_git", "weight": 0.15},
+        {"skillId": "S_api_design", "weight": 0.2},
+        {"skillId": "S_docker", "weight": 0.15},
+        {"skillId": "S_agile", "weight": 0.2}
+      ]
+    },
+    {
+      "title": "solutions architect",
+      "aliases": ["solution architect", "cloud solutions architect"],
+      "requiredSkills": [
+        {"skillId": "S_aws", "weight": 0.3},
+        {"skillId": "S_system_design", "weight": 0.25},
+        {"skillId": "S_kubernetes", "weight": 0.15},
+        {"skillId": "S_docker", "weight": 0.15},
+        {"skillId": "S_terraform", "weight": 0.15}
+      ]
+    },
+    {
+      "title": "data architect",
+      "aliases": ["enterprise data architect"],
+      "requiredSkills": [
+        {"skillId": "S_sql", "weight": 0.3},
+        {"skillId": "S_data_engineering", "weight": 0.25},
+        {"skillId": "S_aws", "weight": 0.15},
+        {"skillId": "S_spark", "weight": 0.15},
+        {"skillId": "S_postgresql", "weight": 0.15}
+      ]
+    }
+  ]
+}

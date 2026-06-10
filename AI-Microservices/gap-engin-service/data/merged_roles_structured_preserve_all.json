@@ -1,0 +1,243 @@
+[
+  {
+    "jobTitle": "Data Analyst",
+    "aliases": ["Data Specialist", "Analytics Engineer", "Business Analyst", "BI Analyst"],
+    "descriptions": ["Analyzes business data to provide insights and support decision making"],
+    "must_have": ["S_sql", "S_python", "S_statistics", "S_data_visualization", "S_data_analysis"],
+    "optional": ["S_tableau", "S_power_bi", "S_r"],
+    "tools": ["Power BI", "Tableau", "Excel", "SQL Server"],
+    "sources": ["job postings - data analyst"]
+  },
+  {
+    "jobTitle": "Machine Learning Engineer",
+    "aliases": ["ML Engineer", "AI Engineer", "Applied ML Engineer"],
+    "descriptions": ["Designs, builds, and deploys ML models and systems at production scale"],
+    "must_have": ["S_python", "S_machine_learning", "S_deep_learning", "S_pytorch", "S_mlops"],
+    "optional": ["S_tensorflow", "S_kubernetes", "S_docker", "S_aws"],
+    "tools": ["PyTorch", "TensorFlow", "MLflow", "Docker", "Kubernetes"],
+    "sources": ["job postings - ML engineer"]
+  },
+  {
+    "jobTitle": "Data Scientist",
+    "aliases": ["Applied Scientist", "Research Scientist", "Quantitative Analyst"],
+    "descriptions": ["Applies statistical analysis, machine learning, and data mining to extract insights"],
+    "must_have": ["S_python", "S_machine_learning", "S_statistics", "S_pandas", "S_data_analysis"],
+    "optional": ["S_deep_learning", "S_r", "S_sql", "S_spark"],
+    "tools": ["Jupyter", "Python", "R", "Scikit-learn", "TensorFlow"],
+    "sources": ["job postings - data scientist"]
+  },
+  {
+    "jobTitle": "Backend Engineer",
+    "aliases": ["Backend Developer", "Server-Side Engineer", "API Engineer"],
+    "descriptions": ["Builds and maintains server-side logic, APIs, and databases"],
+    "must_have": ["S_python", "S_sql", "S_api_design", "S_git", "S_docker"],
+    "optional": ["S_fastapi", "S_django", "S_redis", "S_postgresql", "S_kubernetes"],
+    "tools": ["FastAPI", "Django", "PostgreSQL", "Redis", "Docker"],
+    "sources": ["job postings - backend engineer"]
+  },
+  {
+    "jobTitle": "Frontend Engineer",
+    "aliases": ["Frontend Developer", "UI Engineer", "Web Developer"],
+    "descriptions": ["Builds user interfaces and web applications using modern frontend technologies"],
+    "must_have": ["S_javascript", "S_react", "S_html_css", "S_typescript", "S_git"],
+    "optional": ["S_nextjs", "S_vue", "S_testing"],
+    "tools": ["React", "TypeScript", "Next.js", "CSS", "Webpack"],
+    "sources": ["job postings - frontend engineer"]
+  },
+  {
+    "jobTitle": "Full Stack Engineer",
+    "aliases": ["Full Stack Developer", "Software Engineer", "Web Engineer"],
+    "descriptions": ["Develops both client-side and server-side software"],
+    "must_have": ["S_javascript", "S_react", "S_python", "S_sql", "S_git", "S_api_design"],
+    "optional": ["S_typescript", "S_docker", "S_aws", "S_postgresql"],
+    "tools": ["React", "Node.js", "PostgreSQL", "Docker", "AWS"],
+    "sources": ["job postings - full stack engineer"]
+  },
+  {
+    "jobTitle": "DevOps Engineer",
+    "aliases": ["Platform Engineer", "Infrastructure Engineer", "SRE", "Site Reliability Engineer"],
+    "descriptions": ["Builds and maintains CI/CD pipelines, infrastructure, and deployment systems"],
+    "must_have": ["S_docker", "S_kubernetes", "S_cicd", "S_terraform", "S_linux", "S_git"],
+    "optional": ["S_aws", "S_azure", "S_ansible", "S_monitoring", "S_python"],
+    "tools": ["Docker", "Kubernetes", "Terraform", "Jenkins", "AWS"],
+    "sources": ["job postings - devops engineer"]
+  },
+  {
+    "jobTitle": "Data Engineer",
+    "aliases": ["Big Data Engineer", "Analytics Engineer", "ETL Engineer"],
+    "descriptions": ["Designs and builds data pipelines and infrastructure for data collection and processing"],
+    "must_have": ["S_python", "S_sql", "S_data_engineering", "S_spark", "S_kafka"],
+    "optional": ["S_airflow", "S_aws", "S_bigquery", "S_dbt", "S_docker"],
+    "tools": ["Apache Spark", "Kafka", "Airflow", "dbt", "BigQuery"],
+    "sources": ["job postings - data engineer"]
+  },
+  {
+    "jobTitle": "Cloud Architect",
+    "aliases": ["Cloud Engineer", "Solutions Architect", "Infrastructure Architect"],
+    "descriptions": ["Designs cloud infrastructure and architecture for scalable systems"],
+    "must_have": ["S_aws", "S_cloud_architecture", "S_terraform", "S_kubernetes", "S_system_design"],
+    "optional": ["S_azure", "S_gcp", "S_docker", "S_networking", "S_security"],
+    "tools": ["AWS", "Terraform", "Kubernetes", "Azure", "GCP"],
+    "sources": ["job postings - cloud architect"]
+  },
+  {
+    "jobTitle": "Security Engineer",
+    "aliases": ["Cybersecurity Engineer", "AppSec Engineer", "Information Security Engineer"],
+    "descriptions": ["Builds and maintains security systems, identifies vulnerabilities, and implements protections"],
+    "must_have": ["S_security", "S_networking", "S_linux", "S_python", "S_git"],
+    "optional": ["S_aws", "S_docker", "S_kubernetes", "S_testing"],
+    "tools": ["Burp Suite", "OWASP", "Nmap", "Wireshark", "Metasploit"],
+    "sources": ["job postings - security engineer"]
+  },
+  {
+    "jobTitle": "NLP Engineer",
+    "aliases": ["Natural Language Processing Engineer", "Computational Linguist", "Text Analytics Engineer"],
+    "descriptions": ["Specializes in building NLP systems for text processing and language understanding"],
+    "must_have": ["S_python", "S_nlp", "S_machine_learning", "S_deep_learning", "S_pytorch"],
+    "optional": ["S_hugging_face", "S_tensorflow", "S_langchain", "S_llm"],
+    "tools": ["PyTorch", "Hugging Face", "spaCy", "NLTK", "Transformers"],
+    "sources": ["job postings - nlp engineer"]
+  },
+  {
+    "jobTitle": "Computer Vision Engineer",
+    "aliases": ["CV Engineer", "Image Processing Engineer", "Vision AI Engineer"],
+    "descriptions": ["Develops algorithms and systems for visual data understanding and analysis"],
+    "must_have": ["S_python", "S_computer_vision", "S_deep_learning", "S_pytorch", "S_machine_learning"],
+    "optional": ["S_tensorflow", "S_numpy", "S_docker", "S_mlops"],
+    "tools": ["OpenCV", "PyTorch", "TensorFlow", "CUDA", "Pillow"],
+    "sources": ["job postings - cv engineer"]
+  },
+  {
+    "jobTitle": "MLOps Engineer",
+    "aliases": ["ML Platform Engineer", "AI Infrastructure Engineer", "ML Systems Engineer"],
+    "descriptions": ["Builds and manages infrastructure for deploying and monitoring machine learning models"],
+    "must_have": ["S_mlops", "S_python", "S_docker", "S_kubernetes", "S_cicd"],
+    "optional": ["S_aws", "S_monitoring", "S_airflow", "S_terraform", "S_spark"],
+    "tools": ["MLflow", "Kubeflow", "Airflow", "Docker", "Kubernetes"],
+    "sources": ["job postings - mlops engineer"]
+  },
+  {
+    "jobTitle": "Software Engineer",
+    "aliases": ["Software Developer", "SWE", "Application Developer"],
+    "descriptions": ["Designs, develops, and maintains software applications"],
+    "must_have": ["S_python", "S_algorithms", "S_git", "S_testing", "S_sql"],
+    "optional": ["S_docker", "S_api_design", "S_system_design", "S_agile"],
+    "tools": ["Python", "Git", "Docker", "VS Code", "Linux"],
+    "sources": ["job postings - software engineer"],
+    "requiredSkills": [
+      {"skillId": "S_python", "weight": 0.2},
+      {"skillId": "S_git", "weight": 0.2},
+      {"skillId": "S_sql", "weight": 0.2},
+      {"skillId": "S_docker", "weight": 0.2},
+      {"skillId": "S_system_design", "weight": 0.2}
+    ]
+  },
+  {
+    "jobTitle": "Embedded Systems Engineer",
+    "aliases": ["Firmware Engineer", "Embedded Software Engineer", "Hardware Engineer"],
+    "descriptions": ["Develops software for embedded systems, microcontrollers, and real-time systems"],
+    "must_have": ["S_c", "S_cpp", "S_embedded", "S_linux", "S_networking"],
+    "optional": ["S_ros", "S_python", "S_iot", "S_algorithms"],
+    "tools": ["C/C++", "RTOS", "GDB", "JTAG", "CMake"],
+    "sources": ["job postings - embedded systems engineer"]
+  },
+  {
+    "jobTitle": "Robotics Engineer",
+    "aliases": ["Robotics Software Engineer", "Robot Programmer"],
+    "descriptions": ["Develops software and systems for robotic platforms"],
+    "must_have": ["S_ros", "S_python", "S_cpp", "S_embedded", "S_algorithms"],
+    "optional": ["S_machine_learning", "S_computer_vision", "S_linux", "S_iot"],
+    "tools": ["ROS", "ROS2", "Gazebo", "C++", "Python"],
+    "sources": ["job postings - robotics engineer"]
+  },
+  {
+    "jobTitle": "Blockchain Developer",
+    "aliases": ["Smart Contract Developer", "Web3 Developer", "DeFi Engineer"],
+    "descriptions": ["Develops decentralized applications and smart contracts on blockchain platforms"],
+    "must_have": ["S_blockchain", "S_javascript", "S_algorithms", "S_api_design"],
+    "optional": ["S_python", "S_nodejs", "S_testing", "S_security"],
+    "tools": ["Solidity", "Ethereum", "Hardhat", "Web3.js", "Truffle"],
+    "sources": ["job postings - blockchain developer"]
+  },
+  {
+    "jobTitle": "IoT Engineer",
+    "aliases": ["IoT Developer", "Connected Devices Engineer", "Edge Engineer"],
+    "descriptions": ["Designs and develops IoT systems and connected device solutions"],
+    "must_have": ["S_iot", "S_embedded", "S_python", "S_networking", "S_mqtt"],
+    "optional": ["S_aws", "S_docker", "S_linux", "S_data_engineering"],
+    "tools": ["MQTT", "AWS IoT", "Raspberry Pi", "Arduino", "Python"],
+    "sources": ["job postings - iot engineer"]
+  },
+  {
+    "jobTitle": "AI Research Scientist",
+    "aliases": ["Research Scientist AI", "ML Researcher", "Deep Learning Researcher"],
+    "descriptions": ["Conducts original research in AI and machine learning to advance the state of the art"],
+    "must_have": ["S_python", "S_machine_learning", "S_deep_learning", "S_statistics", "S_pytorch"],
+    "optional": ["S_tensorflow", "S_nlp", "S_computer_vision", "S_r"],
+    "tools": ["PyTorch", "TensorFlow", "Jupyter", "LaTeX", "Python"],
+    "sources": ["job postings - ai research scientist"]
+  },
+  {
+    "jobTitle": "Database Administrator",
+    "aliases": ["DBA", "Database Engineer", "DB Administrator"],
+    "descriptions": ["Manages, maintains, and optimizes database systems"],
+    "must_have": ["S_sql", "S_database_design", "S_postgresql", "S_monitoring", "S_linux"],
+    "optional": ["S_mysql", "S_nosql", "S_mongodb", "S_redis", "S_python"],
+    "tools": ["PostgreSQL", "MySQL", "Oracle", "SQL Server", "MongoDB"],
+    "sources": ["job postings - database administrator"]
+  },
+  {
+    "jobTitle": "Product Manager",
+    "aliases": ["Technical Product Manager", "PM", "Product Owner"],
+    "descriptions": ["Leads product development from conception to launch"],
+    "must_have": ["S_agile", "S_data_analysis", "S_system_design"],
+    "optional": ["S_sql", "S_api_design", "S_statistics"],
+    "tools": ["Jira", "Confluence", "Figma", "SQL", "Google Analytics"],
+    "sources": ["job postings - product manager"]
+  },
+  {
+    "jobTitle": "Android Developer",
+    "aliases": ["Android Engineer", "Mobile Developer Android"],
+    "descriptions": ["Develops native Android mobile applications"],
+    "must_have": ["S_kotlin", "S_java", "S_git", "S_testing", "S_api_design"],
+    "optional": ["S_sql", "S_docker", "S_cicd"],
+    "tools": ["Android Studio", "Kotlin", "Gradle", "Firebase", "Retrofit"],
+    "sources": ["job postings - android developer"]
+  },
+  {
+    "jobTitle": "iOS Developer",
+    "aliases": ["iOS Engineer", "Mobile Developer iOS", "Swift Developer"],
+    "descriptions": ["Develops native iOS mobile applications"],
+    "must_have": ["S_swift", "S_api_design", "S_git", "S_testing"],
+    "optional": ["S_sql", "S_cicd", "S_docker"],
+    "tools": ["Xcode", "Swift", "CocoaPods", "TestFlight", "Firebase"],
+    "sources": ["job postings - ios developer"]
+  },
+  {
+    "jobTitle": "Platform Engineer",
+    "aliases": ["Developer Platform Engineer", "Internal Developer Platform", "IDP Engineer"],
+    "descriptions": ["Builds internal developer platforms and tooling to improve engineering productivity"],
+    "must_have": ["S_kubernetes", "S_docker", "S_terraform", "S_cicd", "S_python"],
+    "optional": ["S_aws", "S_monitoring", "S_golang", "S_api_design"],
+    "tools": ["Kubernetes", "Terraform", "Docker", "GitHub Actions", "Python"],
+    "sources": ["job postings - platform engineer"]
+  },
+  {
+    "jobTitle": "Generative AI Engineer",
+    "aliases": ["GenAI Engineer", "LLM Engineer", "AI Applications Engineer"],
+    "descriptions": ["Builds applications powered by large language models and generative AI"],
+    "must_have": ["S_python", "S_llm", "S_rag", "S_langchain", "S_api_design"],
+    "optional": ["S_fastapi", "S_docker", "S_aws", "S_nlp", "S_hugging_face"],
+    "tools": ["LangChain", "OpenAI API", "Chroma", "FastAPI", "Python"],
+    "sources": ["job postings - generative ai engineer"]
+  },
+  {
+    "jobTitle": "Edge AI Specialist",
+    "aliases": ["Edge AI Engineer", "Edge ML Engineer", "TinyML Engineer"],
+    "descriptions": ["Deploys and optimizes AI/ML models for edge devices and embedded systems"],
+    "must_have": ["S_python", "S_edge_computing", "S_model_optimization", "S_embedded", "S_machine_learning"],
+    "optional": ["S_cpp", "S_iot", "S_ros", "S_tensorflow", "S_docker"],
+    "tools": ["TensorFlow Lite", "ONNX", "OpenVINO", "CUDA", "Python"],
+    "sources": ["job postings - edge ai specialist"]
+  }
+]

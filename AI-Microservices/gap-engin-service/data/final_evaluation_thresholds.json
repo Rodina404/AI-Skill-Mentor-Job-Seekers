@@ -1,0 +1,22 @@
+{
+  "normalization_precision": 0.95,
+  "normalization_recall": 0.95,
+  "normalization_specificity": 0.95,
+  "mode_a_role_accuracy": 0.95,
+  "mode_a_f1": 0.70,
+  "mode_a_p95_ms_max": 500,
+  "rag_availability": 0.95,
+  "rag_relevance": 0.70,
+  "live_groq_availability": 1.0,
+  "mode_b_precision": 0.65,
+  "mode_b_recall": 0.65,
+  "mode_b_f1": 0.65,
+  "mode_b_precision_at_5": 0.70,
+  "mode_b_ndcg_at_5": 0.70,
+  "offline_mode_b_f1": 0.90,
+  "offline_mode_b_ndcg_at_5": 0.90,
+  "mode_b_p95_ms_max": 5000,
+  "mode_a_consistency": 0.95,
+  "mode_b_consistency": 0.80,
+  "mode_b_stability": 0.80
+}

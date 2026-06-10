@@ -1,0 +1,2363 @@
+[
+  {
+    "role_title": "Actuaries",
+    "source": "Uploaded O*NET Technology Skills.xlsx",
+    "source_soc_code": "15-2011.00",
+    "required_skills": [
+      "Microsoft Power BI",
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Microsoft Visual Basic for Applications VBA",
+      "Python",
+      "R",
+      "SQL",
+      "Tableau",
+      "Microsoft SQL Server",
+      "SAS",
+      "C++",
+      "Java"
+    ],
+    "skill_categories": [
+      "Object or component oriented development software",
+      "Data base user interface and query software",
+      "Business intelligence and data analysis software",
+      "Development environment software",
+      "Analytical or scientific software",
+      "Office suite software"
+    ],
+    "hot_technologies": [
+      "Microsoft Power BI",
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Microsoft Visual Basic for Applications VBA",
+      "Python",
+      "R",
+      "SQL",
+      "Tableau"
+    ],
+    "in_demand_technologies": [
+      "Microsoft Power BI",
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Microsoft Visual Basic for Applications VBA",
+      "Python",
+      "R",
+      "SQL",
+      "Tableau"
+    ]
+  },
+  {
+    "role_title": "AI Engineer",
+    "description": "Builds AI-powered systems using machine learning, NLP, and deep learning.",
+    "required_skills": [
+      "Python",
+      "Machine Learning",
+      "Deep Learning",
+      "Natural Language Processing"
+    ],
+    "tools": [
+      "TensorFlow",
+      "PyTorch",
+      "Hugging Face"
+    ],
+    "source": "Curated tech role starter set"
+  },
+  {
+    "role_title": "AI Product Manager",
+    "description": "Manages AI-powered products and systems.",
+    "required_skills": [
+      "AI Strategy",
+      "Product Management",
+      "Machine Learning Basics"
+    ],
+    "tools": [
+      "Jira",
+      "Analytics Tools"
+    ],
+    "source": "Curated tech role starter set"
+  },
+  {
+    "role_title": "AI Researcher",
+    "description": "Conducts research on artificial intelligence algorithms.",
+    "required_skills": [
+      "Machine Learning",
+      "Mathematics",
+      "Deep Learning"
+    ],
+    "tools": [
+      "PyTorch",
+      "TensorFlow"
+    ],
+    "source": "Curated tech role starter set"
+  },
+  {
+    "role_title": "AR/VR Developer",
+    "description": "Develops augmented and virtual reality applications.",
+    "required_skills": [
+      "3D Programming",
+      "Game Development",
+      "Computer Graphics"
+    ],
+    "tools": [
+      "Unity",
+      "Unreal Engine"
+    ],
+    "source": "Curated tech role starter set"
+  },
+  {
+    "role_title": "Automation Engineer",
+    "description": "Builds automated systems for testing or infrastructure.",
+    "required_skills": [
+      "Automation",
+      "Scripting",
+      "System Integration"
+    ],
+    "tools": [
+      "Python",
+      "Selenium",
+      "Jenkins"
+    ],
+    "source": "Curated tech role starter set"
+  },
+  {
+    "role_title": "Backend Engineer",
+    "description": "Develops server-side applications and APIs.",
+    "required_skills": [
+      "Java",
+      "Python",
+      "Node.js",
+      "SQL",
+      "REST APIs",
+      "System Design"
+    ],
+    "tools": [
+      "Spring Boot",
+      "Django",
+      "Express.js",
+      "PostgreSQL"
+    ],
+    "source": "Curated tech role starter set"
+  },
+  {
+    "role_title": "Big Data Engineer",
+    "description": "Builds large-scale data processing systems.",
+    "required_skills": [
+      "Big Data",
+      "Distributed Systems",
+      "Data Engineering"
+    ],
+    "tools": [
+      "Hadoop",
+      "Spark",
+      "Kafka"
+    ],
+    "source": "Curated tech role starter set"
+  },
+  {
+    "role_title": "Bioinformatics Scientists",
+    "source": "Uploaded O*NET Technology Skills.xlsx",
+    "source_soc_code": "19-1029.01",
+    "required_skills": [
+      "AWS",
+      "C",
+      "C++",
+      "Docker",
+      "Git",
+      "GitHub",
+      "Java",
+      "Linux",
+      "MATLAB",
+      "Python",
+      "R",
+      "SQL"
+    ],
+    "skill_categories": [
+      "Object or component oriented development software",
+      "Operating system software",
+      "Web platform development software",
+      "Development environment software",
+      "Data base user interface and query software",
+      "Data base management system software"
+    ],
+    "hot_technologies": [
+      "AWS",
+      "C",
+      "C++",
+      "Docker",
+      "Git",
+      "GitHub",
+      "Java",
+      "Linux"
+    ],
+    "in_demand_technologies": [
+      "AWS",
+      "C",
+      "C++",
+      "Docker",
+      "Git",
+      "GitHub",
+      "Java",
+      "Linux"
+    ]
+  },
+  {
+    "role_title": "Bioinformatics Technicians",
+    "source": "Uploaded O*NET Technology Skills.xlsx",
+    "source_soc_code": "15-2099.01",
+    "required_skills": [
+      "Microsoft SQL Server",
+      "C",
+      "C++",
+      "Git",
+      "Java",
+      "Jenkins CI",
+      "Linux",
+      "MATLAB",
+      "Microsoft Access",
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Microsoft Outlook"
+    ],
+    "skill_categories": [
+      "Object or component oriented development software",
+      "Data base user interface and query software",
+      "Analytical or scientific software",
+      "Development environment software",
+      "File versioning software",
+      "Operating system software"
+    ],
+    "hot_technologies": [
+      "Microsoft SQL Server",
+      "C",
+      "C++",
+      "Git",
+      "Java",
+      "Jenkins CI",
+      "Linux",
+      "MATLAB"
+    ],
+    "in_demand_technologies": []
+  },
+  {
+    "role_title": "Biostatisticians",
+    "source": "Uploaded O*NET Technology Skills.xlsx",
+    "source_soc_code": "15-2041.01",
+    "required_skills": [
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Python",
+      "R",
+      "SQL",
+      "IBM SPSS Statistics",
+      "JavaScript",
+      "Microsoft SQL Server",
+      "SAP",
+      "SAS",
+      "C#",
+      "C++"
+    ],
+    "skill_categories": [
+      "Object or component oriented development software",
+      "Analytical or scientific software",
+      "Operating system software",
+      "Data base user interface and query software",
+      "Web platform development software",
+      "Office suite software"
+    ],
+    "hot_technologies": [
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Python",
+      "R",
+      "SQL",
+      "IBM SPSS Statistics",
+      "JavaScript",
+      "Microsoft SQL Server"
+    ],
+    "in_demand_technologies": [
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Python",
+      "R",
+      "SQL",
+      "IBM SPSS Statistics",
+      "SAP",
+      "SAS"
+    ]
+  },
+  {
+    "role_title": "Blockchain Developer",
+    "description": "Builds decentralized applications and smart contracts.",
+    "required_skills": [
+      "Blockchain",
+      "Cryptography",
+      "Smart Contracts"
+    ],
+    "tools": [
+      "Ethereum",
+      "Solidity"
+    ],
+    "source": "Curated tech role starter set"
+  },
+  {
+    "role_title": "Blockchain Engineers",
+    "source": "Uploaded O*NET Technology Skills.xlsx",
+    "source_soc_code": "15-1299.07",
+    "required_skills": [
+      "JavaScript",
+      "AWS",
+      "C",
+      "C++",
+      "Docker",
+      "Git",
+      "Java",
+      "Kubernetes",
+      "MySQL",
+      "Node.js",
+      "Python",
+      "React"
+    ],
+    "skill_categories": [
+      "Web platform development software",
+      "Object or component oriented development software",
+      "Development environment software",
+      "Application server software",
+      "Data base management system software",
+      "Data base user interface and query software"
+    ],
+    "hot_technologies": [
+      "JavaScript",
+      "AWS",
+      "C",
+      "C++",
+      "Docker",
+      "Git",
+      "Java",
+      "Kubernetes"
+    ],
+    "in_demand_technologies": [
+      "JavaScript",
+      "AWS",
+      "C",
+      "C++",
+      "Docker",
+      "Git",
+      "Java",
+      "Kubernetes"
+    ]
+  },
+  {
+    "role_title": "Business Intelligence Analysts",
+    "source": "Uploaded O*NET Technology Skills.xlsx",
+    "source_soc_code": "15-2051.01",
+    "required_skills": [
+      "Microsoft Azure",
+      "Microsoft Power BI",
+      "Oracle Cloud",
+      "AWS",
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Python",
+      "R",
+      "SQL",
+      "Tableau",
+      "JavaScript",
+      "Microsoft SQL Server"
+    ],
+    "skill_categories": [
+      "Development environment software",
+      "Data base user interface and query software",
+      "Object or component oriented development software",
+      "Data base management system software",
+      "Web platform development software",
+      "Operating system software"
+    ],
+    "hot_technologies": [
+      "Microsoft Azure",
+      "Microsoft Power BI",
+      "Oracle Cloud",
+      "AWS",
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Python",
+      "R"
+    ],
+    "in_demand_technologies": [
+      "Microsoft Azure",
+      "Microsoft Power BI",
+      "Oracle Cloud",
+      "AWS",
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Python",
+      "R"
+    ]
+  },
+  {
+    "role_title": "Business Intelligence Developer",
+    "description": "Creates dashboards and analytics systems.",
+    "required_skills": [
+      "SQL",
+      "Data Modeling",
+      "Reporting",
+      "Data Visualization"
+    ],
+    "tools": [
+      "Power BI",
+      "Tableau",
+      "Looker"
+    ],
+    "source": "Curated tech role starter set"
+  },
+  {
+    "role_title": "Clinical Data Managers",
+    "source": "Uploaded O*NET Technology Skills.xlsx",
+    "source_soc_code": "15-2051.02",
+    "required_skills": [
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Microsoft Visio",
+      "SQL",
+      "Epic Systems",
+      "Microsoft SQL Server",
+      "SAS",
+      "C#",
+      "C++",
+      "Java",
+      "Microsoft Access",
+      "Microsoft Project"
+    ],
+    "skill_categories": [
+      "Data base user interface and query software",
+      "Object or component oriented development software",
+      "Medical software",
+      "Analytical or scientific software",
+      "Development environment software",
+      "Office suite software"
+    ],
+    "hot_technologies": [
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Microsoft Visio",
+      "SQL",
+      "Epic Systems",
+      "Microsoft SQL Server",
+      "SAS",
+      "C#"
+    ],
+    "in_demand_technologies": [
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Microsoft Visio",
+      "SQL",
+      "Epic Systems",
+      "SAS"
+    ]
+  },
+  {
+    "role_title": "Cloud Engineer",
+    "description": "Designs and manages cloud infrastructure.",
+    "required_skills": [
+      "Cloud Architecture",
+      "Networking",
+      "Security",
+      "Automation",
+      "AWS CloudFormation",
+      "JavaScript",
+      "Microsoft Azure",
+      "AWS",
+      "Atlassian JIRA",
+      "C",
+      "C++",
+      "Docker",
+      "Git",
+      "GitHub",
+      "Java",
+      "Jenkins CI"
+    ],
+    "tools": [
+      "AWS",
+      "Azure",
+      "Google Cloud"
+    ],
+    "source": "Curated tech role starter set + Uploaded O*NET Technology Skills.xlsx",
+    "onet_title": "Computer Systems Engineers/Architects",
+    "source_soc_code": "15-1299.08",
+    "skill_categories": [
+      "Development environment software",
+      "Web platform development software",
+      "Data base user interface and query software",
+      "Object or component oriented development software",
+      "Operating system software",
+      "Data base management system software"
+    ],
+    "hot_technologies": [
+      "AWS CloudFormation",
+      "JavaScript",
+      "Microsoft Azure",
+      "AWS",
+      "Atlassian JIRA",
+      "C",
+      "C++",
+      "Docker"
+    ],
+    "in_demand_technologies": [
+      "AWS CloudFormation",
+      "JavaScript",
+      "Microsoft Azure",
+      "AWS",
+      "Atlassian JIRA",
+      "C",
+      "C++",
+      "Docker"
+    ]
+  },
+  {
+    "role_title": "Computer and Information Research Scientists",
+    "source": "Uploaded O*NET Technology Skills.xlsx",
+    "source_soc_code": "15-1221.00",
+    "required_skills": [
+      "JavaScript",
+      "Microsoft Azure",
+      "AWS",
+      "Apache Hadoop",
+      "Apache Spark",
+      "C",
+      "C++",
+      "Docker",
+      "Git",
+      "GitHub",
+      "Java",
+      "Jenkins CI"
+    ],
+    "skill_categories": [
+      "Development environment software",
+      "Data base management system software",
+      "Data base user interface and query software",
+      "Object or component oriented development software",
+      "Operating system software",
+      "Application server software"
+    ],
+    "hot_technologies": [
+      "JavaScript",
+      "Microsoft Azure",
+      "AWS",
+      "Apache Hadoop",
+      "Apache Spark",
+      "C",
+      "C++",
+      "Docker"
+    ],
+    "in_demand_technologies": [
+      "JavaScript",
+      "Microsoft Azure",
+      "AWS",
+      "Apache Hadoop",
+      "Apache Spark",
+      "C",
+      "C++",
+      "Docker"
+    ]
+  },
+  {
+    "role_title": "Computer Hardware Engineers",
+    "source": "Uploaded O*NET Technology Skills.xlsx",
+    "source_soc_code": "17-2061.00",
+    "required_skills": [
+      "C",
+      "C++",
+      "Linux",
+      "MATLAB",
+      "Python",
+      "Perl",
+      "Git",
+      "Java",
+      "Microsoft Access",
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Microsoft Visio"
+    ],
+    "skill_categories": [
+      "Object or component oriented development software",
+      "Development environment software",
+      "Operating system software",
+      "Analytical or scientific software",
+      "Data base user interface and query software",
+      "File versioning software"
+    ],
+    "hot_technologies": [
+      "C",
+      "C++",
+      "Linux",
+      "MATLAB",
+      "Python",
+      "Perl",
+      "Git",
+      "Java"
+    ],
+    "in_demand_technologies": [
+      "C",
+      "C++",
+      "Linux",
+      "MATLAB",
+      "Python",
+      "Perl",
+      "Magellan Firmware",
+      "PCI Express PCIe"
+    ]
+  },
+  {
+    "role_title": "Computer Network Support Specialists",
+    "source": "Uploaded O*NET Technology Skills.xlsx",
+    "source_soc_code": "15-1231.00",
+    "required_skills": [
+      "Linux",
+      "Microsoft Active Directory",
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Microsoft Outlook",
+      "Microsoft Windows",
+      "Microsoft Windows Server",
+      "Apple macOS",
+      "Microsoft Azure",
+      "Microsoft SQL Server",
+      "ServiceNow",
+      "Java"
+    ],
+    "skill_categories": [
+      "Operating system software",
+      "Data base user interface and query software",
+      "Development environment software",
+      "Object or component oriented development software",
+      "Document management software",
+      "Data base management system software"
+    ],
+    "hot_technologies": [
+      "Linux",
+      "Microsoft Active Directory",
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Microsoft Outlook",
+      "Microsoft Windows",
+      "Microsoft Windows Server",
+      "Apple macOS"
+    ],
+    "in_demand_technologies": [
+      "Linux",
+      "Microsoft Active Directory",
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Microsoft Outlook",
+      "Microsoft Windows",
+      "Microsoft Windows Server",
+      "Apple macOS"
+    ]
+  },
+  {
+    "role_title": "Computer Programmers",
+    "source": "Uploaded O*NET Technology Skills.xlsx",
+    "source_soc_code": "15-1251.00",
+    "required_skills": [
+      "JavaScript",
+      "Microsoft SQL Server",
+      "C#",
+      "C++",
+      "Git",
+      "Java",
+      "Linux",
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Microsoft Visual Studio",
+      "Python",
+      "R"
+    ],
+    "skill_categories": [
+      "Web platform development software",
+      "Object or component oriented development software",
+      "Development environment software",
+      "Data base user interface and query software",
+      "Operating system software",
+      "Data base management system software"
+    ],
+    "hot_technologies": [
+      "JavaScript",
+      "Microsoft SQL Server",
+      "C#",
+      "C++",
+      "Git",
+      "Java",
+      "Linux",
+      "Microsoft Excel"
+    ],
+    "in_demand_technologies": [
+      "JavaScript",
+      "Microsoft SQL Server",
+      "C#",
+      "C++",
+      "Git",
+      "Java",
+      "Linux",
+      "Microsoft Excel"
+    ]
+  },
+  {
+    "role_title": "Computer Systems Analysts",
+    "source": "Uploaded O*NET Technology Skills.xlsx",
+    "source_soc_code": "15-1211.00",
+    "required_skills": [
+      "Microsoft Power BI",
+      "Atlassian JIRA",
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Microsoft SharePoint",
+      "Python",
+      "SQL",
+      "AWS CloudFormation",
+      "JavaScript",
+      "Microsoft Azure",
+      "Microsoft SQL Server",
+      "Microsoft SQL Server Integration Services SSIS"
+    ],
+    "skill_categories": [
+      "Web platform development software",
+      "Development environment software",
+      "Data base management system software",
+      "Data base user interface and query software",
+      "Operating system software",
+      "Object or component oriented development software"
+    ],
+    "hot_technologies": [
+      "Microsoft Power BI",
+      "Atlassian JIRA",
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Microsoft SharePoint",
+      "Python",
+      "SQL",
+      "AWS CloudFormation"
+    ],
+    "in_demand_technologies": [
+      "Microsoft Power BI",
+      "Atlassian JIRA",
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Microsoft SharePoint",
+      "Python",
+      "SQL",
+      "SAP"
+    ]
+  },
+  {
+    "role_title": "Computer Vision Engineer",
+    "description": "Builds image and video recognition systems.",
+    "required_skills": [
+      "Python",
+      "Deep Learning",
+      "Computer Vision",
+      "Image Processing"
+    ],
+    "tools": [
+      "OpenCV",
+      "PyTorch",
+      "TensorFlow"
+    ],
+    "source": "Curated tech role starter set"
+  },
+  {
+    "role_title": "Cybersecurity Analyst",
+    "description": "Protects systems and networks from cyber threats.",
+    "required_skills": [
+      "Network Security",
+      "Risk Analysis",
+      "Cryptography",
+      "Incident Response",
+      "Microsoft Azure",
+      "AWS",
+      "Linux",
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Microsoft PowerShell",
+      "Python",
+      "AWS CloudFormation",
+      "JavaScript",
+      "Microsoft SQL Server",
+      "Microsoft SQL Server Integration Services SSIS",
+      "Microsoft SQL Server Reporting Services SSRS"
+    ],
+    "tools": [
+      "Wireshark",
+      "Metasploit",
+      "SIEM"
+    ],
+    "source": "Curated tech role starter set + Uploaded O*NET Technology Skills.xlsx",
+    "onet_title": "Information Security Analysts",
+    "source_soc_code": "15-1212.00",
+    "skill_categories": [
+      "Development environment software",
+      "Web platform development software",
+      "Operating system software",
+      "Data base management system software",
+      "Data base user interface and query software",
+      "Object or component oriented development software"
+    ],
+    "hot_technologies": [
+      "Microsoft Azure",
+      "AWS",
+      "Linux",
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Microsoft PowerShell",
+      "Python",
+      "AWS CloudFormation"
+    ],
+    "in_demand_technologies": [
+      "Microsoft Azure",
+      "AWS",
+      "Linux",
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Microsoft PowerShell",
+      "Python",
+      "Splunk Enterprise"
+    ]
+  },
+  {
+    "role_title": "Data Analyst",
+    "description": "Analyzes datasets to generate insights and support business decisions.",
+    "required_skills": [
+      "SQL",
+      "Python",
+      "Excel",
+      "Statistics",
+      "Data Visualization",
+      "Data Cleaning"
+    ],
+    "tools": [
+      "Power BI",
+      "Tableau",
+      "Excel",
+      "Python"
+    ],
+    "source": "Curated tech role starter set"
+  },
+  {
+    "role_title": "Data Engineer",
+    "description": "Builds data pipelines and data infrastructure.",
+    "required_skills": [
+      "Python",
+      "SQL",
+      "Data Pipelines",
+      "Big Data"
+    ],
+    "tools": [
+      "Apache Spark",
+      "Airflow",
+      "Kafka"
+    ],
+    "source": "Curated tech role starter set"
+  },
+  {
+    "role_title": "Data Scientist",
+    "description": "Builds predictive models and analyzes complex datasets using statistics and machine learning.",
+    "required_skills": [
+      "Python",
+      "Machine Learning",
+      "Statistics",
+      "SQL",
+      "Feature Engineering",
+      "Microsoft Azure",
+      "Microsoft Power BI",
+      "AWS",
+      "Apache Hadoop",
+      "Apache Spark",
+      "C++",
+      "Git",
+      "Java",
+      "MATLAB",
+      "Microsoft Excel",
+      "PyTorch"
+    ],
+    "tools": [
+      "Python",
+      "Scikit-learn",
+      "Jupyter",
+      "Tableau"
+    ],
+    "source": "Curated tech role starter set + Uploaded O*NET Technology Skills.xlsx",
+    "onet_title": "Data Scientists",
+    "source_soc_code": "15-2051.00",
+    "skill_categories": [
+      "Data base user interface and query software",
+      "Object or component oriented development software",
+      "Data base management system software",
+      "Development environment software",
+      "Business intelligence and data analysis software",
+      "Analytical or scientific software"
+    ],
+    "hot_technologies": [
+      "Microsoft Azure",
+      "Microsoft Power BI",
+      "AWS",
+      "Apache Hadoop",
+      "Apache Spark",
+      "C++",
+      "Git",
+      "Java"
+    ],
+    "in_demand_technologies": [
+      "Microsoft Azure",
+      "Microsoft Power BI",
+      "AWS",
+      "Apache Hadoop",
+      "Apache Spark",
+      "C++",
+      "Git",
+      "Java"
+    ]
+  },
+  {
+    "role_title": "Data Warehousing Specialists",
+    "source": "Uploaded O*NET Technology Skills.xlsx",
+    "source_soc_code": "15-1243.01",
+    "required_skills": [
+      "Microsoft Power BI",
+      "Microsoft Access",
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Microsoft Outlook",
+      "Python",
+      "SQL",
+      "Tableau",
+      "Microsoft Azure",
+      "Microsoft SQL Server",
+      "Microsoft SQL Server Integration Services SSIS",
+      "Microsoft SQL Server Reporting Services SSRS"
+    ],
+    "skill_categories": [
+      "Data base user interface and query software",
+      "Object or component oriented development software",
+      "Operating system software",
+      "Data base management system software",
+      "Development environment software",
+      "Business intelligence and data analysis software"
+    ],
+    "hot_technologies": [
+      "Microsoft Power BI",
+      "Microsoft Access",
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Microsoft Outlook",
+      "Python",
+      "SQL",
+      "Tableau"
+    ],
+    "in_demand_technologies": [
+      "Microsoft Power BI",
+      "Microsoft Access",
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Microsoft Outlook",
+      "Python",
+      "SQL",
+      "Tableau"
+    ]
+  },
+  {
+    "role_title": "Database Administrator",
+    "description": "Manages databases and ensures data integrity and performance.",
+    "required_skills": [
+      "SQL",
+      "Database Design",
+      "Performance Tuning",
+      "Microsoft Azure",
+      "Microsoft Power BI",
+      "Microsoft SQL Server",
+      "Microsoft SQL Server Integration Services SSIS",
+      "Oracle PL/SQL",
+      "PostgreSQL",
+      "AWS",
+      "Apache Airflow",
+      "Apache Hadoop",
+      "Apache Kafka",
+      "Apache Spark",
+      "Git"
+    ],
+    "tools": [
+      "MySQL",
+      "PostgreSQL",
+      "Oracle"
+    ],
+    "source": "Curated tech role starter set + Uploaded O*NET Technology Skills.xlsx",
+    "onet_title": "Database Administrators",
+    "source_soc_code": "15-1242.00",
+    "skill_categories": [
+      "Data base user interface and query software",
+      "Development environment software",
+      "Web platform development software",
+      "Object or component oriented development software",
+      "Operating system software",
+      "Data base management system software"
+    ],
+    "hot_technologies": [
+      "Microsoft Azure",
+      "Microsoft Power BI",
+      "Microsoft SQL Server",
+      "Microsoft SQL Server Integration Services SSIS",
+      "Oracle PL/SQL",
+      "PostgreSQL",
+      "AWS",
+      "Apache Airflow"
+    ],
+    "in_demand_technologies": [
+      "Microsoft Azure",
+      "Microsoft Power BI",
+      "Microsoft SQL Server",
+      "Microsoft SQL Server Integration Services SSIS",
+      "Oracle PL/SQL",
+      "PostgreSQL",
+      "AWS",
+      "Apache Airflow"
+    ]
+  },
+  {
+    "role_title": "Database Architects",
+    "source": "Uploaded O*NET Technology Skills.xlsx",
+    "source_soc_code": "15-1243.00",
+    "required_skills": [
+      "Microsoft Azure",
+      "Microsoft Power BI",
+      "AWS",
+      "Apache Spark",
+      "Java",
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Python",
+      "R",
+      "SQL",
+      "Snowflake",
+      "Tableau"
+    ],
+    "skill_categories": [
+      "Web platform development software",
+      "Development environment software",
+      "Object or component oriented development software",
+      "Data base user interface and query software",
+      "Operating system software",
+      "Data base management system software"
+    ],
+    "hot_technologies": [
+      "Microsoft Azure",
+      "Microsoft Power BI",
+      "AWS",
+      "Apache Spark",
+      "Java",
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Python"
+    ],
+    "in_demand_technologies": [
+      "Microsoft Azure",
+      "Microsoft Power BI",
+      "AWS",
+      "Apache Spark",
+      "Java",
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Python"
+    ]
+  },
+  {
+    "role_title": "DevOps Engineer",
+    "description": "Automates deployment pipelines and infrastructure.",
+    "required_skills": [
+      "Linux",
+      "CI/CD",
+      "Cloud Computing",
+      "Infrastructure Automation"
+    ],
+    "tools": [
+      "Docker",
+      "Kubernetes",
+      "Terraform",
+      "Jenkins"
+    ],
+    "source": "Curated tech role starter set"
+  },
+  {
+    "role_title": "Digital Forensics Analysts",
+    "source": "Uploaded O*NET Technology Skills.xlsx",
+    "source_soc_code": "15-1299.06",
+    "required_skills": [
+      "Microsoft Azure",
+      "AWS",
+      "Linux",
+      "Microsoft PowerShell",
+      "Python",
+      "SQL",
+      "JavaScript",
+      "Splunk Enterprise",
+      "C",
+      "C#",
+      "C++",
+      "Java"
+    ],
+    "skill_categories": [
+      "Operating system software",
+      "Object or component oriented development software",
+      "Development environment software",
+      "Data base user interface and query software",
+      "Web platform development software",
+      "Office suite software"
+    ],
+    "hot_technologies": [
+      "Microsoft Azure",
+      "AWS",
+      "Linux",
+      "Microsoft PowerShell",
+      "Python",
+      "SQL",
+      "JavaScript",
+      "Splunk Enterprise"
+    ],
+    "in_demand_technologies": [
+      "Microsoft Azure",
+      "AWS",
+      "Linux",
+      "Microsoft PowerShell",
+      "Python",
+      "SQL",
+      "Splunk Enterprise",
+      "Firewall"
+    ]
+  },
+  {
+    "role_title": "Document Management Specialists",
+    "source": "Uploaded O*NET Technology Skills.xlsx",
+    "source_soc_code": "15-1299.03",
+    "required_skills": [
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Microsoft Outlook",
+      "Microsoft SharePoint",
+      "Microsoft SQL Server",
+      "Oracle SQL Developer",
+      "Java",
+      "Linux",
+      "Microsoft .NET Framework",
+      "Microsoft Access",
+      "Microsoft Project",
+      "Microsoft Visio"
+    ],
+    "skill_categories": [
+      "Operating system software",
+      "Development environment software",
+      "Data base user interface and query software",
+      "Document management software",
+      "Object or component oriented development software",
+      "Computer aided design CAD software"
+    ],
+    "hot_technologies": [
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Microsoft Outlook",
+      "Microsoft SharePoint",
+      "Microsoft SQL Server",
+      "Oracle SQL Developer",
+      "Java",
+      "Linux"
+    ],
+    "in_demand_technologies": [
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Microsoft Outlook",
+      "Microsoft SharePoint"
+    ]
+  },
+  {
+    "role_title": "Embedded Systems Engineer",
+    "description": "Develops software for hardware devices.",
+    "required_skills": [
+      "C",
+      "C++",
+      "Embedded Systems",
+      "Microcontrollers"
+    ],
+    "tools": [
+      "Arduino",
+      "RTOS"
+    ],
+    "source": "Curated tech role starter set"
+  },
+  {
+    "role_title": "Frontend Engineer",
+    "description": "Builds user interfaces for web applications.",
+    "required_skills": [
+      "JavaScript",
+      "HTML",
+      "CSS",
+      "React",
+      "UI Design"
+    ],
+    "tools": [
+      "React",
+      "Next.js",
+      "Tailwind CSS"
+    ],
+    "source": "Curated tech role starter set"
+  },
+  {
+    "role_title": "Full Stack Engineer",
+    "description": "Develops both frontend and backend components of applications.",
+    "required_skills": [
+      "JavaScript",
+      "React",
+      "Node.js",
+      "SQL",
+      "System Design"
+    ],
+    "tools": [
+      "React",
+      "Node.js",
+      "MongoDB"
+    ],
+    "source": "Curated tech role starter set"
+  },
+  {
+    "role_title": "Game Developer",
+    "description": "Builds video games and interactive experiences.",
+    "required_skills": [
+      "C++",
+      "Game Physics",
+      "Graphics Programming",
+      "C#",
+      "Python",
+      "Adobe Photoshop",
+      "JavaScript",
+      "Microsoft SQL Server",
+      "Adobe Creative Cloud",
+      "Atlassian JIRA",
+      "C",
+      "Git",
+      "Java",
+      "Linux"
+    ],
+    "tools": [
+      "Unity",
+      "Unreal Engine"
+    ],
+    "source": "Curated tech role starter set + Uploaded O*NET Technology Skills.xlsx",
+    "onet_title": "Video Game Designers",
+    "source_soc_code": "15-1255.01",
+    "skill_categories": [
+      "Object or component oriented development software",
+      "Graphics or photo imaging software",
+      "Development environment software",
+      "Web platform development software",
+      "Operating system software",
+      "Data base user interface and query software"
+    ],
+    "hot_technologies": [
+      "C#",
+      "C++",
+      "Python",
+      "Adobe Photoshop",
+      "JavaScript",
+      "Microsoft SQL Server",
+      "Adobe Creative Cloud",
+      "Atlassian JIRA"
+    ],
+    "in_demand_technologies": [
+      "C#",
+      "C++",
+      "Python",
+      "Adobe Photoshop",
+      "Autodesk Maya",
+      "Unity Technologies Unity",
+      "Unreal Technology Unreal Engine"
+    ]
+  },
+  {
+    "role_title": "Geographic Information Systems Technologists and Technicians",
+    "source": "Uploaded O*NET Technology Skills.xlsx",
+    "source_soc_code": "15-1299.02",
+    "required_skills": [
+      "JavaScript",
+      "Microsoft Access",
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Python",
+      "SQL",
+      "Autodesk AutoCAD",
+      "ESRI ArcGIS",
+      "Microsoft Azure",
+      "Microsoft SQL Server",
+      "Oracle PL/SQL",
+      "PostgreSQL"
+    ],
+    "skill_categories": [
+      "Web platform development software",
+      "Object or component oriented development software",
+      "Development environment software",
+      "Data base user interface and query software",
+      "Operating system software",
+      "Geographic information system"
+    ],
+    "hot_technologies": [
+      "JavaScript",
+      "Microsoft Access",
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Python",
+      "SQL",
+      "Autodesk AutoCAD",
+      "ESRI ArcGIS"
+    ],
+    "in_demand_technologies": [
+      "JavaScript",
+      "Microsoft Access",
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Python",
+      "SQL",
+      "Autodesk AutoCAD",
+      "ESRI ArcGIS"
+    ]
+  },
+  {
+    "role_title": "Health Informatics Specialists",
+    "source": "Uploaded O*NET Technology Skills.xlsx",
+    "source_soc_code": "15-1211.01",
+    "required_skills": [
+      "Microsoft Power BI",
+      "Microsoft Access",
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Microsoft Outlook",
+      "Python",
+      "R",
+      "SQL",
+      "Tableau",
+      "JavaScript",
+      "Microsoft SQL Server Reporting Services SSRS",
+      "SAS"
+    ],
+    "skill_categories": [
+      "Object or component oriented development software",
+      "Business intelligence and data analysis software",
+      "Data base user interface and query software",
+      "Medical software",
+      "Analytical or scientific software",
+      "Electronic mail software"
+    ],
+    "hot_technologies": [
+      "Microsoft Power BI",
+      "Microsoft Access",
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Microsoft Outlook",
+      "Python",
+      "R",
+      "SQL"
+    ],
+    "in_demand_technologies": [
+      "Microsoft Power BI",
+      "Microsoft Access",
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Microsoft Outlook",
+      "Python",
+      "R",
+      "SQL"
+    ]
+  },
+  {
+    "role_title": "Information Security Engineers",
+    "source": "Uploaded O*NET Technology Skills.xlsx",
+    "source_soc_code": "15-1299.05",
+    "required_skills": [
+      "Microsoft Azure",
+      "AWS",
+      "Java",
+      "Kubernetes",
+      "Linux",
+      "Microsoft Active Directory",
+      "Microsoft PowerShell",
+      "Python",
+      "AWS CloudFormation",
+      "Bash",
+      "IBM Terraform",
+      "JavaScript"
+    ],
+    "skill_categories": [
+      "Operating system software",
+      "Object or component oriented development software",
+      "Data base user interface and query software",
+      "Development environment software",
+      "Web platform development software",
+      "Configuration management software"
+    ],
+    "hot_technologies": [
+      "Microsoft Azure",
+      "AWS",
+      "Java",
+      "Kubernetes",
+      "Linux",
+      "Microsoft Active Directory",
+      "Microsoft PowerShell",
+      "Python"
+    ],
+    "in_demand_technologies": [
+      "Microsoft Azure",
+      "AWS",
+      "Java",
+      "Kubernetes",
+      "Linux",
+      "Microsoft Active Directory",
+      "Microsoft PowerShell",
+      "Python"
+    ]
+  },
+  {
+    "role_title": "Information Technology Project Managers",
+    "source": "Uploaded O*NET Technology Skills.xlsx",
+    "source_soc_code": "15-1299.09",
+    "required_skills": [
+      "Microsoft Azure",
+      "AWS",
+      "Atlassian Confluence",
+      "Atlassian JIRA",
+      "Microsoft Excel",
+      "Microsoft Office",
+      "SQL",
+      "JavaScript",
+      "Microsoft SQL Server",
+      "Microsoft SQL Server Integration Services SSIS",
+      "Microsoft SQL Server Reporting Services SSRS",
+      "Oracle Java 2 Platform Enterprise Edition J2EE"
+    ],
+    "skill_categories": [
+      "Development environment software",
+      "Web platform development software",
+      "Data base user interface and query software",
+      "Data base management system software",
+      "Object or component oriented development software",
+      "Operating system software"
+    ],
+    "hot_technologies": [
+      "Microsoft Azure",
+      "AWS",
+      "Atlassian Confluence",
+      "Atlassian JIRA",
+      "Microsoft Excel",
+      "Microsoft Office",
+      "SQL",
+      "JavaScript"
+    ],
+    "in_demand_technologies": [
+      "Microsoft Azure",
+      "AWS",
+      "Atlassian Confluence",
+      "Atlassian JIRA",
+      "Microsoft Excel",
+      "Microsoft Office",
+      "SQL",
+      "SAP"
+    ]
+  },
+  {
+    "role_title": "IT Support Specialist",
+    "description": "Maintains and troubleshoots IT systems.",
+    "required_skills": [
+      "Troubleshooting",
+      "Networking",
+      "System Administration",
+      "Microsoft Azure",
+      "Linux",
+      "Microsoft Active Directory",
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Microsoft Outlook",
+      "Microsoft Windows",
+      "SQL",
+      "Apple iOS",
+      "Apple macOS",
+      "JavaScript",
+      "Microsoft SQL Server"
+    ],
+    "tools": [
+      "Windows Server",
+      "Linux"
+    ],
+    "source": "Curated tech role starter set + Uploaded O*NET Technology Skills.xlsx",
+    "onet_title": "Computer User Support Specialists",
+    "source_soc_code": "15-1232.00",
+    "skill_categories": [
+      "Operating system software",
+      "Web platform development software",
+      "Development environment software",
+      "Data base user interface and query software",
+      "Data base management system software",
+      "Object or component oriented development software"
+    ],
+    "hot_technologies": [
+      "Microsoft Azure",
+      "Linux",
+      "Microsoft Active Directory",
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Microsoft Outlook",
+      "Microsoft Windows",
+      "SQL"
+    ],
+    "in_demand_technologies": [
+      "Microsoft Azure",
+      "Linux",
+      "Microsoft Active Directory",
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Microsoft Outlook",
+      "Microsoft Windows",
+      "SQL"
+    ]
+  },
+  {
+    "role_title": "Machine Learning Engineer",
+    "description": "Designs and deploys machine learning models into production systems.",
+    "required_skills": [
+      "Python",
+      "Machine Learning",
+      "Deep Learning",
+      "Data Engineering",
+      "Model Deployment"
+    ],
+    "tools": [
+      "TensorFlow",
+      "PyTorch",
+      "Docker",
+      "MLflow"
+    ],
+    "source": "Curated tech role starter set"
+  },
+  {
+    "role_title": "Mathematicians",
+    "source": "Uploaded O*NET Technology Skills.xlsx",
+    "source_soc_code": "15-2021.00",
+    "required_skills": [
+      "Atlassian JIRA",
+      "C",
+      "C#",
+      "C++",
+      "MATLAB",
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Python",
+      "JavaScript",
+      "Java",
+      "Linux",
+      "Microsoft Access"
+    ],
+    "skill_categories": [
+      "Object or component oriented development software",
+      "Operating system software",
+      "Web platform development software",
+      "Development environment software",
+      "Analytical or scientific software",
+      "Data base user interface and query software"
+    ],
+    "hot_technologies": [
+      "Atlassian JIRA",
+      "C",
+      "C#",
+      "C++",
+      "MATLAB",
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Python"
+    ],
+    "in_demand_technologies": [
+      "Atlassian JIRA",
+      "C",
+      "C#",
+      "C++",
+      "MATLAB",
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Python"
+    ]
+  },
+  {
+    "role_title": "MLOps Engineer",
+    "description": "Manages machine learning pipelines and deployment infrastructure.",
+    "required_skills": [
+      "Machine Learning",
+      "CI/CD",
+      "Data Engineering",
+      "Automation"
+    ],
+    "tools": [
+      "MLflow",
+      "Kubeflow",
+      "Docker",
+      "Kubernetes"
+    ],
+    "source": "Curated tech role starter set"
+  },
+  {
+    "role_title": "Mobile Developer",
+    "description": "Develops mobile apps for Android and iOS.",
+    "required_skills": [
+      "Java",
+      "Kotlin",
+      "Swift",
+      "Mobile UI Development"
+    ],
+    "tools": [
+      "Android Studio",
+      "Xcode",
+      "Firebase"
+    ],
+    "source": "Curated tech role starter set"
+  },
+  {
+    "role_title": "Network and Computer Systems Administrators",
+    "source": "Uploaded O*NET Technology Skills.xlsx",
+    "source_soc_code": "15-1244.00",
+    "required_skills": [
+      "Microsoft Azure",
+      "AWS",
+      "Linux",
+      "Microsoft Active Directory",
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Microsoft PowerShell",
+      "Microsoft SharePoint",
+      "Microsoft Windows",
+      "Microsoft Windows Server",
+      "Python",
+      "Red Hat Enterprise Linux"
+    ],
+    "skill_categories": [
+      "Operating system software",
+      "Development environment software",
+      "Data base user interface and query software",
+      "Data base management system software",
+      "Web platform development software",
+      "Object or component oriented development software"
+    ],
+    "hot_technologies": [
+      "Microsoft Azure",
+      "AWS",
+      "Linux",
+      "Microsoft Active Directory",
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Microsoft PowerShell",
+      "Microsoft SharePoint"
+    ],
+    "in_demand_technologies": [
+      "Microsoft Azure",
+      "AWS",
+      "Linux",
+      "Microsoft Active Directory",
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Microsoft PowerShell",
+      "Microsoft SharePoint"
+    ]
+  },
+  {
+    "role_title": "Network Engineer",
+    "description": "Designs and manages computer networks.",
+    "required_skills": [
+      "Networking",
+      "Routing",
+      "Network Security",
+      "Microsoft Azure",
+      "AWS",
+      "Java",
+      "Linux",
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Microsoft PowerShell",
+      "Python",
+      "SQL",
+      "AWS CloudFormation",
+      "Ansible",
+      "Border Gateway Protocol BGP"
+    ],
+    "tools": [
+      "Cisco",
+      "Wireshark"
+    ],
+    "source": "Curated tech role starter set + Uploaded O*NET Technology Skills.xlsx",
+    "onet_title": "Computer Network Architects",
+    "source_soc_code": "15-1241.00",
+    "skill_categories": [
+      "Web platform development software",
+      "Development environment software",
+      "Operating system software",
+      "Data base management system software",
+      "Data base user interface and query software",
+      "Object or component oriented development software"
+    ],
+    "hot_technologies": [
+      "Microsoft Azure",
+      "AWS",
+      "Java",
+      "Linux",
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Microsoft PowerShell",
+      "Python"
+    ],
+    "in_demand_technologies": [
+      "Microsoft Azure",
+      "AWS",
+      "Java",
+      "Linux",
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Microsoft PowerShell",
+      "Python"
+    ]
+  },
+  {
+    "role_title": "NLP Engineer",
+    "description": "Develops systems that process and analyze human language.",
+    "required_skills": [
+      "Python",
+      "Natural Language Processing",
+      "Machine Learning",
+      "Text Processing"
+    ],
+    "tools": [
+      "SpaCy",
+      "NLTK",
+      "Hugging Face"
+    ],
+    "source": "Curated tech role starter set"
+  },
+  {
+    "role_title": "Operations Research Analysts",
+    "source": "Uploaded O*NET Technology Skills.xlsx",
+    "source_soc_code": "15-2031.00",
+    "required_skills": [
+      "Microsoft Power BI",
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Microsoft Outlook",
+      "Python",
+      "SQL",
+      "Tableau",
+      "Microsoft SQL Server",
+      "Microsoft SQL Server Reporting Services SSRS",
+      "Salesforce",
+      "Apache Hadoop",
+      "C"
+    ],
+    "skill_categories": [
+      "Object or component oriented development software",
+      "Operating system software",
+      "Data base user interface and query software",
+      "Business intelligence and data analysis software",
+      "Data base management system software",
+      "Analytical or scientific software"
+    ],
+    "hot_technologies": [
+      "Microsoft Power BI",
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Microsoft Outlook",
+      "Python",
+      "SQL",
+      "Tableau",
+      "Microsoft SQL Server"
+    ],
+    "in_demand_technologies": [
+      "Microsoft Power BI",
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Microsoft Outlook",
+      "Python",
+      "SQL",
+      "Tableau",
+      "Salesforce"
+    ]
+  },
+  {
+    "role_title": "Penetration Tester",
+    "description": "Tests systems for vulnerabilities through ethical hacking.",
+    "required_skills": [
+      "Ethical Hacking",
+      "Network Security",
+      "Vulnerability Assessment",
+      "JavaScript",
+      "Microsoft Azure",
+      "AWS",
+      "C",
+      "C#",
+      "C++",
+      "Java",
+      "Linux",
+      "Microsoft PowerShell",
+      "Python",
+      "SQL",
+      "Bash"
+    ],
+    "tools": [
+      "Kali Linux",
+      "Metasploit",
+      "Burp Suite"
+    ],
+    "source": "Curated tech role starter set + Uploaded O*NET Technology Skills.xlsx",
+    "onet_title": "Penetration Testers",
+    "source_soc_code": "15-1299.04",
+    "skill_categories": [
+      "Operating system software",
+      "Development environment software",
+      "Object or component oriented development software",
+      "Data base user interface and query software",
+      "Web platform development software",
+      "Application server software"
+    ],
+    "hot_technologies": [
+      "JavaScript",
+      "Microsoft Azure",
+      "AWS",
+      "C",
+      "C#",
+      "C++",
+      "Java",
+      "Linux"
+    ],
+    "in_demand_technologies": [
+      "JavaScript",
+      "Microsoft Azure",
+      "AWS",
+      "C",
+      "C#",
+      "C++",
+      "Java",
+      "Linux"
+    ]
+  },
+  {
+    "role_title": "Prompt Engineer",
+    "description": "Designs prompts and workflows for large language models.",
+    "required_skills": [
+      "Prompt Engineering",
+      "NLP",
+      "AI Systems"
+    ],
+    "tools": [
+      "OpenAI API",
+      "LangChain"
+    ],
+    "source": "Curated tech role starter set"
+  },
+  {
+    "role_title": "QA Engineer",
+    "description": "Tests software to ensure quality and reliability.",
+    "required_skills": [
+      "Software Testing",
+      "Automation Testing",
+      "Test Design",
+      "JavaScript",
+      "Microsoft Azure",
+      "AWS",
+      "Atlassian JIRA",
+      "C#",
+      "C++",
+      "Git",
+      "GitHub",
+      "Java",
+      "Jenkins CI",
+      "Linux",
+      "Microsoft Excel"
+    ],
+    "tools": [
+      "Selenium",
+      "JUnit"
+    ],
+    "source": "Curated tech role starter set + Uploaded O*NET Technology Skills.xlsx",
+    "onet_title": "Software Quality Assurance Analysts and Testers",
+    "source_soc_code": "15-1253.00",
+    "skill_categories": [
+      "Development environment software",
+      "Web platform development software",
+      "Object or component oriented development software",
+      "Data base user interface and query software",
+      "Operating system software",
+      "Data base management system software"
+    ],
+    "hot_technologies": [
+      "JavaScript",
+      "Microsoft Azure",
+      "AWS",
+      "Atlassian JIRA",
+      "C#",
+      "C++",
+      "Git",
+      "GitHub"
+    ],
+    "in_demand_technologies": [
+      "JavaScript",
+      "Microsoft Azure",
+      "AWS",
+      "Atlassian JIRA",
+      "C#",
+      "C++",
+      "Git",
+      "GitHub"
+    ]
+  },
+  {
+    "role_title": "Robotics Engineer",
+    "description": "Designs and builds robotic systems.",
+    "required_skills": [
+      "Control Systems",
+      "Robotics",
+      "Embedded Programming",
+      "Atlassian JIRA",
+      "C",
+      "C#",
+      "C++",
+      "Git",
+      "Java",
+      "Linux",
+      "MATLAB",
+      "Python",
+      "Autodesk AutoCAD",
+      "Dassault Systemes SolidWorks",
+      "JavaScript"
+    ],
+    "tools": [
+      "ROS",
+      "Python",
+      "C++"
+    ],
+    "source": "Curated tech role starter set + Uploaded O*NET Technology Skills.xlsx",
+    "onet_title": "Robotics Engineers",
+    "source_soc_code": "17-2199.08",
+    "skill_categories": [
+      "Object or component oriented development software",
+      "Development environment software",
+      "Computer aided design CAD software",
+      "Operating system software",
+      "Data base user interface and query software",
+      "Analytical or scientific software"
+    ],
+    "hot_technologies": [
+      "Atlassian JIRA",
+      "C",
+      "C#",
+      "C++",
+      "Git",
+      "Java",
+      "Linux",
+      "MATLAB"
+    ],
+    "in_demand_technologies": [
+      "Atlassian JIRA",
+      "C",
+      "C#",
+      "C++",
+      "Git",
+      "Java",
+      "Linux",
+      "MATLAB"
+    ]
+  },
+  {
+    "role_title": "Robotics Technicians",
+    "source": "Uploaded O*NET Technology Skills.xlsx",
+    "source_soc_code": "17-3024.01",
+    "required_skills": [
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Microsoft Outlook",
+      "JavaScript",
+      "Bentley MicroStation",
+      "C",
+      "C#",
+      "C++",
+      "Git",
+      "Java",
+      "Linux",
+      "MATLAB"
+    ],
+    "skill_categories": [
+      "Object or component oriented development software",
+      "Operating system software",
+      "Computer aided design CAD software",
+      "Electronic mail software",
+      "Office suite software",
+      "Analytical or scientific software"
+    ],
+    "hot_technologies": [
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Microsoft Outlook",
+      "JavaScript",
+      "Bentley MicroStation",
+      "C",
+      "C#",
+      "C++"
+    ],
+    "in_demand_technologies": [
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Microsoft Outlook"
+    ]
+  },
+  {
+    "role_title": "Security Engineer",
+    "description": "Builds and maintains secure systems and infrastructure.",
+    "required_skills": [
+      "Security Architecture",
+      "Encryption",
+      "Threat Modeling"
+    ],
+    "tools": [
+      "SIEM",
+      "Firewall Systems"
+    ],
+    "source": "Curated tech role starter set"
+  },
+  {
+    "role_title": "Site Reliability Engineer",
+    "description": "Ensures system reliability and scalability.",
+    "required_skills": [
+      "Linux",
+      "Monitoring",
+      "Automation",
+      "Distributed Systems"
+    ],
+    "tools": [
+      "Prometheus",
+      "Grafana",
+      "Kubernetes"
+    ],
+    "source": "Curated tech role starter set"
+  },
+  {
+    "role_title": "Software Engineer",
+    "description": "Designs and builds software applications.",
+    "required_skills": [
+      "Programming",
+      "Algorithms",
+      "Data Structures",
+      "System Design",
+      "JavaScript",
+      "Microsoft Azure",
+      "PostgreSQL",
+      "AWS",
+      "Apache Kafka",
+      "Atlassian JIRA",
+      "C",
+      "C#",
+      "C++",
+      "Docker",
+      "Git",
+      "GitHub"
+    ],
+    "tools": [
+      "Git",
+      "Docker",
+      "Linux"
+    ],
+    "source": "Curated tech role starter set + Uploaded O*NET Technology Skills.xlsx",
+    "onet_title": "Software Developers",
+    "source_soc_code": "15-1252.00",
+    "skill_categories": [
+      "Web platform development software",
+      "Development environment software",
+      "Object or component oriented development software",
+      "Data base user interface and query software",
+      "Operating system software",
+      "Data base management system software"
+    ],
+    "hot_technologies": [
+      "JavaScript",
+      "Microsoft Azure",
+      "PostgreSQL",
+      "AWS",
+      "Apache Kafka",
+      "Atlassian JIRA",
+      "C",
+      "C#"
+    ],
+    "in_demand_technologies": [
+      "JavaScript",
+      "Microsoft Azure",
+      "PostgreSQL",
+      "AWS",
+      "Apache Kafka",
+      "Atlassian JIRA",
+      "C",
+      "C#"
+    ]
+  },
+  {
+    "role_title": "Statisticians",
+    "source": "Uploaded O*NET Technology Skills.xlsx",
+    "source_soc_code": "15-2041.00",
+    "required_skills": [
+      "AWS",
+      "Microsoft Access",
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Python",
+      "R",
+      "SQL",
+      "Tableau",
+      "IBM SPSS Statistics",
+      "Microsoft SQL Server",
+      "SAS",
+      "Apache Hadoop"
+    ],
+    "skill_categories": [
+      "Data base user interface and query software",
+      "Analytical or scientific software",
+      "Object or component oriented development software",
+      "Business intelligence and data analysis software",
+      "Data base management system software",
+      "Operating system software"
+    ],
+    "hot_technologies": [
+      "AWS",
+      "Microsoft Access",
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Python",
+      "R",
+      "SQL",
+      "Tableau"
+    ],
+    "in_demand_technologies": [
+      "AWS",
+      "Microsoft Access",
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Python",
+      "R",
+      "SQL",
+      "Tableau"
+    ]
+  },
+  {
+    "role_title": "Systems Administrator",
+    "description": "Manages servers and operating systems.",
+    "required_skills": [
+      "Linux",
+      "System Administration",
+      "Networking"
+    ],
+    "tools": [
+      "Linux",
+      "Docker"
+    ],
+    "source": "Curated tech role starter set"
+  },
+  {
+    "role_title": "Technical Product Manager",
+    "description": "Manages development of technical products.",
+    "required_skills": [
+      "Product Strategy",
+      "Agile",
+      "Technical Communication"
+    ],
+    "tools": [
+      "Jira",
+      "Confluence"
+    ],
+    "source": "Curated tech role starter set"
+  },
+  {
+    "role_title": "Telecommunications Engineering Specialists",
+    "source": "Uploaded O*NET Technology Skills.xlsx",
+    "source_soc_code": "15-1241.01",
+    "required_skills": [
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Microsoft Outlook",
+      "Microsoft Visio",
+      "Autodesk AutoCAD",
+      "Microsoft SQL Server",
+      "Apache Kafka",
+      "Java",
+      "Linux",
+      "Microsoft PowerShell",
+      "Microsoft Project",
+      "Microsoft Teams"
+    ],
+    "skill_categories": [
+      "Operating system software",
+      "Object or component oriented development software",
+      "Development environment software",
+      "Data base user interface and query software",
+      "Project management software",
+      "Electronic mail software"
+    ],
+    "hot_technologies": [
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Microsoft Outlook",
+      "Microsoft Visio",
+      "Autodesk AutoCAD",
+      "Microsoft SQL Server",
+      "Apache Kafka",
+      "Java"
+    ],
+    "in_demand_technologies": [
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Microsoft Outlook",
+      "Microsoft Visio",
+      "Autodesk AutoCAD",
+      "Firewall",
+      "Operating system"
+    ]
+  },
+  {
+    "role_title": "Web Administrators",
+    "source": "Uploaded O*NET Technology Skills.xlsx",
+    "source_soc_code": "15-1299.01",
+    "required_skills": [
+      "JavaScript",
+      "Microsoft SQL Server",
+      "Java",
+      "Microsoft Access",
+      "Microsoft Active Directory",
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Microsoft SharePoint",
+      "SQL",
+      "Adobe Photoshop",
+      "Cascading style sheets CSS",
+      "Google Analytics"
+    ],
+    "skill_categories": [
+      "Web platform development software",
+      "Data base user interface and query software",
+      "Operating system software",
+      "Development environment software",
+      "Object or component oriented development software",
+      "Graphics or photo imaging software"
+    ],
+    "hot_technologies": [
+      "JavaScript",
+      "Microsoft SQL Server",
+      "Java",
+      "Microsoft Access",
+      "Microsoft Active Directory",
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Microsoft SharePoint"
+    ],
+    "in_demand_technologies": [
+      "JavaScript",
+      "Microsoft SQL Server",
+      "Java",
+      "Microsoft Access",
+      "Microsoft Active Directory",
+      "Microsoft Excel",
+      "Microsoft Office",
+      "Microsoft SharePoint"
+    ]
+  },
+  {
+    "role_title": "Web and Digital Interface Designers",
+    "source": "Uploaded O*NET Technology Skills.xlsx",
+    "source_soc_code": "15-1255.00",
+    "required_skills": [
+      "JavaScript",
+      "Adobe Creative Cloud",
+      "React",
+      "AWS CloudFormation",
+      "Adobe Illustrator",
+      "Adobe Photoshop",
+      "Cascading style sheets CSS",
+      "Figma",
+      "Google Angular",
+      "Hypertext markup language HTML",
+      "Microsoft Azure",
+      "Microsoft SQL Server"
+    ],
+    "skill_categories": [
+      "Web platform development software",
+      "Development environment software",
+      "Operating system software",
+      "Data base management system software",
+      "Object or component oriented development software",
+      "Data base user interface and query software"
+    ],
+    "hot_technologies": [
+      "JavaScript",
+      "Adobe Creative Cloud",
+      "React",
+      "AWS CloudFormation",
+      "Adobe Illustrator",
+      "Adobe Photoshop",
+      "Cascading style sheets CSS",
+      "Figma"
+    ],
+    "in_demand_technologies": [
+      "JavaScript",
+      "Adobe Creative Cloud",
+      "React",
+      "Adobe Illustrator",
+      "Adobe Photoshop",
+      "Cascading style sheets CSS",
+      "Figma",
+      "Google Angular"
+    ]
+  },
+  {
+    "role_title": "Web Developers",
+    "source": "Uploaded O*NET Technology Skills.xlsx",
+    "source_soc_code": "15-1254.00",
+    "required_skills": [
+      "JavaScript",
+      "Microsoft Azure",
+      "PostgreSQL",
+      "AWS",
+      "Apache Kafka",
+      "Atlassian JIRA",
+      "C#",
+      "C++",
+      "Docker",
+      "Git",
+      "GitHub",
+      "Java"
+    ],
+    "skill_categories": [
+      "Web platform development software",
+      "Development environment software",
+      "Object or component oriented development software",
+      "Data base management system software",
+      "Data base user interface and query software",
+      "Operating system software"
+    ],
+    "hot_technologies": [
+      "JavaScript",
+      "Microsoft Azure",
+      "PostgreSQL",
+      "AWS",
+      "Apache Kafka",
+      "Atlassian JIRA",
+      "C#",
+      "C++"
+    ],
+    "in_demand_technologies": [
+      "JavaScript",
+      "Microsoft Azure",
+      "PostgreSQL",
+      "AWS",
+      "Apache Kafka",
+      "Atlassian JIRA",
+      "C#",
+      "C++"
+    ]
+  }
+]
