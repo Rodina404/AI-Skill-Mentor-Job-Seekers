@@ -1,0 +1,39 @@
+# Python cache files
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+
+# Virtual Environments
+**/.venv/
+**/venv/
+**/env/
+**/ENV/
+
+# IDE files
+**/.vscode/
+**/.idea/
+
+# Environment files containing credentials
+**/.env
+**/.env.*
+!**/.env.example
+
+# Test and coverage caches
+**/.pytest_cache/
+**/.coverage
+**/htmlcov/
+
+# Database files
+**/chroma_db/
+**/chroma_db_current/
+**/chroma_db_v0_4_24/
+**/db.sqlite3
+
+# Local/temporary outputs
+**/farah_outputs/
+**/reports/
+**/data/*.csv
+**/data/*.txt
+**/data/*.json
+!**/data/.gitkeep
