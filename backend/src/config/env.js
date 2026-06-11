@@ -11,7 +11,11 @@ const env = {
   bcryptSaltRounds: Number(process.env.BCRYPT_SALT_ROUNDS || 12),
 };
 
-if (!env.mongoUri) throw new Error("Missing MONGO_URI in .env");
-if (!env.jwtAccessSecret) throw new Error("Missing JWT_ACCESS_SECRET in .env");
+if (!env.mongoUri) {
+  console.warn("⚠️ Warning: MONGO_URI is not set in .env. MongoDB features will be disabled.");
+}
+if (!env.jwtAccessSecret) {
+  console.warn("⚠️ Warning: JWT_ACCESS_SECRET is not set in .env. Defaulting or JWT auth may fail.");
+}
 
 module.exports = { env };

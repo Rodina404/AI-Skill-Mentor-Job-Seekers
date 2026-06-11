@@ -1,80 +1,82 @@
-const path = require("path");
-const { asyncHandler } = require("../utils/asyncHandler");
-const { ApiError } = require("../utils/apiError");
-const Resume = require("../models/ai/resume.model.js");
+const { supabaseAdmin } = require('../config/supabase');
+const axios = require('axios');
+const FormData = require('form-data');
 
-function getFormatFromFile(file) {
-  const ext = path.extname(file.originalname).toLowerCase().replace(".", "");
-  if (ext === "pdf") return "pdf";
-  if (ext === "docx") return "docx";
-  return null;
-}
+const SERVICES = {
+  extraction:    process.env.M1_EXTRACTION_URL    || 'http://localhost:8001',
+  normalization: process.env.SKILL_NORM_URL        || 'http://localhost:8002',
+};
 
-const uploadResume = asyncHandler(async (req, res) => {
-  if (!req.user) throw new ApiError(401, "Not authenticated");
-  if (!req.file) throw new ApiError(400, "Resume file is required");
+const uploadResume = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const file = req.file;
+    if (!file) return res.status(400).json({ error: 'No file uploaded' });
 
-  const format = getFormatFromFile(req.file);
-  if (!format) throw new ApiError(400, "Only PDF or DOCX files are allowed");
+    const filePath = `${userId}/${Date.now()}_${file.originalname}`;
+    const { error: uploadError } = await supabaseAdmin.storage
+      .from('resumes')
+      .upload(filePath, file.buffer, { contentType: file.mimetype });
+    if (uploadError) throw new Error(`Storage upload failed: ${uploadError.message}`);
 
-  const resume = await Resume.create({
-    userId: req.user.id,
+    const { data: resumeRecord, error: dbError } = await supabaseAdmin
+      .from('resumes')
+      .insert({ user_id: userId, file_path: filePath, original_name: file.originalname, status: 'processing' })
+      .select().single();
+    if (dbError) throw new Error(`DB insert failed: ${dbError.message}`);
 
-    originalName: req.file.originalname,
-    fileName: req.file.filename,         // multer’s generated name
-    fileUrl: req.file.path,              // local path for now
-    fileSize: req.file.size,             // ✅ matches schema
-    fileFormat: format,
-    mimeType: req.file.mimetype,
+    res.status(202).json({ message: 'Resume uploaded. Processing started.', resume_id: resumeRecord.id });
 
-    analysisStatus: "pending",
-    isAnalyzed: false,
-  });
+    _runAnalysisPipeline(resumeRecord.id, file).catch(err => {
+      console.error(`Pipeline failed for resume ${resumeRecord.id}:`, err.message);
+      supabaseAdmin.from('resumes').update({ status: 'failed' }).eq('id', resumeRecord.id);
+    });
+  } catch (err) {
+    console.error('uploadResume error:', err.message);
+    res.status(500).json({ error: 'Resume upload failed', details: err.message });
+  }
+};
 
-  res.status(201).json({ success: true, data: resume });
-});
+const _runAnalysisPipeline = async (resumeId, file) => {
+  const formData = new FormData();
+  formData.append('file', file.buffer, { filename: file.originalname, contentType: file.mimetype });
 
-const listMyResumes = asyncHandler(async (req, res) => {
-  if (!req.user) throw new ApiError(401, "Not authenticated");
-  const docs = await Resume.find({ userId: req.user.id }).sort({ createdAt: -1 }).lean();
-  res.json({ success: true, data: docs });
-});
+  const { data: extracted } = await axios.post(
+    `${SERVICES.extraction}/extract`, formData,
+    { headers: formData.getHeaders(), timeout: 60000 }
+  );
 
-const analyzeResume = asyncHandler(async (req, res) => {
-  if (!req.user) throw new ApiError(401, "Not authenticated");
+  const { data: normalized } = await axios.post(
+    `${SERVICES.normalization}/run`,
+    { raw_skills: extracted.skills, experience: extracted.experience },
+    { timeout: 30000 }
+  );
 
-  const resume = await Resume.findOne({ _id: req.params.resumeId, userId: req.user.id });
-  if (!resume) throw new ApiError(404, "Resume not found");
+  await supabaseAdmin.from('resumes').update({
+    status: 'analyzed',
+    extracted_data: extracted,
+    normalized_skills: normalized.skills,
+    analyzed_at: new Date().toISOString()
+  }).eq('id', resumeId);
 
-  resume.analysisStatus = "processing";
-  await resume.save();
+  console.log(`Resume ${resumeId} analysis complete.`);
+};
 
-  res.json({
-    success: true,
-    message: "Analysis started",
-    data: { resumeId: resume._id, analysisStatus: resume.analysisStatus },
-  });
-});
+const getResumeStatus = async (req, res) => {
+  const { id } = req.params;
+  const { data, error } = await supabaseAdmin
+    .from('resumes').select('id, status, original_name, analyzed_at, normalized_skills')
+    .eq('id', id).eq('user_id', req.user.id).single();
+  if (error || !data) return res.status(404).json({ error: 'Resume not found' });
+  res.json(data);
+};
 
-const getResumeAnalysis = asyncHandler(async (req, res) => {
-  if (!req.user) throw new ApiError(401, "Not authenticated");
+const getUserResumes = async (req, res) => {
+  const { data, error } = await supabaseAdmin
+    .from('resumes').select('id, status, original_name, analyzed_at, created_at')
+    .eq('user_id', req.user.id).order('created_at', { ascending: false });
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+};
 
-  const resume = await Resume.findOne({ _id: req.params.resumeId, userId: req.user.id }).lean();
-  if (!resume) throw new ApiError(404, "Resume not found");
-
-  // You don't have "analysis" field in schema; return extracted fields instead
-  res.json({
-    success: true,
-    data: {
-      analysisStatus: resume.analysisStatus,
-      isAnalyzed: resume.isAnalyzed,
-      extractedSkills: resume.extractedSkills,
-      extractedEducation: resume.extractedEducation,
-      extractedExperience: resume.extractedExperience,
-      extractedContact: resume.extractedContact,
-      confidenceScore: resume.confidenceScore,
-    },
-  });
-});
-
-module.exports = { uploadResume, listMyResumes, analyzeResume, getResumeAnalysis };
+module.exports = { uploadResume, getResumeStatus, getUserResumes };

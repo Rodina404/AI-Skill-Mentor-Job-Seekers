@@ -1,9 +1,10 @@
-const router = require("express").Router();
-const { authenticate } = require("../middlewares/auth.middleware");
-const { requireRole } = require("../middlewares/role.middleware");
-const { generateMatches, listMatches } = require("../controllers/matches.controller");
+const express = require('express');
+const router = express.Router();
+const { runMatching, getMatchResults } = require('../controllers/matches.controller');
+const { protect } = require('../middlewares/auth.middleware');
 
-router.post("/recruiter/jobs/:jobId/generate", authenticate, requireRole("recruiter"), generateMatches);
-router.get("/recruiter/jobs/:jobId", authenticate, requireRole("recruiter"), listMatches);
+router.use(protect);
+router.post('/run', runMatching);
+router.get('/', getMatchResults);
 
 module.exports = router;
