@@ -3,7 +3,6 @@ kind: Ingress
 metadata:
   name: ai-skill-mentor-ingress
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /$2
     nginx.ingress.kubernetes.io/proxy-read-timeout: "120"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "120"
     nginx.ingress.kubernetes.io/proxy-body-size: "20m"   # allow large resume uploads
@@ -12,17 +11,17 @@ spec:
   rules:
     - http:
         paths:
-          # All /api/* traffic goes to the Express backend
-          - path: /api(/|$)(.*)
-            pathType: ImplementationSpecific
+          # All /api traffic goes to the Express backend
+          - path: /api
+            pathType: Prefix
             backend:
               service:
                 name: express-backend-service
                 port:
                   number: 5000
           # Everything else goes to the React frontend
-          - path: /()(.*)
-            pathType: ImplementationSpecific
+          - path: /
+            pathType: Prefix
             backend:
               service:
                 name: frontend-service

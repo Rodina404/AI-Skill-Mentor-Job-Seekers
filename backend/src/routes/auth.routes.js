@@ -9,4 +9,9 @@ router.post('/logout', protect, logout);
 router.get('/me', protect, getMe);
 router.post('/refresh', refreshToken);
 
+// Frontend compatibility aliases
+router.post('/signin', login);
+router.post('/signout', protect, logout);
+router.get('/verify', protect, getMe);
+
 module.exports = router;

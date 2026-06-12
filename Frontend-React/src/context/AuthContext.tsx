@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import { authAPI } from "../api/auth.api";
 
 interface User {
   id: string;
@@ -16,30 +17,13 @@ interface AuthContextType {
   hasRole: (role: string | string[]) => boolean;
 }
 
-// Mock User Database
-const MOCK_USERS = [
-  {
-    id: "1",
-    name: "Admin User",
-    email: "aya@gmail.com",
-    password: "AY7114_AY",
-    role: "admin" as const
-  },
-  {
-    id: "2",
-    name: "Job Seeker User",
-    email: "ayya@gmail.com",
-    password: "AY7114_AY",
-    role: "jobseeker" as const
-  },
-  {
-    id: "3",
-    name: "Recruiter User",
-    email: "ayyya@gmail.com",
-    password: "AY7114_AY",
-    role: "recruiter" as const
-  }
-];
+const mapRole = (role: string): "jobseeker" | "recruiter" | "admin" => {
+  const clean = role ? role.toLowerCase() : "";
+  if (clean === "job_seeker" || clean === "jobseeker") return "jobseeker";
+  if (clean === "recruiter") return "recruiter";
+  if (clean === "admin") return "admin";
+  return "jobseeker";
+};
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -48,64 +32,79 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Check for existing session on mount
   useEffect(() => {
+    const token = localStorage.getItem('token');
     const savedUser = localStorage.getItem('currentUser');
-    if (savedUser) {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch (error) {
-        localStorage.removeItem('currentUser');
-      }
+    if (token && savedUser) {
+      authAPI.verifyToken(token)
+        .then(data => {
+          const verifiedUser: User = {
+            id: data.user.id,
+            name: data.user.full_name || data.user.email,
+            email: data.user.email,
+            role: mapRole(data.user.role)
+          };
+          setUser(verifiedUser);
+          localStorage.setItem('currentUser', JSON.stringify(verifiedUser));
+        })
+        .catch(() => {
+          setUser(null);
+          localStorage.removeItem('currentUser');
+          localStorage.removeItem('token');
+        });
     }
   }, []);
 
   const login = async (email: string, password: string) => {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
+    const data = await authAPI.signIn({ email, password });
     
-    // Find user in mock database
-    const foundUser = MOCK_USERS.find(
-      u => u.email.toLowerCase() === email.toLowerCase() && u.password === password
-    );
-
-    if (!foundUser) {
-      throw new Error("Invalid email or password");
+    if (!data.user) {
+      throw new Error("Login response missing user details");
     }
 
     const authenticatedUser: User = {
-      id: foundUser.id,
-      name: foundUser.name,
-      email: foundUser.email,
-      role: foundUser.role
+      id: data.user.id,
+      name: data.user.full_name || data.user.email,
+      email: data.user.email,
+      role: mapRole(data.user.role)
     };
 
     setUser(authenticatedUser);
     localStorage.setItem('currentUser', JSON.stringify(authenticatedUser));
+    localStorage.setItem('token', data.access_token);
   };
 
   const signup = async (name: string, email: string, password: string, role: "jobseeker" | "recruiter") => {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    // Check if user already exists
-    const existingUser = MOCK_USERS.find(u => u.email.toLowerCase() === email.toLowerCase());
-    if (existingUser) {
-      throw new Error("User with this email already exists");
+    // Map frontend role to backend database role format
+    const dbRole = role === "jobseeker" ? "job_seeker" : "recruiter";
+    const data = await authAPI.signUp({ full_name: name, email, password, role: dbRole });
+
+    if (!data.user) {
+      throw new Error("Signup response missing user details");
     }
 
     const newUser: User = {
-      id: Date.now().toString(),
-      name: name,
-      email: email,
-      role: role
+      id: data.user.id,
+      name: data.user.full_name || data.user.email,
+      email: data.user.email,
+      role: mapRole(data.user.role)
     };
 
+    // Auto-login on signup
     setUser(newUser);
     localStorage.setItem('currentUser', JSON.stringify(newUser));
+    if (data.access_token) {
+      localStorage.setItem('token', data.access_token);
+    }
   };
 
   const logout = () => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      authAPI.signOut(token).catch(err => console.error('Sign out error:', err));
+    }
     setUser(null);
     localStorage.removeItem('currentUser');
+    localStorage.removeItem('token');
   };
 
   const hasRole = (roles: string | string[]): boolean => {

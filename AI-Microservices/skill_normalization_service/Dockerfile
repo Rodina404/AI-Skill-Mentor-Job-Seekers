@@ -12,9 +12,9 @@ COPY requirements.txt .
 
 # Install CPU-only torch explicitly to avoid pulling the massive CUDA build
 RUN pip install --upgrade pip && \
-    pip install --prefix=/install --no-cache-dir \
-        torch==2.1.0 --index-url https://download.pytorch.org/whl/cpu && \
-    pip install --prefix=/install --no-cache-dir -r requirements.txt
+    pip install --no-cache-dir \
+        torch==2.4.0 --index-url https://download.pytorch.org/whl/cpu && \
+    pip install --no-cache-dir -r requirements.txt
 
 # ── Stage 2: Runtime ──────────────────────────────────────────────────────────
 FROM python:3.11-slim
@@ -26,7 +26,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libgomp1 \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder /install /usr/local
+COPY --from=builder /usr/local /usr/local
 COPY . .
 
 # Cache the sentence-transformer model at build time so the container

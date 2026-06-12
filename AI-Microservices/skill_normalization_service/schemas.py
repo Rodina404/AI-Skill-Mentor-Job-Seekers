@@ -98,6 +98,16 @@ class SkillOutput(BaseModel):
     name: str = Field(..., description="Canonical skill name (e.g., Python)")
     confidence: float = Field(..., ge=0.0, le=1.0, description="Match confidence (1.0=exact, 0.7+=semantic)")
 
+    @validator('confidence', pre=True)
+    def clamp_confidence(cls, v):
+        if v is not None:
+            try:
+                val = float(v)
+                return max(0.0, min(1.0, val))
+            except (ValueError, TypeError):
+                return v
+        return v
+
     class Config:
         schema_extra = {
             "example": {

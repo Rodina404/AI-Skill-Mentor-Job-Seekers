@@ -7,8 +7,18 @@ $ErrorActionPreference = "Stop"
 Write-Host "=== AI Skill Mentor - Minikube Deploy ===" -ForegroundColor Cyan
 
 # ── 1. Start Minikube if not running ─────────────────────────────────────
-$status = minikube status --format='{{.Host}}' 2>$null
-if ($status -ne "Running") {
+$status = ""
+$oldPreference = $ErrorActionPreference
+$ErrorActionPreference = "SilentlyContinue"
+try {
+    $status = minikube status --format='{{.Host}}' 2>$null
+    if ($status -is [array]) { $status = $status -join "" }
+} catch {
+    $status = "Stopped"
+}
+$ErrorActionPreference = $oldPreference
+
+if ([string]$status -notlike "*Running*") {
     Write-Host "Starting Minikube..." -ForegroundColor Yellow
     minikube start --memory=6144 --cpus=4   # ML services need RAM
 }
@@ -21,14 +31,14 @@ Write-Host "Switching Docker context to Minikube..." -ForegroundColor Yellow
 Write-Host "Building images inside Minikube..." -ForegroundColor Yellow
 
 docker build -t ai-skill-mentor/m1-extraction:latest       "AI-Microservices/m1_extraction_service"
-docker build -t ai-skill-mentor/skill-normalization:latest  "AI-Microservices/skills' System/skill_normalization_service"
+docker build -t ai-skill-mentor/skill-normalization:latest  "AI-Microservices/skill_normalization_service"
 docker build -t ai-skill-mentor/cv-matching:latest          "AI-Microservices/cv_matching_service"
+docker build -t ai-skill-mentor/gap-engine:latest           "AI-Microservices/gap-engin-service"
 docker build -t ai-skill-mentor/m5-roadmap:latest           "AI-Microservices/m5_roadmap_service"
-docker build -t ai-skill-mentor/gap-engine:latest           "AI-Microservices/gap_engine_service"          # push teammate's service first
-docker build -t ai-skill-mentor/course-recommendation:latest "AI-Microservices/course_recommendation_service"  # from march-new
-docker build -t ai-skill-mentor/job-recommendation:latest   "AI-Microservices/job_recommendation_service"     # from march-new
+docker build -t ai-skill-mentor/course-recommendation:latest "AI-Microservices/course_recommendation_service"
+docker build -t ai-skill-mentor/job-recommendation:latest   "AI-Microservices/job_recommendation_service"
 docker build -t ai-skill-mentor/express-backend:latest      "backend"
-docker build -t ai-skill-mentor/frontend:latest             "Frontend React"
+docker build -t ai-skill-mentor/frontend:latest             "Frontend-React"
 
 Write-Host "All images built." -ForegroundColor Green
 
@@ -44,9 +54,9 @@ kubectl apply -f k8s/secrets.yaml
 kubectl apply -f k8s/configmap.yaml
 
 # Deploy all services
-kubectl apply -f k8s/services/microservices.yaml
-kubectl apply -f k8s/backend/backend-frontend.yaml
-kubectl apply -f k8s/ingress/ingress.yaml
+kubectl apply -f k8s/microservices.yaml
+kubectl apply -f k8s/backend-frontend.yaml
+kubectl apply -f k8s/ingress.yaml
 
 # ── 6. Wait for pods to be ready ─────────────────────────────────────────
 Write-Host ""

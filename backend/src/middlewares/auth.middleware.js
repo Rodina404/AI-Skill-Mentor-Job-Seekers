@@ -20,4 +20,4 @@ const protect = async (req, res, next) => {
   next();
 };
 
-module.exports = { protect };
+module.exports = { protect, authenticate: protect };
