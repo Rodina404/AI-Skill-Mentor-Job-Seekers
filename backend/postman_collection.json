@@ -1,0 +1,642 @@
+{
+  "info": {
+    "_postman_id": "b3f669e4-bcde-4f51-b84e-e17f415c7349",
+    "name": "AI Skill Mentor API",
+    "description": "API collection for AI Skill Mentor platform, organizing all endpoints by resource category.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Signup",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"Password123!\",\n  \"first_name\": \"John\",\n  \"last_name\": \"Doe\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/signup",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "signup"]
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"flowtest@gmail.com\",\n  \"password\": \"Test1234!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Signin (Alias)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"flowtest@gmail.com\",\n  \"password\": \"Test1234!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/signin",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "signin"]
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{token}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "logout"]
+            }
+          }
+        },
+        {
+          "name": "Signout (Alias)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{token}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/auth/signout",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "signout"]
+            }
+          }
+        },
+        {
+          "name": "Get Current User (/me)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{token}}", "type": "string" }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "me"]
+            }
+          }
+        },
+        {
+          "name": "Verify (Alias)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{token}}", "type": "string" }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/auth/verify",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "verify"]
+            }
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh_token\": \"your_refresh_token_here\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/refresh",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "refresh"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Resumes",
+      "item": [
+        {
+          "name": "Upload Resume",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{token}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "file", "type": "file", "src": "" }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/resumes/upload",
+              "host": ["{{base_url}}"],
+              "path": ["resumes", "upload"]
+            }
+          }
+        },
+        {
+          "name": "Analyze Resume (Alias)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{token}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "resume", "type": "file", "src": "" }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/resumes/analyze",
+              "host": ["{{base_url}}"],
+              "path": ["resumes", "analyze"]
+            }
+          }
+        },
+        {
+          "name": "Get User Resumes",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{token}}", "type": "string" }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/resumes",
+              "host": ["{{base_url}}"],
+              "path": ["resumes"]
+            }
+          }
+        },
+        {
+          "name": "Get Resume Status",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{token}}", "type": "string" }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/resumes/:id/status",
+              "host": ["{{base_url}}"],
+              "path": ["resumes", ":id", "status"],
+              "variable": [
+                { "key": "id", "value": "13c80c30-a853-429f-96e9-7053e052ec64" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Resume Analysis (Alias)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{token}}", "type": "string" }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/resumes/analysis/:id",
+              "host": ["{{base_url}}"],
+              "path": ["resumes", "analysis", ":id"],
+              "variable": [
+                { "key": "id", "value": "13c80c30-a853-429f-96e9-7053e052ec64" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Resume History By User (Alias)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{token}}", "type": "string" }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/resumes/history/:userId",
+              "host": ["{{base_url}}"],
+              "path": ["resumes", "history", ":userId"],
+              "variable": [
+                { "key": "userId", "value": "c2fe5fc2-690c-41d3-87e5-f87a03de0829" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Learning Path",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{token}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"resumeId\": \"13c80c30-a853-429f-96e9-7053e052ec64\",\n  \"jobTitle\": \"Junior Data Scientist\",\n  \"missingSkills\": [\"Machine Learning\", \"Deep Learning\"]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/resumes/learning-path",
+              "host": ["{{base_url}}"],
+              "path": ["resumes", "learning-path"]
+            }
+          }
+        },
+        {
+          "name": "Get Recommended Courses",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{token}}", "type": "string" }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/resumes/recommendations/:id",
+              "host": ["{{base_url}}"],
+              "path": ["resumes", "recommendations", ":id"],
+              "variable": [
+                { "key": "id", "value": "13c80c30-a853-429f-96e9-7053e052ec64" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Matches",
+      "item": [
+        {
+          "name": "Run End-to-End Matching",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{token}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"resume_id\": \"13c80c30-a853-429f-96e9-7053e052ec64\",\n  \"job_id\": \"009598ed-d700-4915-a93c-a9f7214b6740\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/matches/run",
+              "host": ["{{base_url}}"],
+              "path": ["matches", "run"]
+            }
+          }
+        },
+        {
+          "name": "Get Match Results",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{token}}", "type": "string" }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/matches",
+              "host": ["{{base_url}}"],
+              "path": ["matches"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Courses",
+      "item": [
+        {
+          "name": "Get All Courses",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{token}}", "type": "string" }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/courses",
+              "host": ["{{base_url}}"],
+              "path": ["courses"]
+            }
+          }
+        },
+        {
+          "name": "Get Course By ID",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{token}}", "type": "string" }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/courses/:courseId",
+              "host": ["{{base_url}}"],
+              "path": ["courses", ":courseId"],
+              "variable": [
+                { "key": "courseId", "value": "c1" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Enroll in Course",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{token}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/courses/:courseId/enroll",
+              "host": ["{{base_url}}"],
+              "path": ["courses", ":courseId", "enroll"],
+              "variable": [
+                { "key": "courseId", "value": "c1" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Course Progress",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{token}}", "type": "string" }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"progress\": 75\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/courses/:courseId/progress",
+              "host": ["{{base_url}}"],
+              "path": ["courses", ":courseId", "progress"],
+              "variable": [
+                { "key": "courseId", "value": "c1" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add Custom Course",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{token}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"course_id\": \"GEN-002\",\n  \"course_title\": \"Docker Deep Dive\",\n  \"course_provider\": \"Pluralsight\",\n  \"course_url\": \"https://pluralsight.org\",\n  \"course_level\": \"intermediate\",\n  \"course_duration\": 20\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/courses",
+              "host": ["{{base_url}}"],
+              "path": ["courses"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Roadmap",
+      "item": [
+        {
+          "name": "Get Roadmap by Resume ID",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{token}}", "type": "string" }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/roadmap/:resumeId",
+              "host": ["{{base_url}}"],
+              "path": ["roadmap", ":resumeId"],
+              "variable": [
+                { "key": "resumeId", "value": "13c80c30-a853-429f-96e9-7053e052ec64" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "Get User Notifications",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{token}}", "type": "string" }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/notifications",
+              "host": ["{{base_url}}"],
+              "path": ["notifications"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Progress",
+      "item": [
+        {
+          "name": "Get Learning Progress",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{token}}", "type": "string" }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/progress",
+              "host": ["{{base_url}}"],
+              "path": ["progress"]
+            }
+          }
+        },
+        {
+          "name": "Update Learning Progress",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{token}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseId\": \"c1\",\n  \"status\": \"in_progress\",\n  \"progress\": 40\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/progress/update",
+              "host": ["{{base_url}}"],
+              "path": ["progress", "update"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Skills",
+      "item": [
+        {
+          "name": "Get All Skills in Catalog",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{token}}", "type": "string" }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/skills",
+              "host": ["{{base_url}}"],
+              "path": ["skills"]
+            }
+          }
+        },
+        {
+          "name": "Get My Skills",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{token}}", "type": "string" }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/skills/me",
+              "host": ["{{base_url}}"],
+              "path": ["skills", "me"]
+            }
+          }
+        },
+        {
+          "name": "Add Custom Skill to My Profile",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{token}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"skillName\": \"Pytorch\",\n  \"proficiency\": \"advanced\",\n  \"yearsOfExperience\": 2\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/skills/me",
+              "host": ["{{base_url}}"],
+              "path": ["skills", "me"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
