@@ -87,18 +87,18 @@ try {
         Write-Host "------------------------------------------------------------" -ForegroundColor Cyan
         
         foreach ($s in $services) {
-            $status = "🔴 OFFLINE"
+            $status = "OFFLINE"
             $details = "Connection failed"
             $color = "Red"
             
             try {
                 $res = Invoke-WebRequest -Uri $s.url -Method GET -TimeoutSec 2 -UseBasicParsing -ErrorAction Stop
                 if ($res.StatusCode -eq 200) {
-                    $status = "🟢 ONLINE"
+                    $status = "ONLINE"
                     $details = "200 OK"
                     $color = "Green"
                 } else {
-                    $status = "🟡 UNHEALTHY"
+                    $status = "UNHEALTHY"
                     $details = "HTTP $($res.StatusCode)"
                     $color = "Yellow"
                 }
@@ -106,7 +106,7 @@ try {
                 # Check if port is open to differentiate starting vs dead
                 $connection = Get-NetTCPConnection -LocalPort $s.port -ErrorAction SilentlyContinue
                 if ($connection) {
-                    $status = "🟡 STARTING"
+                    $status = "STARTING"
                     $details = "Port open, awaiting response"
                     $color = "Yellow"
                 }
