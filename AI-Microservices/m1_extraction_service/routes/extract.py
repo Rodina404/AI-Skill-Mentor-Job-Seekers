@@ -38,6 +38,12 @@ async def extract_resume(
         if not (filename.lower().endswith(".pdf") or filename.lower().endswith(".docx") or filename.lower().endswith(".txt")):
             return _error(415, f"Unsupported file type: '{Path(filename).suffix}'. Only PDF, DOCX, and TXT are accepted.")
         file_bytes = await resumeFile.read()
+        print(f"[INFO] FastAPI received file: {filename}, size: {len(file_bytes)} bytes")
+        import uuid
+        save_path = f"d:/Grad/Repo/AI-Skill-Mentor-Job-Seekers/scratch/received_{uuid.uuid4().hex[:8]}.pdf"
+        with open(save_path, "wb") as f:
+            f.write(file_bytes)
+        print(f"[INFO] Saved file to {save_path}")
 
     start_ts = time.time()
 
@@ -60,6 +66,7 @@ async def extract_resume(
 
     except ValueError as exc:
         sanitized = str(exc)
+        print(f"[ERROR] ValueError during extraction: {sanitized}")
         if "empty" in sanitized.lower() or "no text" in sanitized.lower():
             return _error(422, "The file was parsed but contained no extractable text. It may be a scanned/image-only PDF.")
         return _error(422, f"File parsing error: {sanitized}")
