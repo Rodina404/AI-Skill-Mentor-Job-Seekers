@@ -1,0 +1,267 @@
+const { supabaseAdmin } = require('../config/supabase');
+
+/**
+ * Get all job postings
+ * GET /jobs
+ */
+const getAllJobs = async (req, res) => {
+  try {
+    const { location, jobType, type, status = 'open' } = req.query;
+    let query = supabaseAdmin.from('job_postings').select('*').eq('status', status);
+
+    if (location) {
+      query = query.ilike('location', `%${location}%`);
+    }
+
+    const filterType = jobType || type;
+    if (filterType && filterType !== 'all') {
+      // Normalize frontend types (e.g. full-time -> full_time)
+      const dbType = filterType.toLowerCase().replace('-', '_');
+      query = query.eq('job_type', dbType);
+    }
+
+    const { data, error } = await query.order('created_at', { ascending: false });
+    if (error) throw error;
+
+    // The frontend expects { success: true, data: { jobs: [...] } }
+    res.json({
+      success: true,
+      data: {
+        jobs: data || []
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+/**
+ * Get job posting by ID
+ * GET /jobs/:jobId
+ */
+const getJobById = async (req, res) => {
+  try {
+    const { jobId } = req.params;
+    const { data, error } = await supabaseAdmin
+      .from('job_postings')
+      .select('*')
+      .eq('id', jobId)
+      .single();
+
+    if (error || !data) {
+      return res.status(404).json({ error: 'Job not found' });
+    }
+
+    res.json({
+      success: true,
+      data
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+/**
+ * Create new job posting (Recruiter only)
+ * POST /jobs
+ */
+const createJob = async (req, res) => {
+  try {
+    if (req.user.role !== 'recruiter' && req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Forbidden: Recruiter or admin role required' });
+    }
+
+    const {
+      title,
+      job_description,
+      description,
+      location,
+      company,
+      required_skills,
+      job_type,
+      jobType,
+      status = 'open'
+    } = req.body;
+
+    if (!title) {
+      return res.status(400).json({ error: 'title is required' });
+    }
+
+    const finalDescription = job_description || description || '';
+    const finalJobType = job_type || jobType || 'full_time';
+
+    const { data, error } = await supabaseAdmin
+      .from('job_postings')
+      .insert({
+        title,
+        job_description: finalDescription,
+        location: location || 'Remote',
+        company: company || 'Company',
+        required_skills: required_skills || [],
+        job_type: finalJobType,
+        status,
+        recruiter_id: req.user.id
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    res.status(201).json({
+      success: true,
+      data
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+/**
+ * Update job posting (Recruiter/Admin only, owns posting)
+ * PUT /jobs/:jobId
+ */
+const updateJob = async (req, res) => {
+  try {
+    const { jobId } = req.params;
+
+    // Fetch posting to verify ownership
+    const { data: job, error: fetchErr } = await supabaseAdmin
+      .from('job_postings')
+      .select('recruiter_id')
+      .eq('id', jobId)
+      .single();
+
+    if (fetchErr || !job) {
+      return res.status(404).json({ error: 'Job not found' });
+    }
+
+    if (req.user.role !== 'admin' && job.recruiter_id !== req.user.id) {
+      return res.status(403).json({ error: 'Forbidden: You do not own this job posting' });
+    }
+
+    const {
+      title,
+      job_description,
+      description,
+      location,
+      company,
+      required_skills,
+      job_type,
+      jobType,
+      status
+    } = req.body;
+
+    const updates = {};
+    if (title !== undefined) updates.title = title;
+    if (job_description !== undefined) updates.job_description = job_description;
+    if (description !== undefined) updates.job_description = description;
+    if (location !== undefined) updates.location = location;
+    if (company !== undefined) updates.company = company;
+    if (required_skills !== undefined) updates.required_skills = required_skills;
+    if (status !== undefined) updates.status = status;
+
+    const finalJobType = job_type || jobType;
+    if (finalJobType !== undefined) {
+      updates.job_type = finalJobType.toLowerCase().replace('-', '_');
+    }
+
+    const { data: updatedJob, error: updateErr } = await supabaseAdmin
+      .from('job_postings')
+      .update(updates)
+      .eq('id', jobId)
+      .select()
+      .single();
+
+    if (updateErr) throw updateErr;
+
+    res.json({
+      success: true,
+      data: updatedJob
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+/**
+ * Delete job posting (Recruiter/Admin only, owns posting)
+ * DELETE /jobs/:jobId
+ */
+const deleteJob = async (req, res) => {
+  try {
+    const { jobId } = req.params;
+
+    // Fetch posting to verify ownership
+    const { data: job, error: fetchErr } = await supabaseAdmin
+      .from('job_postings')
+      .select('recruiter_id')
+      .eq('id', jobId)
+      .single();
+
+    if (fetchErr || !job) {
+      return res.status(404).json({ error: 'Job not found' });
+    }
+
+    if (req.user.role !== 'admin' && job.recruiter_id !== req.user.id) {
+      return res.status(403).json({ error: 'Forbidden: You do not own this job posting' });
+    }
+
+    const { error: deleteErr } = await supabaseAdmin
+      .from('job_postings')
+      .delete()
+      .eq('id', jobId);
+
+    if (deleteErr) throw deleteErr;
+
+    res.json({
+      success: true,
+      message: 'Job deleted'
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+/**
+ * Apply to job (Stubbed 501 - missing applications table)
+ * POST /jobs/:jobId/apply
+ */
+const applyToJob = async (req, res) => {
+  res.status(501).json({
+    error: 'Not Implemented',
+    message: 'Job applications database table (applications/job_applications) is missing from the database schema.'
+  });
+};
+
+/**
+ * Get job applicants (Stubbed 501 - missing applications table)
+ * GET /jobs/:jobId/applicants
+ */
+const getJobApplicants = async (req, res) => {
+  res.status(501).json({
+    error: 'Not Implemented',
+    message: 'Job applications database table (applications/job_applications) is missing from the database schema.'
+  });
+};
+
+/**
+ * Approve job (Stubbed 501 - missing applications table/feature)
+ * POST /jobs/:jobId/approve
+ */
+const approveJob = async (req, res) => {
+  res.status(501).json({
+    error: 'Not Implemented',
+    message: 'Job approval and applications mapping is missing from the database schema.'
+  });
+};
+
+module.exports = {
+  getAllJobs,
+  getJobById,
+  createJob,
+  updateJob,
+  deleteJob,
+  applyToJob,
+  getJobApplicants,
+  approveJob
+};

@@ -9,7 +9,7 @@ router.use('/roadmap', require('./roadmap.routes'));
 router.use('/notifications', require('./notifications.routes'));
 router.use('/progress', require('./progress.routes'));
 router.use('/skills', require('./skills.routes'));
-// router.use('/jobs', require('./jobs.routes'));
-// router.use('/users', require('./users.routes'));
+router.use('/jobs', require('./jobs.routes'));
+router.use('/users', require('./users.routes'));
 
 module.exports = router;
