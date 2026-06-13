@@ -397,7 +397,7 @@ const runMatching = async (req, res) => {
 const getMatchResults = async (req, res) => {
   const { data, error } = await supabaseAdmin
     .from('candidate_matches')
-    .select('id, match_score, skill_match_score, matched_skills, missing_skills, created_at, job_postings(id, title, company, location)')
+    .select('id, resume_id, match_score, overall_score, skill_match_score, matched_skills, missing_skills, created_at, job_postings(id, title, company, location)')
     .eq('user_id', req.user.id)
     .order('match_score', { ascending: false });
   if (error) return res.status(500).json({ error: error.message });

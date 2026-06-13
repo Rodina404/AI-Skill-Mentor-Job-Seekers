@@ -1,4 +1,4 @@
-const { supabase } = require('../config/supabase');
+const { supabase, supabaseAdmin } = require('../config/supabase');
 
 const signup = async (req, res) => {
   const { email, password, full_name, role } = req.body;
@@ -11,10 +11,18 @@ const signup = async (req, res) => {
   });
   if (error) return res.status(400).json({ error: error.message });
 
-  return res.status(201).json({
+  const responsePayload = {
     message: 'Account created. Please verify your email.',
     user: { id: data.user.id, email: data.user.email, full_name, role: role || 'job_seeker' }
-  });
+  };
+
+  if (data.session) {
+    responsePayload.access_token = data.session.access_token;
+    responsePayload.refresh_token = data.session.refresh_token;
+    responsePayload.message = 'Account created and logged in successfully.';
+  }
+
+  return res.status(201).json(responsePayload);
 };
 
 const login = async (req, res) => {
@@ -46,7 +54,51 @@ const logout = async (req, res) => {
 };
 
 const getMe = async (req, res) => {
-  return res.status(200).json({ user: req.user });
+  try {
+    const userId = req.user.id;
+
+    // Pull enriched name from public.users (populated by auth trigger)
+    console.log('[getMe] Querying for userId:', userId);
+    const { data: dbUser, error: dbUserError } = await supabaseAdmin
+      .from('users')
+      .select('first_name, last_name, roles(name)')
+      .eq('id', userId)
+      .single();
+    console.log('[getMe] dbUser result:', dbUser, 'error:', dbUserError);
+    if (dbUserError) {
+      console.error('[getMe] dbUser fetch error:', dbUserError.message);
+    }
+
+    // Pull job seeker profile (location, etc.)
+    const { data: seekerProfile } = await supabaseAdmin
+      .from('job_seeker_profiles')
+      .select('id, location, years_of_experience, target_role, headline, bio')
+      .eq('user_id', userId)
+      .single();
+
+    const fullName = req.user.full_name || '';
+    const enrichedUser = {
+      id: userId,
+      email: req.user.email,
+      full_name: fullName,
+      role: dbUser?.roles?.name || dbUser?.role || req.user.role,
+      first_name: dbUser?.first_name || fullName.split(' ')[0] || '',
+      last_name: dbUser?.last_name || fullName.split(' ').slice(1).join(' ') || '',
+    };
+
+    return res.status(200).json({ user: enrichedUser, profile: seekerProfile || null });
+  } catch (err) {
+    // Safe fallback — never let getMe return non-200 for a DB lookup failure
+    const fullName = req.user.full_name || '';
+    return res.status(200).json({
+      user: {
+        ...req.user,
+        first_name: fullName.split(' ')[0] || '',
+        last_name: fullName.split(' ').slice(1).join(' ') || '',
+      },
+      profile: null
+    });
+  }
 };
 
 const refreshToken = async (req, res) => {

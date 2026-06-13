@@ -12,6 +12,7 @@ const uploadResume = async (req, res) => {
     const userId = req.user.id;
     const file = req.file;
     if (!file) return res.status(400).json({ error: 'No file uploaded' });
+    console.log(`[Upload] File received: originalname=${file.originalname}, mimetype=${file.mimetype}, size=${file.buffer ? file.buffer.length : 'undefined'} bytes`);
 
     const filePath = `${userId}/${Date.now()}_${file.originalname}`;
     const { error: uploadError } = await supabaseAdmin.storage
@@ -27,9 +28,12 @@ const uploadResume = async (req, res) => {
 
     res.status(202).json({ message: 'Resume uploaded. Processing started.', resume_id: resumeRecord.id });
 
-    _runAnalysisPipeline(resumeRecord.id, file).catch(err => {
+    _runAnalysisPipeline(resumeRecord.id, file).catch(async (err) => {
       console.error(`Pipeline failed for resume ${resumeRecord.id}:`, err.message);
-      supabaseAdmin.from('resumes').update({ status: 'failed' }).eq('id', resumeRecord.id);
+      const { error } = await supabaseAdmin.from('resumes').update({ status: 'failed' }).eq('id', resumeRecord.id);
+      if (error) {
+        console.error(`Failed to update resume status to failed for ID ${resumeRecord.id}:`, error.message);
+      }
     });
   } catch (err) {
     console.error('uploadResume error:', err.message);
@@ -133,16 +137,21 @@ const createLearningPath = async (req, res) => {
       return res.status(404).json({ error: 'No analysis results found for this resume. Please run matching first.' });
     }
 
+    const missingSkillsList = (match.missing_skills || []).map(s => {
+      if (typeof s === 'string') return s;
+      return s.skill || s.name || '';
+    }).filter(Boolean);
+
     const roadmapRequest = {
       user_id: userId,
-      missing_skills: match.missing_skills || [],
+      missing_skills: missingSkillsList,
       hours_per_week: 10,
       deadline_weeks: 8,
       job_title: match.job_postings?.title || 'Target Role'
     };
 
     const roadmapUrl = process.env.M5_ROADMAP_URL || 'http://localhost:8005';
-    const { data: response } = await axios.post(`${roadmapUrl}/roadmap`, roadmapRequest, { timeout: 30000 });
+    const { data: response } = await axios.post(`${roadmapUrl}/run/roadmap`, roadmapRequest, { timeout: 30000 });
 
     if (!response.success) {
       return res.status(500).json({ error: 'Failed to generate roadmap', details: response.error });
@@ -179,10 +188,15 @@ const getRecommendedCourses = async (req, res) => {
       .eq('id', analysisId)
       .single();
 
+    const normalizedSkillsList = (resume?.normalized_skills || []).map(s => {
+      if (typeof s === 'string') return s;
+      return s.name || s.skill || '';
+    }).filter(Boolean);
+
     const courseRecRequest = {
       user_id: userId,
       user_profile: {
-        skills: resume?.normalized_skills || [],
+        skills: normalizedSkillsList,
         experience_years: 0,
         education: "",
         location: ""
