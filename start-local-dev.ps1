@@ -13,10 +13,10 @@ foreach ($port in $ports) {
     $connection = Get-NetTCPConnection -LocalPort $port -ErrorAction SilentlyContinue
     if ($connection) {
         $pids = $connection.OwningProcess | Select-Object -Unique
-        foreach ($pid in $pids) {
-            if ($pid -gt 0) {
-                Write-Host "Port $port in use by PID $pid. Terminating process..." -ForegroundColor Yellow
-                Stop-Process -Id $pid -Force -ErrorAction SilentlyContinue
+        foreach ($p in $pids) {
+            if ($p -gt 0) {
+                Write-Host "Port $port in use by PID $p. Terminating process..." -ForegroundColor Yellow
+                Stop-Process -Id $p -Force -ErrorAction SilentlyContinue
             }
         }
     }
@@ -56,7 +56,7 @@ foreach ($s in $services) {
     
     if ($s.isNode) {
         # Launch Node/NPM service
-        Start-Process "npm" -ArgumentList "run dev" -WorkingDirectory $path -NoNewWindow -RedirectStandardOutput $stdout -RedirectStandardError $stderr
+        Start-Process "cmd.exe" -ArgumentList "/c npm run dev" -WorkingDirectory $path -NoNewWindow -RedirectStandardOutput $stdout -RedirectStandardError $stderr
     } else {
         # Launch Python FastAPI service
         $uvicornPath = "uvicorn"
