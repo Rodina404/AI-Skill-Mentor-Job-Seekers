@@ -1,6 +1,7 @@
 import { Briefcase, MapPin, DollarSign, Clock, Users, ArrowRight, AlertCircle } from 'lucide-react';
 import { useState } from 'react';
 import { validateRequired, validateTextLength } from '../utils/validation';
+import { jobsAPI } from '../api/jobs.api';
 
 interface JobPostingProps {
   onNavigate: (page: string) => void;
@@ -21,7 +22,7 @@ export function JobPosting({ onNavigate }: JobPostingProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     const newErrors: Record<string, string> = {};
@@ -55,21 +56,44 @@ export function JobPosting({ onNavigate }: JobPostingProps) {
     
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
-      // Scroll to first error
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
     
-    // Clear errors and submit
     setErrors({});
     setIsLoading(true);
     
-    // Simulate job posting
-    setTimeout(() => {
+    try {
+      const parsedSkills = formData.skills
+        .split(',')
+        .map(s => s.trim())
+        .filter(s => s.length > 0);
+
+      const jobData = {
+        title: formData.title.trim(),
+        job_description: `${formData.description.trim()}\n\nRequirements:\n${formData.requirements.trim()}`,
+        location: formData.location.trim(),
+        company: formData.company.trim(),
+        required_skills: parsedSkills,
+        employment_type: formData.type === 'full-time' ? 'full_time' : formData.type === 'part-time' ? 'part_time' : formData.type
+      };
+
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('Session expired, please log in again');
+        onNavigate('login');
+        return;
+      }
+      await jobsAPI.createJob(jobData, token);
+      
       setIsLoading(false);
       alert('Job posted successfully! Candidates will be matched based on their skills and readiness scores.');
       onNavigate('recruiter-profile');
-    }, 1500);
+    } catch (err: any) {
+      setIsLoading(false);
+      setErrors({ submit: err.message || 'Failed to post job' });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   const clearFieldError = (field: string) => {

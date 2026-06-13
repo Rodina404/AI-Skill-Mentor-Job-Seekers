@@ -56,11 +56,12 @@ export const authAPI = {
    * @returns {Promise<void>}
    */
   async signOut(token) {
+    const finalToken = token || localStorage.getItem('token');
     const response = await fetch(`${API_BASE_URL}/auth/signout`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
+        'Authorization': `Bearer ${finalToken}`,
       },
     });
 
@@ -77,10 +78,11 @@ export const authAPI = {
    * @returns {Promise<Object>} - User data
    */
   async verifyToken(token) {
+    const finalToken = token || localStorage.getItem('token');
     const response = await fetch(`${API_BASE_URL}/auth/verify`, {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${token}`,
+        'Authorization': `Bearer ${finalToken}`,
       },
     });
 

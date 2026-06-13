@@ -15,6 +15,7 @@ interface AuthContextType {
   logout: () => void;
   isAuthenticated: boolean;
   hasRole: (role: string | string[]) => boolean;
+  updateUser: (updatedFields: Partial<User>) => void;
 }
 
 const mapRole = (role: string): "jobseeker" | "recruiter" | "admin" => {
@@ -25,33 +26,72 @@ const mapRole = (role: string): "jobseeker" | "recruiter" | "admin" => {
   return "jobseeker";
 };
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
 
-  // Check for existing session on mount
+  // Attempt to restore session from localStorage on mount
   useEffect(() => {
     const token = localStorage.getItem('token');
     const savedUser = localStorage.getItem('currentUser');
-    if (token && savedUser) {
-      authAPI.verifyToken(token)
-        .then(data => {
-          const verifiedUser: User = {
-            id: data.user.id,
-            name: data.user.full_name || data.user.email,
-            email: data.user.email,
-            role: mapRole(data.user.role)
-          };
-          setUser(verifiedUser);
-          localStorage.setItem('currentUser', JSON.stringify(verifiedUser));
-        })
-        .catch(() => {
-          setUser(null);
-          localStorage.removeItem('currentUser');
-          localStorage.removeItem('token');
-        });
-    }
+    if (!token || !savedUser) return;
+
+    // Verify token is still valid — auto-refresh if expired
+    const tryRestoreSession = async () => {
+      try {
+        const data = await authAPI.verifyToken(token);
+        const verifiedUser: User = {
+          id: data.user.id,
+          name: data.user.full_name || data.user.email,
+          email: data.user.email,
+          role: mapRole(data.user.role)
+        };
+        setUser(verifiedUser);
+        localStorage.setItem('currentUser', JSON.stringify(verifiedUser));
+      } catch {
+        // Token may be expired — attempt refresh
+        const refreshToken = localStorage.getItem('refresh_token');
+        if (refreshToken) {
+          try {
+            const refreshRes = await fetch(`${API_BASE_URL}/auth/refresh`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ refresh_token: refreshToken })
+            });
+            if (refreshRes.ok) {
+              const refreshData = await refreshRes.json();
+              localStorage.setItem('token', refreshData.access_token);
+              if (refreshData.refresh_token) {
+                localStorage.setItem('refresh_token', refreshData.refresh_token);
+              }
+              // Re-verify with new token
+              const data = await authAPI.verifyToken(refreshData.access_token);
+              const verifiedUser: User = {
+                id: data.user.id,
+                name: data.user.full_name || data.user.email,
+                email: data.user.email,
+                role: mapRole(data.user.role)
+              };
+              setUser(verifiedUser);
+              localStorage.setItem('currentUser', JSON.stringify(verifiedUser));
+              return;
+            }
+          } catch {
+            // Refresh also failed — clear session
+          }
+        }
+        // Clear stale session
+        setUser(null);
+        localStorage.removeItem('currentUser');
+        localStorage.removeItem('token');
+        localStorage.removeItem('refresh_token');
+      }
+    };
+
+    tryRestoreSession();
   }, []);
 
   const login = async (email: string, password: string) => {
@@ -71,6 +111,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(authenticatedUser);
     localStorage.setItem('currentUser', JSON.stringify(authenticatedUser));
     localStorage.setItem('token', data.access_token);
+    // Store refresh token so we can auto-renew expired sessions
+    if (data.refresh_token) {
+      localStorage.setItem('refresh_token', data.refresh_token);
+    }
   };
 
   const signup = async (name: string, email: string, password: string, role: "jobseeker" | "recruiter") => {
@@ -95,6 +139,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (data.access_token) {
       localStorage.setItem('token', data.access_token);
     }
+    if (data.refresh_token) {
+      localStorage.setItem('refresh_token', data.refresh_token);
+    }
   };
 
   const logout = () => {
@@ -105,6 +152,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     localStorage.removeItem('currentUser');
     localStorage.removeItem('token');
+    localStorage.removeItem('refresh_token');
+  };
+
+  const updateUser = (updatedFields: Partial<User>) => {
+    setUser(prev => {
+      if (!prev) return null;
+      const updated = { ...prev, ...updatedFields };
+      localStorage.setItem('currentUser', JSON.stringify(updated));
+      return updated;
+    });
   };
 
   const hasRole = (roles: string | string[]): boolean => {
@@ -120,7 +177,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signup, 
       logout, 
       isAuthenticated: !!user,
-      hasRole
+      hasRole,
+      updateUser
     }}>
       {children}
     </AuthContext.Provider>

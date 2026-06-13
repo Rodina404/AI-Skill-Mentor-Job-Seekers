@@ -1,26 +1,30 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { User, Mail, MapPin, Save, X, CheckCircle, AlertCircle } from 'lucide-react';
+import { usersAPI } from '../api/users.api';
+import { useAuth } from '../context/AuthContext';
 
 interface EditProfileProps {
   onNavigate: (page: string) => void;
 }
 
 export function EditProfile({ onNavigate }: EditProfileProps) {
+  const { updateUser } = useAuth();
   const [formData, setFormData] = useState({
-    name: 'John Doe',
-    email: 'aya.mamdouh10@icloud.com',
-    country: 'Egypt',
-    city: 'Alex',
+    name: '',
+    email: '',
+    country: '',
+    city: '',
   });
 
-  const [originalData] = useState({
-    name: 'John Doe',
-    email: 'aya.mamdouh10@icloud.com',
-    country: 'Egypt',
-    city: 'Alex',
+  const [originalData, setOriginalData] = useState({
+    name: '',
+    email: '',
+    country: '',
+    city: '',
   });
 
   const [isLoading, setIsLoading] = useState(false);
+  const [isFetching, setIsFetching] = useState(true);
   const [showSuccess, setShowSuccess] = useState(false);
   const [errors, setErrors] = useState<{
     name?: string;
@@ -29,6 +33,51 @@ export function EditProfile({ onNavigate }: EditProfileProps) {
     city?: string;
     noChanges?: string;
   }>({});
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          alert('Session expired, please log in again');
+          onNavigate('login');
+          return;
+        }
+
+        const currentUserStr = localStorage.getItem('currentUser');
+        const currentUser = currentUserStr ? JSON.parse(currentUserStr) : null;
+        const userId = currentUser?.id || 'me';
+
+        const prof = await usersAPI.getProfile(userId, token);
+        if (prof) {
+          const name = prof.user?.full_name || `${prof.user?.first_name || ''} ${prof.user?.last_name || ''}`.trim() || '';
+          const email = prof.user?.email || '';
+          
+          let country = '';
+          let city = '';
+          const location = prof.profile?.location || '';
+          if (location.includes(',')) {
+            const parts = location.split(',');
+            country = parts[0].trim();
+            city = parts.slice(1).join(',').trim();
+          } else {
+            country = location;
+          }
+
+          const initData = { name, email, country, city };
+          setFormData(initData);
+          setOriginalData(initData);
+        }
+      } catch (err: any) {
+        console.error(err);
+        setErrors({ noChanges: err.message || 'Failed to load profile data' });
+      } finally {
+        setIsFetching(false);
+      }
+    };
+
+    fetchProfile();
+  }, []);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,10 +118,32 @@ export function EditProfile({ onNavigate }: EditProfileProps) {
     setErrors({});
     setIsLoading(true);
     
-    // Simulate API call
-    // In a real app: await updateUserProfile(formData);
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('Session expired, please log in again');
+        onNavigate('login');
+        return;
+      }
+
+      const currentUserStr = localStorage.getItem('currentUser');
+      const currentUser = currentUserStr ? JSON.parse(currentUserStr) : null;
+      const userId = currentUser?.id || 'me';
+
+      const profileData = {
+        name: formData.name.trim(),
+        email: formData.email.trim(),
+        location: `${formData.country.trim()}, ${formData.city.trim()}`
+      };
+
+      await usersAPI.updateProfile(userId, profileData, token);
+
+      // Update current user details in localStorage and AuthContext
+      updateUser({
+        name: formData.name.trim(),
+        email: formData.email.trim()
+      });
+
       setShowSuccess(true);
       
       // Hide success message and navigate back after 2 seconds
@@ -80,12 +151,26 @@ export function EditProfile({ onNavigate }: EditProfileProps) {
         setShowSuccess(false);
         onNavigate('profile');
       }, 2000);
-    }, 1000);
+    } catch (err: any) {
+      console.error(err);
+      setErrors({ noChanges: err.message || 'Failed to save profile changes' });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleCancel = () => {
     onNavigate('profile');
   };
+
+  if (isFetching) {
+    return (
+      <div className="min-h-screen pt-20 pb-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-green-50 to-lime-50 flex flex-col items-center justify-center">
+        <div className="w-12 h-12 border-4 border-green-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p className="text-gray-600 font-medium">Loading profile details...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen pt-20 pb-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-green-50 to-lime-50">

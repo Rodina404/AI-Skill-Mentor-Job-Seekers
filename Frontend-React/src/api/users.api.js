@@ -5,10 +5,13 @@
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
-const getAuthHeaders = (token) => ({
-  'Content-Type': 'application/json',
-  'Authorization': `Bearer ${token}`,
-});
+const getAuthHeaders = (token) => {
+  const finalToken = token || localStorage.getItem('token');
+  return {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${finalToken}`,
+  };
+};
 
 export const usersAPI = {
   /**
@@ -18,7 +21,7 @@ export const usersAPI = {
    * @returns {Promise<Object>} - User profile data
    */
   async getProfile(userId, token) {
-    const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
+    const response = await fetch(`${API_BASE_URL}/auth/me`, {
       method: 'GET',
       headers: getAuthHeaders(token),
     });
@@ -59,10 +62,15 @@ export const usersAPI = {
    * @returns {Promise<Object>} - Updated skills list
    */
   async addSkill(userId, skillData, token) {
-    const response = await fetch(`${API_BASE_URL}/users/${userId}/skills`, {
+    const payload = {
+      skillName: skillData.name || skillData.skillName,
+      proficiency: skillData.level || skillData.proficiency || 'intermediate',
+      yearsOfExperience: skillData.yearsOfExperience || 1
+    };
+    const response = await fetch(`${API_BASE_URL}/skills/me`, {
       method: 'POST',
       headers: getAuthHeaders(token),
-      body: JSON.stringify(skillData),
+      body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
@@ -148,6 +156,24 @@ export const usersAPI = {
 
     if (!response.ok) {
       throw new Error('Failed to remove saved job');
+    }
+
+    return response.json();
+  },
+
+  /**
+   * Get current user's skills
+   * @param {string} token - Auth token
+   * @returns {Promise<Array>} - List of skills
+   */
+  async getSkills(token) {
+    const response = await fetch(`${API_BASE_URL}/skills/me`, {
+      method: 'GET',
+      headers: getAuthHeaders(token),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch user skills');
     }
 
     return response.json();
