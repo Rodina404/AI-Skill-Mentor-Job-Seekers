@@ -109,7 +109,9 @@ const createJob = async (req, res) => {
 
     res.status(201).json({
       success: true,
-      data
+      data: {
+        job: data
+      }
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -258,8 +260,7 @@ const applyToJob = async (req, res) => {
         job_posting_id: jobId,
         job_seeker_profile_id: profile.id,
         user_id: req.user.id,
-        resume_id: resumeId,
-        status: 'pending'
+        resume_id: resumeId
       })
       .select()
       .single();
@@ -305,35 +306,47 @@ const getJobApplicants = async (req, res) => {
       return res.status(403).json({ error: 'Forbidden: You do not own this job posting' });
     }
 
-    // Fetch applicants with joined details
-    const { data, error } = await supabaseAdmin
+    // Fetch applicants with joined user details
+    const { data: applications, error: appErr } = await supabaseAdmin
       .from('job_applications')
       .select(`
         *,
-        resumes (
-          id,
-          original_name,
-          file_path,
-          analyzed_at,
-          normalized_skills
-        ),
         users (
           first_name,
           last_name,
           email
-        ),
-        job_seeker_profiles (
-          years_of_experience,
-          location
         )
       `)
       .eq('job_posting_id', jobId);
 
-    if (error) throw error;
+    if (appErr) throw appErr;
+
+    // Fetch candidate matches to retrieve matching metrics
+    const { data: matches, error: matchesErr } = await supabaseAdmin
+      .from('candidate_matches')
+      .select('*')
+      .eq('job_posting_id', jobId);
+
+    if (matchesErr) throw matchesErr;
+
+    const candidates = (applications || []).map(app => {
+      const match = (matches || []).find(m => m.user_id === app.user_id);
+      const fullName = app.users ? `${app.users.first_name || ''} ${app.users.last_name || ''}`.trim() : 'Job Seeker';
+
+      return {
+        name: fullName,
+        email: app.users?.email || '',
+        score: match ? match.match_score || Math.round((match.overall_score || 0) * 100) : 75,
+        matchedSkills: match ? match.matched_skills || [] : [],
+        missingSkills: match ? match.missing_skills || [] : []
+      };
+    });
 
     res.json({
       success: true,
-      data: data || []
+      data: {
+        candidates
+      }
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
