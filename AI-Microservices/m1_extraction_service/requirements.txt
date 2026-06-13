@@ -12,3 +12,4 @@ langchain-groq
 langchain-ollama
 pytest
 python-dotenv
+langchain-text-splitters>=0.2.0
