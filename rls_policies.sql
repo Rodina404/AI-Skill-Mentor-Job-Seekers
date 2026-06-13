@@ -49,6 +49,14 @@ DROP POLICY IF EXISTS "Allow users to insert their own roadmaps" ON public.roadm
 DROP POLICY IF EXISTS "Allow users to update their own roadmaps" ON public.roadmaps;
 DROP POLICY IF EXISTS "Allow users to delete their own roadmaps" ON public.roadmaps;
 
+DROP POLICY IF EXISTS "Allow users to select their own applications or owned posting applications" ON public.job_applications;
+DROP POLICY IF EXISTS "Allow users to insert their own applications" ON public.job_applications;
+DROP POLICY IF EXISTS "Allow recruiters to update their owned posting applications" ON public.job_applications;
+
+DROP POLICY IF EXISTS "Allow users to select their own saved jobs" ON public.saved_jobs;
+DROP POLICY IF EXISTS "Allow users to insert their own saved jobs" ON public.saved_jobs;
+DROP POLICY IF EXISTS "Allow users to delete their own saved jobs" ON public.saved_jobs;
+
 -- 1. Skills Policies
 CREATE POLICY "Allow read access to all users"
     ON public.skills FOR SELECT
@@ -228,5 +236,38 @@ CREATE POLICY "Allow users to update their own roadmaps"
 
 CREATE POLICY "Allow users to delete their own roadmaps"
     ON public.roadmaps FOR DELETE
+    TO authenticated
+    USING (user_id = auth.uid());
+
+-- 12. Job Applications Policies
+CREATE POLICY "Allow users to select their own applications or owned posting applications"
+    ON public.job_applications FOR SELECT
+    TO authenticated
+    USING (user_id = auth.uid() OR job_posting_id IN (SELECT id FROM public.job_postings WHERE recruiter_id = auth.uid()));
+
+CREATE POLICY "Allow users to insert their own applications"
+    ON public.job_applications FOR INSERT
+    TO authenticated
+    WITH CHECK (user_id = auth.uid());
+
+CREATE POLICY "Allow recruiters to update their owned posting applications"
+    ON public.job_applications FOR UPDATE
+    TO authenticated
+    USING (job_posting_id IN (SELECT id FROM public.job_postings WHERE recruiter_id = auth.uid()))
+    WITH CHECK (job_posting_id IN (SELECT id FROM public.job_postings WHERE recruiter_id = auth.uid()));
+
+-- 13. Saved Jobs Policies
+CREATE POLICY "Allow users to select their own saved jobs"
+    ON public.saved_jobs FOR SELECT
+    TO authenticated
+    USING (user_id = auth.uid());
+
+CREATE POLICY "Allow users to insert their own saved jobs"
+    ON public.saved_jobs FOR INSERT
+    TO authenticated
+    WITH CHECK (user_id = auth.uid());
+
+CREATE POLICY "Allow users to delete their own saved jobs"
+    ON public.saved_jobs FOR DELETE
     TO authenticated
     USING (user_id = auth.uid());

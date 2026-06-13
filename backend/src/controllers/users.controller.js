@@ -70,47 +70,150 @@ const updateProfile = async (req, res) => {
 };
 
 /**
- * Update career goals (Stubbed 501 - missing goals column)
+ * Update career goals
  * PUT /users/:userId/goals
  */
 const updateGoals = async (req, res) => {
-  res.status(501).json({
-    error: 'Not Implemented',
-    message: 'Goals column (goals/target_role) is missing from the job_seeker_profiles table in the database schema.'
-  });
+  try {
+    const { userId } = req.params;
+    const { goals } = req.body;
+
+    // Check authorization
+    if (req.user.id !== userId && req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Forbidden: You cannot update another user\'s goals' });
+    }
+
+    const { data, error } = await supabaseAdmin
+      .from('job_seeker_profiles')
+      .update({ goals: goals || [] })
+      .eq('user_id', userId)
+      .select()
+      .single();
+
+    if (error || !data) {
+      return res.status(404).json({ error: 'Profile not found' });
+    }
+
+    res.json({
+      success: true,
+      message: 'Goals updated successfully',
+      data
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
 
 /**
- * Get user's saved jobs (Stubbed 501 - missing saved_jobs table)
+ * Get user's saved jobs
  * GET /users/:userId/saved-jobs
  */
 const getSavedJobs = async (req, res) => {
-  res.status(501).json({
-    error: 'Not Implemented',
-    message: 'Saved jobs database table (saved_jobs) is missing from the database schema.'
-  });
+  try {
+    const { userId } = req.params;
+
+    // Check authorization
+    if (req.user.id !== userId && req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Forbidden: Access denied' });
+    }
+
+    const { data, error } = await supabaseAdmin
+      .from('saved_jobs')
+      .select(`
+        *,
+        job_postings (
+          id,
+          title,
+          company,
+          location,
+          job_type,
+          status,
+          created_at
+        )
+      `)
+      .eq('user_id', userId);
+
+    if (error) throw error;
+
+    // Return the array directly as expected by Frontend-React (JobsListing.tsx maps array)
+    res.json(data || []);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
 
 /**
- * Save a job posting (Stubbed 501 - missing saved_jobs table)
+ * Save a job posting
  * POST /users/:userId/saved-jobs
  */
 const saveJob = async (req, res) => {
-  res.status(501).json({
-    error: 'Not Implemented',
-    message: 'Saved jobs database table (saved_jobs) is missing from the database schema.'
-  });
+  try {
+    const { userId } = req.params;
+    const { jobId } = req.body;
+
+    // Check authorization
+    if (req.user.id !== userId && req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Forbidden: Access denied' });
+    }
+
+    if (!jobId) {
+      return res.status(400).json({ error: 'jobId is required' });
+    }
+
+    const { data, error } = await supabaseAdmin
+      .from('saved_jobs')
+      .insert({
+        user_id: userId,
+        job_posting_id: jobId
+      })
+      .select()
+      .single();
+
+    if (error) {
+      if (error.code === '23505') {
+        return res.status(409).json({ error: 'Job already saved' });
+      }
+      throw error;
+    }
+
+    res.status(201).json({
+      success: true,
+      message: 'Job saved successfully',
+      data
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
 
 /**
- * Remove saved job (Stubbed 501 - missing saved_jobs table)
+ * Remove saved job
  * DELETE /users/:userId/saved-jobs/:jobId
  */
 const removeSavedJob = async (req, res) => {
-  res.status(501).json({
-    error: 'Not Implemented',
-    message: 'Saved jobs database table (saved_jobs) is missing from the database schema.'
-  });
+  try {
+    const { userId, jobId } = req.params;
+
+    // Check authorization
+    if (req.user.id !== userId && req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Forbidden: Access denied' });
+    }
+
+    const { error } = await supabaseAdmin
+      .from('saved_jobs')
+      .delete()
+      .eq('user_id', userId)
+      .eq('job_posting_id', jobId);
+
+    if (error) throw error;
+
+    res.json({
+      success: true,
+      message: 'Job removed from saved list'
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
 
 module.exports = {

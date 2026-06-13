@@ -136,6 +136,29 @@ CREATE TABLE IF NOT EXISTS public.notifications (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL
 );
 
+-- 11. Job Applications Table
+CREATE TABLE IF NOT EXISTS public.job_applications (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    job_posting_id UUID NOT NULL REFERENCES public.job_postings(id) ON DELETE CASCADE,
+    job_seeker_profile_id UUID NOT NULL REFERENCES public.job_seeker_profiles(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    resume_id UUID REFERENCES public.resumes(id) ON DELETE SET NULL,
+    status TEXT DEFAULT 'pending' NOT NULL,
+    notes TEXT,
+    applied_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
+    CONSTRAINT job_applications_unique UNIQUE (job_posting_id, user_id),
+    CONSTRAINT job_applications_status_check CHECK (status IN ('pending', 'reviewed', 'approved', 'rejected'))
+);
+
+-- 12. Saved Jobs Table
+CREATE TABLE IF NOT EXISTS public.saved_jobs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    job_posting_id UUID NOT NULL REFERENCES public.job_postings(id) ON DELETE CASCADE,
+    saved_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
+    CONSTRAINT saved_jobs_user_job_unique UNIQUE (user_id, job_posting_id)
+);
+
 -- ==========================================
 -- Enable Row Level Security (RLS)
 -- ==========================================
@@ -149,3 +172,13 @@ ALTER TABLE public.readiness_scores ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.course_recommendations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.learning_progress ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.job_applications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.saved_jobs ENABLE ROW LEVEL SECURITY;
+
+-- ==========================================
+-- Schema Alterations for Profiles
+-- Note: job_seeker_profiles table is originally defined in database_setup.sql.
+-- This ALTER is appended here to introduce the goals column.
+-- ==========================================
+ALTER TABLE public.job_seeker_profiles
+    ADD COLUMN IF NOT EXISTS goals JSONB DEFAULT '[]'::jsonb;

@@ -223,36 +223,154 @@ const deleteJob = async (req, res) => {
 };
 
 /**
- * Apply to job (Stubbed 501 - missing applications table)
+ * Apply to job
  * POST /jobs/:jobId/apply
  */
 const applyToJob = async (req, res) => {
-  res.status(501).json({
-    error: 'Not Implemented',
-    message: 'Job applications database table (applications/job_applications) is missing from the database schema.'
-  });
+  try {
+    const { jobId } = req.params;
+
+    // 1. Fetch job seeker profile ID
+    const { data: profile, error: profileErr } = await supabaseAdmin
+      .from('job_seeker_profiles')
+      .select('id')
+      .eq('user_id', req.user.id)
+      .single();
+
+    if (profileErr || !profile) {
+      return res.status(404).json({ error: 'Job seeker profile not found' });
+    }
+
+    // 2. Fetch user's latest resume
+    const { data: latestResume, error: resumeErr } = await supabaseAdmin
+      .from('resumes')
+      .select('id')
+      .eq('user_id', req.user.id)
+      .order('created_at', { ascending: false })
+      .limit(1);
+
+    const resumeId = latestResume && latestResume.length > 0 ? latestResume[0].id : null;
+
+    // 3. Insert application record
+    const { data, error } = await supabaseAdmin
+      .from('job_applications')
+      .insert({
+        job_posting_id: jobId,
+        job_seeker_profile_id: profile.id,
+        user_id: req.user.id,
+        resume_id: resumeId,
+        status: 'pending'
+      })
+      .select()
+      .single();
+
+    if (error) {
+      // 23505 is PostgreSQL code for unique violation (unique user_id + job_posting_id)
+      if (error.code === '23505') {
+        return res.status(409).json({ error: 'You have already applied to this job' });
+      }
+      throw error;
+    }
+
+    res.status(201).json({
+      success: true,
+      message: 'Application submitted successfully',
+      data
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
 
 /**
- * Get job applicants (Stubbed 501 - missing applications table)
+ * Get job applicants
  * GET /jobs/:jobId/applicants
  */
 const getJobApplicants = async (req, res) => {
-  res.status(501).json({
-    error: 'Not Implemented',
-    message: 'Job applications database table (applications/job_applications) is missing from the database schema.'
-  });
+  try {
+    const { jobId } = req.params;
+
+    // Verify ownership of the job posting
+    const { data: job, error: fetchErr } = await supabaseAdmin
+      .from('job_postings')
+      .select('recruiter_id')
+      .eq('id', jobId)
+      .single();
+
+    if (fetchErr || !job) {
+      return res.status(404).json({ error: 'Job not found' });
+    }
+
+    if (req.user.role !== 'admin' && job.recruiter_id !== req.user.id) {
+      return res.status(403).json({ error: 'Forbidden: You do not own this job posting' });
+    }
+
+    // Fetch applicants with joined details
+    const { data, error } = await supabaseAdmin
+      .from('job_applications')
+      .select(`
+        *,
+        resumes (
+          id,
+          original_name,
+          file_path,
+          analyzed_at,
+          normalized_skills
+        ),
+        users (
+          first_name,
+          last_name,
+          email
+        ),
+        job_seeker_profiles (
+          years_of_experience,
+          location
+        )
+      `)
+      .eq('job_posting_id', jobId);
+
+    if (error) throw error;
+
+    res.json({
+      success: true,
+      data: data || []
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
 
 /**
- * Approve job (Stubbed 501 - missing applications table/feature)
+ * Approve job (Admin only)
  * POST /jobs/:jobId/approve
  */
 const approveJob = async (req, res) => {
-  res.status(501).json({
-    error: 'Not Implemented',
-    message: 'Job approval and applications mapping is missing from the database schema.'
-  });
+  try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Forbidden: Admin role required' });
+    }
+
+    const { jobId } = req.params;
+
+    const { data, error } = await supabaseAdmin
+      .from('job_postings')
+      .update({ status: 'open' })
+      .eq('id', jobId)
+      .select()
+      .single();
+
+    if (error || !data) {
+      return res.status(404).json({ error: 'Job not found' });
+    }
+
+    res.json({
+      success: true,
+      message: 'Job posting approved and is now live',
+      data
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
 
 module.exports = {
