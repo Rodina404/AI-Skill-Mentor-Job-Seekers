@@ -17,8 +17,8 @@ RUN mkdir -p ./data ./models
 
 EXPOSE 8006
 
-ENV PORT=8003
+ENV PORT=8006
 ENV DATA_PATH=./data
 ENV MODEL_PATH=./models
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8003"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8006"]
