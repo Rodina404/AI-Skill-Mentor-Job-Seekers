@@ -201,7 +201,8 @@ const enrollInCourse = async (req, res) => {
             course_duration: defaultCourse.course_duration,
             course_rating: defaultCourse.course_rating,
             course_price: defaultCourse.course_price,
-            skill_gap_id: gapId
+            skill_gap_id: gapId,
+            user_id: userId
           })
           .select('id')
           .single();
@@ -212,16 +213,27 @@ const enrollInCourse = async (req, res) => {
       }
     }
 
-    // Insert learning progress record
+    // Insert learning progress record (check if already enrolled first)
+    const { data: existingProgress } = await supabaseAdmin
+      .from('learning_progress')
+      .select('*')
+      .eq('job_seeker_profile_id', profileId)
+      .eq('course_recommendation_id', targetCourseId)
+      .maybeSingle();
+
+    if (existingProgress) {
+      return res.status(200).json({ message: 'Already enrolled', enrollment: existingProgress });
+    }
+
     const { data: enrollment, error } = await supabaseAdmin
       .from('learning_progress')
-      .upsert({
+      .insert({
         job_seeker_profile_id: profileId,
         course_recommendation_id: targetCourseId,
         status: 'in_progress',
         completion_percentage: 0,
         enrolled_at: new Date().toISOString()
-      }, { onConflict: 'job_seeker_profile_id,course_recommendation_id' })
+      })
       .select()
       .single();
 

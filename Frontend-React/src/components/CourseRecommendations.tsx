@@ -1,12 +1,14 @@
 import { BookOpen, Clock, BarChart, Star, ExternalLink, Filter, CheckCircle, PlayCircle, Award } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { coursesAPI } from '../api/courses.api';
+import { useAuth } from '../context/AuthContext';
 
 interface CourseRecommendationsProps {
   onNavigate: (page: string) => void;
 }
 
 export function CourseRecommendations({ onNavigate }: CourseRecommendationsProps) {
+  const { token } = useAuth();
   const [filter, setFilter] = useState('all');
   const [courses, setCourses] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -14,15 +16,10 @@ export function CourseRecommendations({ onNavigate }: CourseRecommendationsProps
   const [enrollingId, setEnrollingId] = useState<string | null>(null);
 
   const fetchCourses = async () => {
+    if (!token) return;
     setIsLoading(true);
     setError(null);
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        setError('Session expired, please log in again');
-        onNavigate('login');
-        return;
-      }
       const data = await coursesAPI.getCourses({}, token);
       setCourses(data || []);
     } catch (err: any) {
@@ -34,11 +31,12 @@ export function CourseRecommendations({ onNavigate }: CourseRecommendationsProps
   };
 
   useEffect(() => {
-    fetchCourses();
-  }, []);
+    if (token) {
+      fetchCourses();
+    }
+  }, [token]);
 
   const handleEnroll = async (courseId: string) => {
-    const token = localStorage.getItem('token');
     if (!token) {
       alert('Session expired, please log in again');
       onNavigate('login');
@@ -57,7 +55,6 @@ export function CourseRecommendations({ onNavigate }: CourseRecommendationsProps
   };
 
   const handleContinueLearning = async (courseId: string, currentProgress: number) => {
-    const token = localStorage.getItem('token');
     if (!token) {
       alert('Session expired, please log in again');
       onNavigate('login');

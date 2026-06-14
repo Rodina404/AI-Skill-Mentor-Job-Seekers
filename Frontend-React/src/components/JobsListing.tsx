@@ -2,12 +2,14 @@ import { Search, MapPin, Briefcase, Clock, DollarSign, TrendingUp, Filter } from
 import { useState, useEffect } from 'react';
 import { jobsAPI } from '../api/jobs.api';
 import { usersAPI } from '../api/users.api';
+import { useAuth } from '../context/AuthContext';
 
 interface JobsListingProps {
   onNavigate: (page: string) => void;
 }
 
 export function JobsListing({ onNavigate }: JobsListingProps) {
+  const { user, token } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
   const [savedJobs, setSavedJobs] = useState<string[]>([]);
@@ -17,17 +19,12 @@ export function JobsListing({ onNavigate }: JobsListingProps) {
   const [error, setError] = useState<string | null>(null);
 
   const fetchJobs = async () => {
+    if (!token) return;
     setIsLoading(true);
     setError(null);
     try {
       // 1. Fetch matches for user
       const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-      const token = localStorage.getItem('token');
-      if (!token) {
-        setError('Session expired, please log in again');
-        onNavigate('login');
-        return;
-      }
       
       let matches: any[] = [];
       const matchesRes = await fetch(`${API_BASE_URL}/matches`, {
@@ -78,14 +75,12 @@ export function JobsListing({ onNavigate }: JobsListingProps) {
       setJobs(mapped);
 
       // Fetch saved jobs for the user
-      const currentUserStr = localStorage.getItem('currentUser');
-      const currentUser = currentUserStr ? JSON.parse(currentUserStr) : null;
-      const userId = currentUser?.id;
+      const userId = user?.id;
       if (userId) {
         try {
           const savedJobsRes = await usersAPI.getSavedJobs(userId, token);
           if (Array.isArray(savedJobsRes)) {
-            setSavedJobs(savedJobsRes.map((sj: any) => sj.job_id || sj.id));
+            setSavedJobs(savedJobsRes.map((sj: any) => sj.job_posting_id || sj.job_postings?.id || sj.job_id || sj.id));
           }
         } catch (err) {
           console.error("Failed to load saved jobs:", err);
@@ -101,21 +96,20 @@ export function JobsListing({ onNavigate }: JobsListingProps) {
   };
 
   useEffect(() => {
-    fetchJobs();
-  }, []);
+    if (token) {
+      fetchJobs();
+    }
+  }, [token]);
 
   const handleSaveJob = async (jobId: string) => {
-    const token = localStorage.getItem('token');
-    if (!token) {
+    if (!token || !user?.id) {
       alert('Session expired, please log in again');
       onNavigate('login');
       return;
     }
     setSavingJobId(jobId);
     try {
-      const currentUserStr = localStorage.getItem('currentUser');
-      const currentUser = currentUserStr ? JSON.parse(currentUserStr) : null;
-      const userId = currentUser?.id || 'me';
+      const userId = user.id;
       
       await usersAPI.saveJob(userId, jobId, token);
       setSavedJobs(prev => [...prev, jobId]);

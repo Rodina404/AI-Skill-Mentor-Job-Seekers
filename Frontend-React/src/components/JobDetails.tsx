@@ -50,7 +50,7 @@ const formatJobType = (jobType: string | undefined) => {
 };
 
 export function JobDetails({ onNavigate, jobId }: JobDetailsProps) {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const selectedJobId = jobId || localStorage.getItem('latestJobId') || '';
   const [job, setJob] = useState<Job | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -71,7 +71,7 @@ export function JobDetails({ onNavigate, jobId }: JobDetailsProps) {
       }
 
       try {
-        const response = await jobsAPI.getJobById(selectedJobId, localStorage.getItem('token'));
+        const response = await jobsAPI.getJobById(selectedJobId, token || undefined);
         const data = response.data || response;
         setJob({
           id: data.id,
@@ -82,6 +82,19 @@ export function JobDetails({ onNavigate, jobId }: JobDetailsProps) {
           description: data.job_description || 'No job description provided.',
           requiredSkills: parseSkills(data.required_skills),
         });
+
+        // Check if job is already saved or applied by loading user data if logged in
+        if (token && user?.id) {
+          try {
+            const savedJobsRes = await usersAPI.getSavedJobs(user.id, token);
+            if (Array.isArray(savedJobsRes)) {
+              const isJobSaved = savedJobsRes.some((sj: any) => (sj.job_posting_id || sj.job_postings?.id) === selectedJobId);
+              setIsSaved(isJobSaved);
+            }
+          } catch (e) {
+            console.error('Failed to load saved status in details:', e);
+          }
+        }
       } catch (error) {
         setLoadError(error instanceof Error ? error.message : 'Failed to fetch job details');
       } finally {
@@ -90,10 +103,9 @@ export function JobDetails({ onNavigate, jobId }: JobDetailsProps) {
     };
 
     loadJob();
-  }, [selectedJobId]);
+  }, [selectedJobId, token, user?.id]);
 
   const handleApply = async () => {
-    const token = localStorage.getItem('token');
     if (!token) {
       setActionError('Please sign in before applying to this job');
       return;
@@ -121,7 +133,6 @@ export function JobDetails({ onNavigate, jobId }: JobDetailsProps) {
   };
 
   const handleSave = async () => {
-    const token = localStorage.getItem('token');
     if (!token || !user?.id) {
       setActionError('Please sign in before saving this job');
       return;
