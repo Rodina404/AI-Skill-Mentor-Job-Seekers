@@ -34,19 +34,6 @@ export function SkillAnalysis({ onNavigate }: SkillAnalysisProps) {
   const [skillGapsCount, setSkillGapsCount] = useState(0);
   const [weeksToTarget, setWeeksToTarget] = useState(12);
 
-  const jobTitles = [
-    'Software Engineer',
-    'Data Scientist',
-    'Product Manager',
-    'UI/UX Designer',
-    'DevOps Engineer',
-    'Full Stack Developer',
-    'Machine Learning Engineer',
-    'Business Analyst',
-    'Project Manager',
-    'Cybersecurity Analyst',
-  ];
-
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setFile(e.target.files[0]);
@@ -189,18 +176,13 @@ export function SkillAnalysis({ onNavigate }: SkillAnalysisProps) {
 
             <div className="space-y-3">
               <label className="text-sm text-gray-700">Choose your desired job role</label>
-              <select
+              <input
+                type="text"
+                placeholder="e.g. Data Scientist, Frontend Developer, DevOps Engineer"
                 value={jobTitle}
                 onChange={(e) => setJobTitle(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-green-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent bg-green-50/50"
-              >
-                <option value="">Select a job title...</option>
-                {jobTitles.map((title) => (
-                  <option key={title} value={title}>
-                    {title}
-                  </option>
-                ))}
-              </select>
+                className="w-full border rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+              />
             </div>
 
             {jobTitle && (

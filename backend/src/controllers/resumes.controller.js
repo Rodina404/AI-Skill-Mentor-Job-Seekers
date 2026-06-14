@@ -5,12 +5,16 @@ const FormData = require('form-data');
 const SERVICES = {
   extraction:    process.env.M1_EXTRACTION_URL    || 'http://localhost:8001',
   normalization: process.env.SKILL_NORM_URL        || 'http://localhost:8002',
+  gapEngine:     process.env.GAP_ENGINE_URL         || 'http://localhost:8004',
+  roadmap:       process.env.M5_ROADMAP_URL         || 'http://localhost:8005',
+  courseRec:     process.env.COURSE_REC_URL         || 'http://localhost:8006',
 };
 
 const uploadResume = async (req, res) => {
   try {
     const userId = req.user.id;
     const file = req.file;
+    const jobTitle = req.body.jobTitle || 'Software Engineer';
     if (!file) return res.status(400).json({ error: 'No file uploaded' });
     console.log(`[Upload] File received: originalname=${file.originalname}, mimetype=${file.mimetype}, size=${file.buffer ? file.buffer.length : 'undefined'} bytes`);
 
@@ -28,7 +32,7 @@ const uploadResume = async (req, res) => {
 
     res.status(202).json({ message: 'Resume uploaded. Processing started.', resume_id: resumeRecord.id });
 
-    _runAnalysisPipeline(resumeRecord.id, file).catch(async (err) => {
+    _runAnalysisPipeline(resumeRecord.id, file, jobTitle).catch(async (err) => {
       console.error(`Pipeline failed for resume ${resumeRecord.id}:`, err.message);
       const { error } = await supabaseAdmin.from('resumes').update({ status: 'failed' }).eq('id', resumeRecord.id);
       if (error) {
@@ -41,7 +45,7 @@ const uploadResume = async (req, res) => {
   }
 };
 
-const _runAnalysisPipeline = async (resumeId, file) => {
+const _runAnalysisPipeline = async (resumeId, file, jobTitle = 'Software Engineer') => {
   const formData = new FormData();
   formData.append('resumeFile', file.buffer, { filename: file.originalname, contentType: file.mimetype });
 
@@ -90,12 +94,75 @@ const _runAnalysisPipeline = async (resumeId, file) => {
     throw new Error(`Normalization failed`);
   }
 
-  console.log(`[Pipeline] Normalization complete. Saving to database...`);
+  const normalizedSkills = normalized.data?.skills || [];
+  const skillIds = normalizedSkills.map(skill => skill.skillId || skill.name || skill).filter(Boolean);
+  const skillNames = normalizedSkills.map(skill => skill.name || skill.skill || skill.skillId || skill).filter(Boolean);
+
+  console.log(`[Pipeline] Normalization complete. Calling gap engine with jobTitle="${jobTitle}"...`);
+  const { data: gapResponse } = await axios.post(
+    `${SERVICES.gapEngine}/run`,
+    {
+      jobTitle,
+      userProfile: {
+        skills: skillIds.map(skillId => ({ skillId })),
+        experienceLevel: exp.years ? `${exp.years} years` : '',
+        educationLevel: educationInput.degree
+      }
+    },
+    { timeout: 30000 }
+  );
+
+  if (!gapResponse.success || !gapResponse.data) {
+    throw new Error(`Gap analysis failed`);
+  }
+
+  const gapAnalysis = gapResponse.data;
+  const missingSkills = (gapAnalysis.missingSkills || []).map(skill => (
+    typeof skill === 'string' ? skill : (skill.skill || skill.name || skill.skillId || '')
+  )).filter(Boolean);
+
+  console.log(`[Pipeline] Calling roadmap service with jobTitle="${jobTitle}"...`);
+  const { data: roadmapResponse } = await axios.post(
+    `${SERVICES.roadmap}/run/roadmap`,
+    {
+      user_id: resumeId,
+      missing_skills: missingSkills,
+      hours_per_week: 10,
+      deadline_weeks: 8,
+      job_title: jobTitle
+    },
+    { timeout: 60000 }
+  );
+
+  console.log(`[Pipeline] Calling course recommender with jobTitle="${jobTitle}"...`);
+  const { data: courseResponse } = await axios.post(
+    `${SERVICES.courseRec}/run`,
+    {
+      user_id: resumeId,
+      user_profile: {
+        skills: skillNames,
+        experience_years: Math.round(parseFloat(exp.years) || 0),
+        education: educationInput.degree,
+        location: ''
+      },
+      job_title: jobTitle,
+      top_n: 5
+    },
+    { timeout: 120000 }
+  );
+
+  console.log(`[Pipeline] Enrichment complete. Saving to database...`);
 
   await supabaseAdmin.from('resumes').update({
     status: 'analyzed',
-    extracted_data: extractedData,
-    normalized_skills: normalized.data?.skills || [],
+    extracted_data: {
+      ...extractedData,
+      jobTitle,
+      gapAnalysis,
+      roadmap: roadmapResponse.data || null,
+      courseRecommendations: courseResponse.data?.recommendations || []
+    },
+    normalized_skills: normalizedSkills,
     analyzed_at: new Date().toISOString()
   }).eq('id', resumeId);
 
@@ -105,10 +172,19 @@ const _runAnalysisPipeline = async (resumeId, file) => {
 const getResumeStatus = async (req, res) => {
   const { id } = req.params;
   const { data, error } = await supabaseAdmin
-    .from('resumes').select('id, status, original_name, analyzed_at, normalized_skills')
+    .from('resumes').select('id, status, original_name, analyzed_at, normalized_skills, extracted_data')
     .eq('id', id).eq('user_id', req.user.id).single();
   if (error || !data) return res.status(404).json({ error: 'Resume not found' });
-  res.json(data);
+  const gapAnalysis = data.extracted_data?.gapAnalysis || {};
+  res.json({
+    ...data,
+    jobTitle: data.extracted_data?.jobTitle,
+    readinessScore: gapAnalysis.readinessScore,
+    matchedSkills: gapAnalysis.matchedSkills || [],
+    missingSkills: gapAnalysis.missingSkills || [],
+    courseRecommendations: data.extracted_data?.courseRecommendations || [],
+    roadmap: data.extracted_data?.roadmap || null
+  });
 };
 
 const getUserResumes = async (req, res) => {
