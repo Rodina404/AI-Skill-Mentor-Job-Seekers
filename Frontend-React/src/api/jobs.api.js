@@ -13,6 +13,21 @@ const getAuthHeaders = (token) => {
   };
 };
 
+const createApiError = async (response, fallbackMessage) => {
+  let message = fallbackMessage;
+
+  try {
+    const body = await response.json();
+    message = body.error || body.message || fallbackMessage;
+  } catch {
+    // Keep the fallback when the server does not return JSON.
+  }
+
+  const error = new Error(message);
+  error.status = response.status;
+  return error;
+};
+
 export const jobsAPI = {
   /**
    * Get all jobs
@@ -47,7 +62,7 @@ export const jobsAPI = {
     });
 
     if (!response.ok) {
-      throw new Error('Failed to fetch job details');
+      throw await createApiError(response, 'Failed to fetch job details');
     }
 
     return response.json();
@@ -126,7 +141,7 @@ export const jobsAPI = {
     });
 
     if (!response.ok) {
-      throw new Error('Failed to apply to job');
+      throw await createApiError(response, 'Failed to apply to job');
     }
 
     return response.json();

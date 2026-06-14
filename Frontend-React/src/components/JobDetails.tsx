@@ -1,87 +1,174 @@
-import { useState } from 'react';
-import { MapPin, Clock, DollarSign, Briefcase, Building, Users, TrendingUp, CheckCircle, ArrowLeft, Send } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { MapPin, Clock, Briefcase, Building, CheckCircle, ArrowLeft, Send } from 'lucide-react';
+import { jobsAPI } from '../api/jobs.api';
+import { usersAPI } from '../api/users.api';
+import { useAuth } from '../context/AuthContext';
 
 interface JobDetailsProps {
   onNavigate: (page: string) => void;
   jobId?: string;
 }
 
+interface Job {
+  id: string;
+  title: string;
+  company: string;
+  location: string;
+  jobType: string;
+  description: string;
+  requiredSkills: string[];
+}
+
+interface ApiError extends Error {
+  status?: number;
+}
+
+const parseSkills = (skills: unknown): string[] => {
+  if (Array.isArray(skills)) {
+    return skills.map(String);
+  }
+
+  if (typeof skills !== 'string' || !skills.trim()) {
+    return [];
+  }
+
+  try {
+    const parsed = JSON.parse(skills);
+    if (Array.isArray(parsed)) {
+      return parsed.map(String);
+    }
+  } catch {
+    // Some existing jobs store skills as comma-separated text.
+  }
+
+  return skills.split(',').map((skill) => skill.trim()).filter(Boolean);
+};
+
+const formatJobType = (jobType: string | undefined) => {
+  if (!jobType) return 'Not specified';
+  return jobType.replaceAll('_', ' ').replace(/\b\w/g, (letter) => letter.toUpperCase());
+};
+
 export function JobDetails({ onNavigate, jobId }: JobDetailsProps) {
+  const { user } = useAuth();
+  const selectedJobId = jobId || localStorage.getItem('latestJobId') || '';
+  const [job, setJob] = useState<Job | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
+  const [actionMessage, setActionMessage] = useState('');
+  const [actionError, setActionError] = useState('');
   const [isApplying, setIsApplying] = useState(false);
   const [hasApplied, setHasApplied] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Mock job data - in a real app, this would be fetched based on jobId
-  const job = {
-    id: jobId || '1',
-    title: 'Senior Software Engineer',
-    company: 'TechCorp',
-    location: 'San Francisco, CA',
-    type: 'Full-time',
-    salary: '$120k - $180k',
-    posted: '2 days ago',
-    applicants: 45,
-    match: 92,
-    skills: ['JavaScript', 'React', 'Node.js', 'AWS', 'TypeScript', 'Docker'],
-    description: `We are seeking a talented Senior Software Engineer to join our growing engineering team. 
-    
-You will be responsible for designing, developing, and maintaining high-quality software solutions that power our platform used by millions of users worldwide.
+  useEffect(() => {
+    const loadJob = async () => {
+      if (!selectedJobId) {
+        setLoadError('No job was selected. Return to Jobs and choose a job to view.');
+        setIsLoading(false);
+        return;
+      }
 
-This is an excellent opportunity to work with cutting-edge technologies and make a significant impact on our product and company growth.`,
-    responsibilities: [
-      'Design and develop scalable web applications using modern technologies',
-      'Collaborate with cross-functional teams to define and implement new features',
-      'Write clean, maintainable, and well-documented code',
-      'Participate in code reviews and mentor junior developers',
-      'Contribute to architectural decisions and technical strategy',
-      'Optimize application performance and ensure high availability',
-    ],
-    requirements: [
-      '5+ years of experience in software development',
-      'Strong proficiency in JavaScript, React, and Node.js',
-      'Experience with cloud platforms (AWS, Azure, or GCP)',
-      'Solid understanding of software design patterns and best practices',
-      'Excellent problem-solving and communication skills',
-      'Bachelor\'s degree in Computer Science or related field',
-    ],
-    niceToHave: [
-      'Experience with TypeScript and modern build tools',
-      'Knowledge of containerization (Docker, Kubernetes)',
-      'Contributions to open-source projects',
-      'Experience with microservices architecture',
-    ],
-    benefits: [
-      'Competitive salary and equity package',
-      'Comprehensive health, dental, and vision insurance',
-      'Flexible work arrangements and remote options',
-      '401(k) with company matching',
-      'Professional development budget',
-      'Generous PTO and parental leave',
-    ],
-  };
+      try {
+        const response = await jobsAPI.getJobById(selectedJobId, localStorage.getItem('token'));
+        const data = response.data || response;
+        setJob({
+          id: data.id,
+          title: data.title || 'Untitled job',
+          company: data.company || 'Company not specified',
+          location: data.location || 'Location not specified',
+          jobType: formatJobType(data.job_type),
+          description: data.job_description || 'No job description provided.',
+          requiredSkills: parseSkills(data.required_skills),
+        });
+      } catch (error) {
+        setLoadError(error instanceof Error ? error.message : 'Failed to fetch job details');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadJob();
+  }, [selectedJobId]);
 
   const handleApply = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setActionError('Please sign in before applying to this job');
+      return;
+    }
+
     setIsApplying(true);
-    
-    // Simulate API call
-    // In a real app: await applyToJob(job.id);
-    setTimeout(() => {
-      setIsApplying(false);
+    setActionMessage('');
+    setActionError('');
+
+    try {
+      const response = await jobsAPI.applyToJob(selectedJobId, token);
       setHasApplied(true);
-    }, 1500);
+      setActionMessage(response.message || 'Application submitted successfully');
+    } catch (error) {
+      const apiError = error as ApiError;
+      if (apiError.status === 409) {
+        setHasApplied(true);
+        setActionMessage('You have already applied to this job');
+      } else {
+        setActionError(apiError.message || 'Failed to apply to job');
+      }
+    } finally {
+      setIsApplying(false);
+    }
   };
 
   const handleSave = async () => {
+    const token = localStorage.getItem('token');
+    if (!token || !user?.id) {
+      setActionError('Please sign in before saving this job');
+      return;
+    }
+
     setIsSaving(true);
-    
-    // Simulate API call
-    // In a real app: await saveJob(job.id);
-    setTimeout(() => {
+    setActionMessage('');
+    setActionError('');
+
+    try {
+      const response = await usersAPI.saveJob(user.id, selectedJobId, token);
+      setIsSaved(true);
+      setActionMessage(response.message || 'Job saved successfully');
+    } catch (error) {
+      const apiError = error as ApiError;
+      if (apiError.status === 409) {
+        setIsSaved(true);
+        setActionMessage(apiError.message || 'Job already saved');
+      } else {
+        setActionError(apiError.message || 'Failed to save job');
+      }
+    } finally {
       setIsSaving(false);
-      setIsSaved(!isSaved);
-    }, 500);
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen pt-28 bg-gradient-to-br from-green-50 to-lime-50 text-center text-gray-700">
+        Loading job details...
+      </div>
+    );
+  }
+
+  if (!job || loadError) {
+    return (
+      <div className="min-h-screen pt-20 px-4 bg-gradient-to-br from-green-50 to-lime-50">
+        <div className="max-w-5xl mx-auto">
+          <button onClick={() => onNavigate('jobs')} className="mb-6 flex items-center gap-2 text-green-700">
+            <ArrowLeft className="w-5 h-5" />
+            Back to Jobs
+          </button>
+          <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">{loadError}</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen pt-20 pb-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-green-50 to-lime-50">
@@ -95,64 +182,42 @@ This is an excellent opportunity to work with cutting-edge technologies and make
         </button>
 
         <div className="bg-white rounded-2xl shadow-lg p-8 border-2 border-green-100 mb-6">
-          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6 mb-6">
-            <div className="flex-1">
-              <div className="flex items-start gap-4 mb-4">
-                <div className="w-16 h-16 bg-gradient-to-br from-green-700 to-green-600 rounded-xl flex items-center justify-center text-white flex-shrink-0">
-                  <Building className="w-8 h-8" />
-                </div>
-                <div>
-                  <h1 className="text-3xl text-gray-900 mb-2">{job.title}</h1>
-                  <p className="text-gray-600 text-lg">{job.company}</p>
-                </div>
-              </div>
-
-              <div className="flex flex-wrap gap-4 mb-6 text-gray-600">
-                <div className="flex items-center gap-2">
-                  <MapPin className="w-5 h-5 text-green-600" />
-                  <span>{job.location}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Clock className="w-5 h-5 text-green-600" />
-                  <span>{job.type}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <DollarSign className="w-5 h-5 text-green-600" />
-                  <span>{job.salary}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Users className="w-5 h-5 text-green-600" />
-                  <span>{job.applicants} applicants</span>
-                </div>
-              </div>
-
-              <div className="flex flex-wrap gap-2">
-                {job.skills.map((skill, idx) => (
-                  <span
-                    key={idx}
-                    className="px-3 py-1 bg-green-50 text-green-700 rounded-full text-sm border border-green-200"
-                  >
-                    {skill}
-                  </span>
-                ))}
-              </div>
+          <div className="flex items-start gap-4 mb-6">
+            <div className="w-16 h-16 bg-gradient-to-br from-green-700 to-green-600 rounded-xl flex items-center justify-center text-white flex-shrink-0">
+              <Building className="w-8 h-8" />
             </div>
-
-            <div className="lg:text-right">
-              <div className="inline-flex flex-col items-center p-4 bg-gradient-to-br from-green-50 to-lime-50 rounded-xl border-2 border-green-200">
-                <TrendingUp className="w-8 h-8 text-green-600 mb-2" />
-                <div className="text-4xl text-green-700 mb-1">{job.match}%</div>
-                <p className="text-sm text-gray-600">Match Score</p>
-              </div>
+            <div>
+              <h1 className="text-3xl text-gray-900 mb-2">{job.title}</h1>
+              <p className="text-gray-600 text-lg">{job.company}</p>
             </div>
           </div>
 
-          {hasApplied && (
+          <div className="flex flex-wrap gap-4 mb-6 text-gray-600">
+            <div className="flex items-center gap-2">
+              <MapPin className="w-5 h-5 text-green-600" />
+              <span>{job.location}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Clock className="w-5 h-5 text-green-600" />
+              <span>{job.jobType}</span>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-2 mb-6">
+            {job.requiredSkills.length > 0 ? job.requiredSkills.map((skill) => (
+              <span key={skill} className="px-3 py-1 bg-green-50 text-green-700 rounded-full text-sm border border-green-200">
+                {skill}
+              </span>
+            )) : <span className="text-sm text-gray-500">No required skills listed</span>}
+          </div>
+
+          {actionMessage && (
             <div className="mb-6 flex items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700">
               <CheckCircle className="w-5 h-5" />
-              <span>Application submitted successfully! The company will review your profile.</span>
+              <span>{actionMessage}</span>
             </div>
           )}
+          {actionError && <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">{actionError}</div>}
 
           <div className="flex gap-4">
             <button
@@ -160,40 +225,21 @@ This is an excellent opportunity to work with cutting-edge technologies and make
               disabled={isApplying || hasApplied}
               className="flex-1 px-6 py-3 bg-gradient-to-r from-green-700 to-green-600 text-white rounded-lg hover:shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isApplying ? (
-                <>
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  Applying...
-                </>
-              ) : hasApplied ? (
-                <>
-                  <CheckCircle className="w-5 h-5" />
-                  Applied
-                </>
+              {isApplying ? 'Applying...' : hasApplied ? (
+                <><CheckCircle className="w-5 h-5" />Applied</>
               ) : (
-                <>
-                  <Send className="w-5 h-5" />
-                  Apply Now
-                </>
+                <><Send className="w-5 h-5" />Apply Now</>
               )}
             </button>
             <button
               onClick={handleSave}
-              disabled={isSaving}
-              className={`px-6 py-3 rounded-lg transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${
-                isSaved
-                  ? 'bg-green-100 text-green-700 border-2 border-green-300'
-                  : 'border-2 border-green-600 text-green-700 hover:bg-green-50'
+              disabled={isSaving || isSaved}
+              className={`px-6 py-3 rounded-lg transition-all flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed ${
+                isSaved ? 'bg-green-100 text-green-700 border-2 border-green-300' : 'border-2 border-green-600 text-green-700 hover:bg-green-50'
               }`}
             >
-              {isSaving ? (
-                <div className="w-5 h-5 border-2 border-green-700 border-t-transparent rounded-full animate-spin"></div>
-              ) : (
-                <>
-                  <Briefcase className="w-5 h-5" />
-                  {isSaved ? 'Saved' : 'Save Job'}
-                </>
-              )}
+              <Briefcase className="w-5 h-5" />
+              {isSaving ? 'Saving...' : isSaved ? 'Saved' : 'Save Job'}
             </button>
           </div>
         </div>
@@ -209,76 +255,25 @@ This is an excellent opportunity to work with cutting-edge technologies and make
             </div>
 
             <div className="bg-white rounded-2xl shadow-lg p-8 border-2 border-green-100">
-              <h2 className="text-gray-900 mb-4">Responsibilities</h2>
-              <ul className="space-y-3">
-                {job.responsibilities.map((item, idx) => (
-                  <li key={idx} className="flex items-start gap-3">
-                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-700">{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="bg-white rounded-2xl shadow-lg p-8 border-2 border-green-100">
-              <h2 className="text-gray-900 mb-4">Requirements</h2>
-              <ul className="space-y-3">
-                {job.requirements.map((item, idx) => (
-                  <li key={idx} className="flex items-start gap-3">
-                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-700">{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="bg-white rounded-2xl shadow-lg p-8 border-2 border-green-100">
-              <h2 className="text-gray-900 mb-4">Nice to Have</h2>
-              <ul className="space-y-3">
-                {job.niceToHave.map((item, idx) => (
-                  <li key={idx} className="flex items-start gap-3">
-                    <div className="w-2 h-2 bg-green-600 rounded-full flex-shrink-0 mt-2"></div>
-                    <span className="text-gray-700">{item}</span>
-                  </li>
-                ))}
-              </ul>
+              <h2 className="text-gray-900 mb-4">Required Skills</h2>
+              {job.requiredSkills.length > 0 ? (
+                <ul className="space-y-3">
+                  {job.requiredSkills.map((skill) => (
+                    <li key={skill} className="flex items-start gap-3">
+                      <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                      <span className="text-gray-700">{skill}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : <p className="text-gray-500">No required skills listed.</p>}
             </div>
           </div>
 
-          <div className="space-y-6">
-            <div className="bg-white rounded-2xl shadow-lg p-6 border-2 border-green-100">
-              <h3 className="text-gray-900 mb-4">Benefits</h3>
-              <ul className="space-y-3">
-                {job.benefits.map((benefit, idx) => (
-                  <li key={idx} className="flex items-start gap-2">
-                    <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-700 text-sm">{benefit}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="bg-gradient-to-br from-green-700 to-green-600 rounded-2xl p-6 text-white">
-              <h3 className="text-white mb-4">About {job.company}</h3>
-              <p className="text-white/90 text-sm mb-4">
-                {job.company} is a leading technology company focused on innovation and excellence. 
-                We're committed to building products that make a difference.
-              </p>
-              <div className="space-y-2 text-sm">
-                <div className="flex items-center justify-between">
-                  <span className="text-white/80">Company Size:</span>
-                  <span className="text-white">500-1000</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-white/80">Industry:</span>
-                  <span className="text-white">Technology</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-white/80">Founded:</span>
-                  <span className="text-white">2015</span>
-                </div>
-              </div>
-            </div>
+          <div className="bg-gradient-to-br from-green-700 to-green-600 rounded-2xl p-6 text-white h-fit">
+            <h3 className="text-white mb-4">About {job.company}</h3>
+            <p className="text-white/90 text-sm">
+              Review the job description and required skills, then apply or save this opportunity for later.
+            </p>
           </div>
         </div>
       </div>

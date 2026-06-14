@@ -13,6 +13,21 @@ const getAuthHeaders = (token) => {
   };
 };
 
+const createApiError = async (response, fallbackMessage) => {
+  let message = fallbackMessage;
+
+  try {
+    const body = await response.json();
+    message = body.error || body.message || fallbackMessage;
+  } catch {
+    // Keep the fallback when the server does not return JSON.
+  }
+
+  const error = new Error(message);
+  error.status = response.status;
+  return error;
+};
+
 export const usersAPI = {
   /**
    * Get user profile
@@ -135,7 +150,7 @@ export const usersAPI = {
     });
 
     if (!response.ok) {
-      throw new Error('Failed to save job');
+      throw await createApiError(response, 'Failed to save job');
     }
 
     return response.json();
