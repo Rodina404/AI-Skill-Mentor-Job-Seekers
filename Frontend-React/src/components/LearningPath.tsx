@@ -1,4 +1,4 @@
-import { BookOpen, Target, CheckCircle, Clock, TrendingUp, Star, ArrowRight } from 'lucide-react';
+import { BookOpen, Target, CheckCircle, Clock, TrendingUp, Star, ArrowRight, AlertCircle } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { resumeAPI } from '../api/resume.api';
 import { useAuth } from '../context/AuthContext';
@@ -13,10 +13,12 @@ export function LearningPath({ onNavigate }: LearningPathProps) {
   const [learningPath, setLearningPath] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [errorType, setErrorType] = useState<'no-resumes' | 'no-analyzed' | 'no-roadmap' | 'generic'>('generic');
 
   const fetchLearningPath = async () => {
     setIsLoading(true);
     setError(null);
+    setErrorType('generic');
     try {
       if (!token) {
         setError('Session expired, please log in again');
@@ -24,84 +26,107 @@ export function LearningPath({ onNavigate }: LearningPathProps) {
         return;
       }
 
-      let analysisId = localStorage.getItem('latestAnalysisId');
-      
-      if (!analysisId) {
-        // Fallback: fetch matches to get latest resume ID
-        const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-        const response = await fetch(`${API_BASE_URL}/matches`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
+      // 1. Fetch user's resumes to find latest analyzed one
+      const resumeList = await resumeAPI.getAnalysisHistory(null, token);
+      const resumes = Array.isArray(resumeList) ? resumeList : (resumeList?.resumes || []);
+
+      if (resumes.length === 0) {
+        setErrorType('no-resumes');
+        throw new Error('Upload and analyze your resume to generate a learning path.');
+      }
+
+      const latestAnalyzed = resumes.find((r: any) => r.status === 'analyzed');
+      if (!latestAnalyzed) {
+        setErrorType('no-analyzed');
+        throw new Error('Your resume is still being analyzed. Check back soon.');
+      }
+
+      const resumeId = latestAnalyzed.id;
+
+      // 2. Fetch roadmap — primary source: resume status (always has roadmap), fallback: /api/roadmap/:id
+      let roadmapObj: any = {};
+      let targetRole = 'Target Role';
+
+      // Try resume status first (roadmap lives in extracted_data)
+      const resumeDetail = await resumeAPI.pollResumeStatus(resumeId, token);
+      targetRole = resumeDetail.jobTitle || 'Target Role';
+
+      if (resumeDetail.roadmap && resumeDetail.roadmap.roadmap) {
+        // Structure: { roadmap: { weeks: [...] }, cards_svg, timeline_svg }
+        roadmapObj = resumeDetail.roadmap.roadmap;
+      } else {
+        // Fallback: try GET /api/roadmap/:resumeId
+        try {
+          const pathData = await resumeAPI.getRoadmap(resumeId, token);
+          const roadmapData = pathData.roadmap_data || pathData;
+          targetRole = roadmapData.job_title || targetRole;
+          roadmapObj = roadmapData.roadmap || {};
+        } catch (roadmapErr: any) {
+          if (roadmapErr.status === 404) {
+            setErrorType('no-roadmap');
+            throw new Error('No roadmap generated yet. Run Analyze Resume to create your learning path.');
           }
-        });
-        if (response.ok) {
-          const matches = await response.json();
-          if (matches && matches.length > 0) {
-            analysisId = matches[0].resume_id;
-            if (analysisId) {
-              localStorage.setItem('latestAnalysisId', analysisId);
-            }
-          }
+          throw roadmapErr;
         }
       }
 
-      if (!analysisId) {
-        throw new Error("No resume analysis found. Please upload and analyze your resume first.");
-      }
+      // Extract weeks array
+      const rawWeeks = roadmapObj.weeks || (Array.isArray(roadmapObj) ? roadmapObj : []);
 
-      // Fetch the learning path
-      const pathData = await resumeAPI.getRoadmap(analysisId, token);
-      
-      const actualRoadmapData = pathData.roadmap_data || pathData;
-      const targetRole = actualRoadmapData.job_title || 'Target Role';
-      const rawRoadmap = actualRoadmapData.roadmap || [];
-      
-      const mappedPhases = rawRoadmap.map((item: any, index: number) => {
-        const title = item.week ? `Week ${item.week}: ${item.skill || item.title || 'Skill Mastery'}` : (item.title || `Phase ${index + 1}`);
-        const skills = Array.isArray(item.skills) ? item.skills : (item.skill ? [item.skill] : ['General']);
+      // 4. Map weeks to UI phases
+      const mappedPhases = rawWeeks.map((week: any, index: number) => {
+        const weekNum = week.week_num || week.week || week.week_number || (index + 1);
+        const theme = week.theme || week.focus || '';
+        // skills can be a space-separated string, comma-separated string, or array
+        let skills: string[] = [];
+        if (Array.isArray(week.skills)) {
+          skills = week.skills;
+        } else if (typeof week.skills === 'string') {
+          skills = week.skills.includes(',')
+            ? week.skills.split(',').map((s: string) => s.trim())
+            : week.skills.split(/\s+/).filter((s: string) => s.length > 0);
+        }
+        // Extract courses from week if available
+        const courses = (week.courses || week.resources || []).map((c: any) => ({
+          title: c.course_title || c.title || 'Recommended Course',
+          platform: c.platform || c.provider || 'Online',
+          duration: c.hours ? `${c.hours}h` : (c.duration || 'Self-paced'),
+          progress: 0,
+          status: 'Not Started',
+        }));
+        // Fallback if no courses in data
+        if (courses.length === 0) {
+          courses.push({
+            title: `${theme || 'Skills'} Course`,
+            platform: 'Online',
+            duration: week.total_hours ? `${week.total_hours}h` : '1 week',
+            progress: 0,
+            status: 'Not Started',
+          });
+        }
+
         return {
-          title,
-          duration: item.duration || '1 week',
-          difficulty: item.difficulty || 'Intermediate',
-          courses: [
-            {
-              title: item.course_title || 'Recommended Course',
-              platform: item.platform || 'Coursera',
-              duration: item.course_duration || '6 hours',
-              progress: 0,
-              status: 'Not Started',
-            }
-          ],
+          title: `Week ${weekNum}: ${theme}`,
+          duration: week.total_hours ? `${week.total_hours} hours` : '1 week',
+          difficulty: week.difficulty || 'Intermediate',
+          courses,
           skills,
-          readinessGain: item.readinessGain || '+5%',
-          explanation: item.explanation || 'Mastering this skill is critical for your career path.'
+          readinessGain: week.readiness_gain || '+5%',
+          explanation: week.explanation || (week.milestones ? `Milestones: ${Array.isArray(week.milestones) ? week.milestones.join(', ') : week.milestones}` : ''),
         };
       });
+
+      if (mappedPhases.length === 0) {
+        setErrorType('no-roadmap');
+        throw new Error('Roadmap data is empty. Try running a new resume analysis.');
+      }
 
       setLearningPath({
         title: `${targetRole} Career Path`,
         targetRole,
-        duration: `${rawRoadmap.length} weeks`,
-        readinessBoost: '+25%',
-        phases: mappedPhases.length > 0 ? mappedPhases : [
-          {
-            title: 'Phase 1: Foundation',
-            duration: '4 weeks',
-            difficulty: 'Intermediate',
-            courses: [
-              {
-                title: 'General Fundamentals Course',
-                platform: 'Coursera',
-                duration: '10 hours',
-                progress: 0,
-                status: 'Not Started',
-              }
-            ],
-            skills: ['Core Concepts'],
-            readinessGain: '+10%',
-            explanation: 'Begin your learning journey with foundational concepts.'
-          }
-        ]
+        duration: `${mappedPhases.length} weeks`,
+        readinessBoost: roadmapData.readiness_boost || `+${mappedPhases.length * 5}%`,
+        phases: mappedPhases,
       });
 
     } catch (err: any) {
@@ -133,7 +158,7 @@ export function LearningPath({ onNavigate }: LearningPathProps) {
     return (
       <div className="min-h-screen pt-20 pb-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-green-50 to-lime-50 flex flex-col items-center justify-center">
         <div className="w-12 h-12 border-4 border-green-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-        <p className="text-gray-600 font-medium">Generating your career roadmap...</p>
+        <p className="text-gray-600 font-medium">Loading your career roadmap...</p>
       </div>
     );
   }
@@ -141,14 +166,30 @@ export function LearningPath({ onNavigate }: LearningPathProps) {
   if (error || !learningPath) {
     return (
       <div className="min-h-screen pt-20 pb-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-green-50 to-lime-50 flex flex-col items-center justify-center">
-        <div className="bg-white p-8 rounded-2xl shadow-lg border-2 border-red-100 max-w-md w-full text-center">
-          <h3 className="text-red-700 mb-2 font-bold">Roadmap Generation Failed</h3>
+        <div className={`bg-white p-8 rounded-2xl shadow-lg border-2 max-w-md w-full text-center ${
+          errorType === 'no-analyzed' ? 'border-yellow-200' : errorType === 'no-resumes' ? 'border-blue-200' : 'border-red-100'
+        }`}>
+          {errorType === 'no-resumes' ? (
+            <BookOpen className="w-12 h-12 text-blue-500 mx-auto mb-4" />
+          ) : errorType === 'no-analyzed' ? (
+            <Clock className="w-12 h-12 text-yellow-500 mx-auto mb-4" />
+          ) : (
+            <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+          )}
+          <h3 className={`mb-2 font-bold ${
+            errorType === 'no-analyzed' ? 'text-yellow-700' : errorType === 'no-resumes' ? 'text-blue-700' : 'text-red-700'
+          }`}>
+            {errorType === 'no-resumes' ? 'No Resume Found' :
+             errorType === 'no-analyzed' ? 'Analysis In Progress' :
+             errorType === 'no-roadmap' ? 'No Roadmap Available' :
+             'Roadmap Loading Failed'}
+          </h3>
           <p className="text-gray-600 mb-6">{error || "Could not retrieve learning path."}</p>
           <button
             onClick={() => onNavigate('analysis')}
             className="px-6 py-2 bg-gradient-to-r from-green-700 to-green-600 text-white rounded-lg hover:shadow-lg transition-all text-sm font-medium"
           >
-            Go to Resume Upload
+            {errorType === 'no-resumes' ? 'Upload Resume' : errorType === 'no-analyzed' ? 'Check Analysis Status' : 'Go to Resume Upload'}
           </button>
         </div>
       </div>
@@ -247,22 +288,24 @@ export function LearningPath({ onNavigate }: LearningPathProps) {
                   )}
 
                   {/* Skills to Learn */}
-                  <div className="mb-6">
-                    <h4 className="text-gray-900 mb-3 flex items-center gap-2">
-                      <Target className="w-5 h-5 text-green-600" />
-                      Skills You'll Learn
-                    </h4>
-                    <div className="flex flex-wrap gap-2">
-                      {phase.skills.map((skill: string, idx: number) => (
-                        <span
-                          key={idx}
-                          className="px-3 py-1 bg-white text-gray-700 rounded-lg border border-green-200 text-sm"
-                        >
-                          {skill}
-                        </span>
-                      ))}
+                  {phase.skills.length > 0 && (
+                    <div className="mb-6">
+                      <h4 className="text-gray-900 mb-3 flex items-center gap-2">
+                        <Target className="w-5 h-5 text-green-600" />
+                        Skills You'll Learn
+                      </h4>
+                      <div className="flex flex-wrap gap-2">
+                        {phase.skills.map((skill: string, idx: number) => (
+                          <span
+                            key={idx}
+                            className="px-3 py-1 bg-white text-gray-700 rounded-lg border border-green-200 text-sm"
+                          >
+                            {skill}
+                          </span>
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* Courses */}
                   <div>
