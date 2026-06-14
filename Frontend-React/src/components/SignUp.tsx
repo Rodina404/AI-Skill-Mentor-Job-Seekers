@@ -1,59 +1,66 @@
 import { useState } from 'react';
 import { Mail, Lock, User, Briefcase, ArrowRight, Brain, AlertCircle } from 'lucide-react';
-import { validateEmail, validatePassword, validateName } from '../utils/validation';
 import { useAuth } from '../context/AuthContext';
+import { authAPI } from '../api/auth.api';
 
 interface SignUpProps {
   onNavigate: (page: string) => void;
 }
 
 export function SignUp({ onNavigate }: SignUpProps) {
-  const { signup } = useAuth();
+  const { setSuccessMessage } = useAuth();
   const [formData, setFormData] = useState({
-    name: '',
+    full_name: '',
     email: '',
     password: '',
-    role: 'jobseeker' as 'jobseeker' | 'recruiter',
+    confirmPassword: '',
+    role: 'job_seeker' as 'job_seeker' | 'recruiter',
   });
   const [errors, setErrors] = useState<{
-    name?: string;
+    full_name?: string;
     email?: string;
     password?: string;
+    confirmPassword?: string;
     general?: string;
   }>({});
-  const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Validate all fields
-    const nameError = validateName(formData.name);
-    const emailError = validateEmail(formData.email);
-    const passwordError = validatePassword(formData.password);
-    
-    if (nameError || emailError || passwordError) {
-      setErrors({
-        name: nameError || undefined,
-        email: emailError || undefined,
-        password: passwordError || undefined,
-      });
+    const newErrors: typeof errors = {};
+
+    if (!formData.full_name.trim()) {
+      newErrors.full_name = 'Full Name is required';
+    }
+    if (!formData.email.trim()) {
+      newErrors.email = 'Email Address is required';
+    }
+    if (formData.password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters';
+    }
+    if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match';
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
-    
-    if (!agreedToTerms) {
-      setErrors({ general: 'Please agree to the Terms of Service and Privacy Policy to continue.' });
-      return;
-    }
-    
-    // Clear errors
+
     setErrors({});
     setIsLoading(true);
-    
+
     try {
-      await signup(formData.name, formData.email, formData.password, formData.role);
-      // Navigation will be handled by App.tsx based on role
-    } catch (error) {
+      await authAPI.signup({
+        full_name: formData.full_name,
+        email: formData.email,
+        password: formData.password,
+        role: formData.role,
+      });
+      setSuccessMessage('Account created! Please sign in.');
+      setIsLoading(false);
+      onNavigate('login');
+    } catch (error: any) {
       setIsLoading(false);
       setErrors({ general: error instanceof Error ? error.message : 'Sign up failed. Please try again.' });
     }
@@ -73,6 +80,13 @@ export function SignUp({ onNavigate }: SignUpProps) {
         </div>
 
         <div className="bg-white rounded-2xl shadow-xl p-8 border-2 border-green-100">
+          {errors.general && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700">
+              <AlertCircle className="w-5 h-5" />
+              <span>{errors.general}</span>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label className="block text-gray-700 mb-2">Full Name</label>
@@ -80,22 +94,22 @@ export function SignUp({ onNavigate }: SignUpProps) {
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
                   type="text"
-                  value={formData.name}
+                  value={formData.full_name}
                   onChange={(e) => {
-                    setFormData({ ...formData, name: e.target.value });
-                    if (errors.name) setErrors({ ...errors, name: undefined });
+                    setFormData({ ...formData, full_name: e.target.value });
+                    if (errors.full_name) setErrors({ ...errors, full_name: undefined });
                   }}
                   placeholder="John Doe"
                   className={`w-full pl-11 pr-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent bg-green-50/50 ${
-                    errors.name ? 'border-red-300' : 'border-green-200'
+                    errors.full_name ? 'border-red-300' : 'border-green-200'
                   }`}
                   required
                 />
               </div>
-              {errors.name && (
+              {errors.full_name && (
                 <div className="mt-1 flex items-center gap-1 text-red-600 text-sm">
                   <AlertCircle className="w-4 h-4" />
-                  <span>{errors.name}</span>
+                  <span>{errors.full_name}</span>
                 </div>
               )}
             </div>
@@ -144,15 +158,37 @@ export function SignUp({ onNavigate }: SignUpProps) {
                   required
                 />
               </div>
-              {errors.password ? (
+              {errors.password && (
                 <div className="mt-1 flex items-center gap-1 text-red-600 text-sm">
                   <AlertCircle className="w-4 h-4" />
                   <span>{errors.password}</span>
                 </div>
-              ) : (
-                <p className="text-xs text-gray-500 mt-1">
-                  Must be at least 8 characters with uppercase, lowercase, and number
-                </p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-gray-700 mb-2">Confirm Password</label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="password"
+                  value={formData.confirmPassword}
+                  onChange={(e) => {
+                    setFormData({ ...formData, confirmPassword: e.target.value });
+                    if (errors.confirmPassword) setErrors({ ...errors, confirmPassword: undefined });
+                  }}
+                  placeholder="Confirm password"
+                  className={`w-full pl-11 pr-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent bg-green-50/50 ${
+                    errors.confirmPassword ? 'border-red-300' : 'border-green-200'
+                  }`}
+                  required
+                />
+              </div>
+              {errors.confirmPassword && (
+                <div className="mt-1 flex items-center gap-1 text-red-600 text-sm">
+                  <AlertCircle className="w-4 h-4" />
+                  <span>{errors.confirmPassword}</span>
+                </div>
               )}
             </div>
 
@@ -162,29 +198,13 @@ export function SignUp({ onNavigate }: SignUpProps) {
                 <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <select
                   value={formData.role}
-                  onChange={(e) => setFormData({ ...formData, role: e.target.value as 'jobseeker' | 'recruiter' })}
-                  className="w-full pl-11 pr-4 py-3 border-2 border-green-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent bg-green-50/50"
+                  onChange={(e) => setFormData({ ...formData, role: e.target.value as 'job_seeker' | 'recruiter' })}
+                  className="w-full pl-11 pr-4 py-3 border-2 border-green-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent bg-green-50/50 text-gray-700"
                 >
-                  <option value="jobseeker">Job Seeker</option>
+                  <option value="job_seeker">Job Seeker</option>
                   <option value="recruiter">Recruiter</option>
                 </select>
               </div>
-              <p className="text-xs text-gray-500 mt-1">
-                Job seekers get analytics and course recommendations. Recruiters can post jobs.
-              </p>
-            </div>
-
-            <div className="flex items-start">
-              <input
-                type="checkbox"
-                checked={agreedToTerms}
-                onChange={(e) => setAgreedToTerms(e.target.checked)}
-                className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500 mt-1"
-                required
-              />
-              <label className="ml-2 text-sm text-gray-600">
-                I agree to the Terms of Service and Privacy Policy
-              </label>
             </div>
 
             <button
@@ -210,17 +230,12 @@ export function SignUp({ onNavigate }: SignUpProps) {
             <p className="text-gray-600">
               Already have an account?{' '}
               <button
+                type="button"
                 onClick={() => onNavigate('login')}
-                className="text-green-700 hover:text-green-600"
+                className="text-green-700 hover:text-green-600 font-semibold"
               >
                 Sign in
               </button>
-            </p>
-          </div>
-
-          <div className="mt-6 p-4 bg-green-50 rounded-lg border border-green-200">
-            <p className="text-sm text-gray-700 text-center">
-              🎉 This platform is <span className="text-green-700">completely free</span> - no subscription or payment required!
             </p>
           </div>
         </div>

@@ -10,8 +10,10 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string) => Promise<void>;
-  signup: (name: string, email: string, password: string, role: "jobseeker" | "recruiter") => Promise<void>;
+  token: string | null;
+  successMessage: string | null;
+  setSuccessMessage: (msg: string | null) => void;
+  login: (userData: any) => void;
   logout: () => void;
   isAuthenticated: boolean;
   hasRole: (role: string | string[]) => boolean;
@@ -26,23 +28,22 @@ const mapRole = (role: string): "jobseeker" | "recruiter" | "admin" => {
   return "jobseeker";
 };
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(null);
+  const [refreshToken, setRefreshToken] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // Attempt to restore session from localStorage on mount
+  // Restore session from localStorage on app load (bridge for 21+ components that still read localStorage)
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const savedUser = localStorage.getItem('currentUser');
-    if (!token || !savedUser) return;
+    const savedToken = localStorage.getItem('token');
+    if (!savedToken) return;
 
-    // Verify token is still valid — auto-refresh if expired
     const tryRestoreSession = async () => {
       try {
-        const data = await authAPI.verifyToken(token);
+        const data = await authAPI.verifyToken(savedToken);
         const verifiedUser: User = {
           id: data.user.id,
           name: data.user.full_name || data.user.email,
@@ -50,117 +51,71 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           role: mapRole(data.user.role)
         };
         setUser(verifiedUser);
-        localStorage.setItem('currentUser', JSON.stringify(verifiedUser));
-      } catch {
-        // Token may be expired — attempt refresh
-        const refreshToken = localStorage.getItem('refresh_token');
-        if (refreshToken) {
-          try {
-            const refreshRes = await fetch(`${API_BASE_URL}/auth/refresh`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ refresh_token: refreshToken })
-            });
-            if (refreshRes.ok) {
-              const refreshData = await refreshRes.json();
-              localStorage.setItem('token', refreshData.access_token);
-              if (refreshData.refresh_token) {
-                localStorage.setItem('refresh_token', refreshData.refresh_token);
-              }
-              // Re-verify with new token
-              const data = await authAPI.verifyToken(refreshData.access_token);
-              const verifiedUser: User = {
-                id: data.user.id,
-                name: data.user.full_name || data.user.email,
-                email: data.user.email,
-                role: mapRole(data.user.role)
-              };
-              setUser(verifiedUser);
-              localStorage.setItem('currentUser', JSON.stringify(verifiedUser));
-              return;
-            }
-          } catch {
-            // Refresh also failed — clear session
-          }
-        }
-        // Clear stale session
-        setUser(null);
-        localStorage.removeItem('currentUser');
+        setToken(savedToken);
+        const savedRefresh = localStorage.getItem('refresh_token');
+        if (savedRefresh) setRefreshToken(savedRefresh);
+      } catch (err) {
+        // Token invalid/expired — clear everything
         localStorage.removeItem('token');
         localStorage.removeItem('refresh_token');
+        localStorage.removeItem('currentUser');
+        setUser(null);
+        setToken(null);
+        setRefreshToken(null);
       }
     };
-
     tryRestoreSession();
   }, []);
 
-  const login = async (email: string, password: string) => {
-    const data = await authAPI.signIn({ email, password });
-    
-    if (!data.user) {
+  const login = (userData: any) => {
+    if (!userData || !userData.user) {
       throw new Error("Login response missing user details");
     }
 
     const authenticatedUser: User = {
-      id: data.user.id,
-      name: data.user.full_name || data.user.email,
-      email: data.user.email,
-      role: mapRole(data.user.role)
+      id: userData.user.id,
+      name: userData.user.full_name || userData.user.email,
+      email: userData.user.email,
+      role: mapRole(userData.user.role)
     };
 
     setUser(authenticatedUser);
+    setToken(userData.access_token);
+    setRefreshToken(userData.refresh_token || null);
+
+    // Sync to localStorage so existing components (UserProfile, JobsListing, etc.) can read the token
+    localStorage.setItem('token', userData.access_token);
     localStorage.setItem('currentUser', JSON.stringify(authenticatedUser));
-    localStorage.setItem('token', data.access_token);
-    // Store refresh token so we can auto-renew expired sessions
-    if (data.refresh_token) {
-      localStorage.setItem('refresh_token', data.refresh_token);
-    }
-  };
-
-  const signup = async (name: string, email: string, password: string, role: "jobseeker" | "recruiter") => {
-    // Map frontend role to backend database role format
-    const dbRole = role === "jobseeker" ? "job_seeker" : "recruiter";
-    const data = await authAPI.signUp({ full_name: name, email, password, role: dbRole });
-
-    if (!data.user) {
-      throw new Error("Signup response missing user details");
-    }
-
-    const newUser: User = {
-      id: data.user.id,
-      name: data.user.full_name || data.user.email,
-      email: data.user.email,
-      role: mapRole(data.user.role)
-    };
-
-    // Auto-login on signup
-    setUser(newUser);
-    localStorage.setItem('currentUser', JSON.stringify(newUser));
-    if (data.access_token) {
-      localStorage.setItem('token', data.access_token);
-    }
-    if (data.refresh_token) {
-      localStorage.setItem('refresh_token', data.refresh_token);
+    if (userData.refresh_token) {
+      localStorage.setItem('refresh_token', userData.refresh_token);
     }
   };
 
   const logout = () => {
-    const token = localStorage.getItem('token');
     if (token) {
       authAPI.signOut(token).catch(err => console.error('Sign out error:', err));
     }
     setUser(null);
-    localStorage.removeItem('currentUser');
+    setToken(null);
+    setRefreshToken(null);
+    setSuccessMessage(null);
+
+    // Clear localStorage bridge
     localStorage.removeItem('token');
     localStorage.removeItem('refresh_token');
+    localStorage.removeItem('currentUser');
+
+    // Redirect to /signin using pushState for browser URL matching
+    window.history.pushState({}, '', '/signin');
+    
+    // Dispatch a custom event to notify App component's custom router to show signin page
+    window.dispatchEvent(new CustomEvent('auth-redirect', { detail: 'login' }));
   };
 
   const updateUser = (updatedFields: Partial<User>) => {
     setUser(prev => {
       if (!prev) return null;
-      const updated = { ...prev, ...updatedFields };
-      localStorage.setItem('currentUser', JSON.stringify(updated));
-      return updated;
+      return { ...prev, ...updatedFields };
     });
   };
 
@@ -173,8 +128,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return (
     <AuthContext.Provider value={{ 
       user, 
+      token,
+      successMessage,
+      setSuccessMessage,
       login, 
-      signup, 
       logout, 
       isAuthenticated: !!user,
       hasRole,

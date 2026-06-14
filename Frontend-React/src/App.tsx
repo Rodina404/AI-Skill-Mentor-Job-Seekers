@@ -87,6 +87,18 @@ function AppContent() {
   const [currentPage, setCurrentPage] = useState<Page>("home");
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
 
+  // Custom routing event listener to handle memory-only redirect on logout/auth failures
+  useEffect(() => {
+    const handleAuthRedirect = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      if (customEvent.detail === 'login') {
+        setCurrentPage('login');
+      }
+    };
+    window.addEventListener('auth-redirect', handleAuthRedirect);
+    return () => window.removeEventListener('auth-redirect', handleAuthRedirect);
+  }, []);
+
   // Check route permissions
   const canAccessRoute = (page: Page): boolean => {
     // Public routes are always accessible

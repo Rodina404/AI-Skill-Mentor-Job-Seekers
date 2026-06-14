@@ -8,7 +8,7 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 export const authAPI = {
   /**
    * Sign in user
-   * @param {Object} credentials - { email, password, role }
+   * @param {Object} credentials - { email, password }
    * @returns {Promise<Object>} - User data and token
    */
   async signIn(credentials) {
@@ -20,17 +20,22 @@ export const authAPI = {
       body: JSON.stringify(credentials),
     });
 
+    const data = await response.json();
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Sign in failed');
+      throw new Error(data.error || data.message || 'Sign in failed');
     }
 
-    return response.json();
+    return data;
+  },
+
+  // Alias for signin
+  async signin(credentials) {
+    return this.signIn(credentials);
   },
 
   /**
    * Sign up new user
-   * @param {Object} userData - { name, email, password, role }
+   * @param {Object} userData - { email, password, full_name, role }
    * @returns {Promise<Object>} - User data and token
    */
   async signUp(userData) {
@@ -42,12 +47,17 @@ export const authAPI = {
       body: JSON.stringify(userData),
     });
 
+    const data = await response.json();
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Sign up failed');
+      throw new Error(data.error || data.message || 'Sign up failed');
     }
 
-    return response.json();
+    return data;
+  },
+
+  // Alias for signup
+  async signup(userData) {
+    return this.signUp(userData);
   },
 
   /**
@@ -56,12 +66,11 @@ export const authAPI = {
    * @returns {Promise<void>}
    */
   async signOut(token) {
-    const finalToken = token || localStorage.getItem('token');
     const response = await fetch(`${API_BASE_URL}/auth/signout`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${finalToken}`,
+        'Authorization': `Bearer ${token}`,
       },
     });
 
@@ -78,11 +87,10 @@ export const authAPI = {
    * @returns {Promise<Object>} - User data
    */
   async verifyToken(token) {
-    const finalToken = token || localStorage.getItem('token');
     const response = await fetch(`${API_BASE_URL}/auth/verify`, {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${finalToken}`,
+        'Authorization': `Bearer ${token}`,
       },
     });
 
