@@ -25,7 +25,7 @@ export const resumeAPI = {
     formData.append('resume', file);
     formData.append('jobTitle', jobTitle);
 
-    const response = await fetch(`${API_BASE_URL}/resume/analyze`, {
+    const response = await fetch(`${API_BASE_URL}/resumes/analyze`, {
       method: 'POST',
       headers: getAuthHeaders(token),
       body: formData,
@@ -67,7 +67,7 @@ export const resumeAPI = {
    * @returns {Promise<Object>} - Analysis details
    */
   async getAnalysisById(analysisId, token) {
-    const response = await fetch(`${API_BASE_URL}/resume/analysis/${analysisId}`, {
+    const response = await fetch(`${API_BASE_URL}/resumes/${analysisId}/status`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

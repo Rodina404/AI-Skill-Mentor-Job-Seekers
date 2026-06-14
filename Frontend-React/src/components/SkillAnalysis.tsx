@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Upload, Target, BookOpen, TrendingUp, FileText, CheckCircle2, ArrowRight } from 'lucide-react';
 import { resumeAPI } from '../api/resume.api';
-import { jobsAPI } from '../api/jobs.api';
 
 interface Course {
   title: string;
@@ -78,11 +77,12 @@ export function SkillAnalysis({ onNavigate }: SkillAnalysisProps) {
       let status = "processing";
       let retries = 0;
       const maxRetries = 20; // 60 seconds max
+      let analysisData: any = null;
 
       while (status !== "analyzed" && retries < maxRetries) {
         await new Promise((resolve) => setTimeout(resolve, 3000));
-        const statusRes = await resumeAPI.getAnalysisById(resId, token);
-        status = statusRes.status;
+        analysisData = await resumeAPI.getAnalysisById(resId, token);
+        status = analysisData.status;
         retries++;
         if (status === "failed") {
           throw new Error("Resume analysis failed on the server.");
@@ -97,73 +97,13 @@ export function SkillAnalysis({ onNavigate }: SkillAnalysisProps) {
       localStorage.setItem('latestAnalysisId', resId);
       localStorage.setItem('latestResumeId', resId);
 
-      // 3. Find or create matching job posting
-      const jobsRes = await jobsAPI.getAllJobs({}, token);
-      const jobs = jobsRes?.data?.jobs || [];
-      let matchingJob = jobs.find((j: any) => j.title.toLowerCase() === jobTitle.toLowerCase());
-      
-      if (!matchingJob) {
-        const newJobRes = await jobsAPI.createJob({
-          title: jobTitle,
-          job_description: `Target job posting for matching candidates to the role of ${jobTitle}.`,
-          location: 'Remote',
-          company: 'Target Company',
-          required_skills: [jobTitle],
-          employment_type: 'full_time'
-        }, token);
-        matchingJob = newJobRes?.data?.job;
-      }
-
-      if (!matchingJob) {
-        throw new Error("Could not find or create a matching job posting");
-      }
-
-      // 4. Run matching pipeline (M3-M7)
-      await resumeAPI.runMatching(resId, matchingJob.id, token);
-      
-      // 5. Fetch consolidated analysis and match details
-      const analysisData = await resumeAPI.getAnalysis(resId, token);
-      
-      // Map to UI state
-      const targetReadinessScore = analysisData.readinessScore || 0;
-      
-      // Animate readiness score
-      let score = 0;
-      const interval = setInterval(() => {
-        score += 1;
-        setReadinessScore(score);
-        if (score >= targetReadinessScore) {
-          clearInterval(interval);
-          setReadinessScore(targetReadinessScore);
-        }
-      }, 20);
-
-      // Map skill gaps
-      const mappedGaps: SkillGap[] = (analysisData.missingSkills || []).map((skill: any) => {
-        const skillName = typeof skill === 'string' ? skill : (skill.name || skill.skill || 'Skill');
-        return {
-          skill: skillName,
-          currentLevel: 30,
-          requiredLevel: 80,
-          gap: 50
-        };
-      });
-      setSkillGaps(mappedGaps);
-
-      // Fetch course recommendations
-      const coursesRes = await resumeAPI.getRecommendedCourses(resId, token);
-      const mappedCourses: Course[] = (coursesRes || []).map((c: any) => ({
-        title: c.course_title || c.title || 'Recommended Course',
-        platform: c.course_provider || c.provider || 'Coursera',
-        duration: c.course_duration ? `${c.course_duration} weeks` : '4 weeks',
-        level: c.course_level || c.level || 'Intermediate',
-        impact: `+${Math.floor(Math.random() * 10) + 15}% Readiness`
-      }));
-      setRecommendedCourses(mappedCourses);
-
-      setMatchingSkillsCount(analysisData.match?.matched_skills?.length || 0);
-      setSkillGapsCount(analysisData.missingSkills?.length || 0);
-      setWeeksToTarget(analysisData.missingSkills?.length ? analysisData.missingSkills.length * 2 : 8);
+      const extractedSkills = analysisData?.normalized_skills || [];
+      setReadinessScore(0);
+      setSkillGaps([]);
+      setRecommendedCourses([]);
+      setMatchingSkillsCount(extractedSkills.length);
+      setSkillGapsCount(0);
+      setWeeksToTarget(0);
 
       setIsAnalyzing(false);
       setAnalysisComplete(true);
