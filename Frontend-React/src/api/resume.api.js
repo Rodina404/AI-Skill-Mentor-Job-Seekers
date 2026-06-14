@@ -12,27 +12,64 @@ const getAuthHeaders = (token) => {
   };
 };
 
+const throwApiError = async (response, fallbackMessage) => {
+  let message = fallbackMessage;
+
+  try {
+    const body = await response.json();
+    message = body.error || body.message || fallbackMessage;
+  } catch {
+    // Keep the fallback when the server does not return JSON.
+  }
+
+  const error = new Error(
+    response.status === 401 ? 'Session expired. Please log in again.' : message
+  );
+  error.status = response.status;
+  throw error;
+};
+
 export const resumeAPI = {
   /**
    * Upload and analyze resume
-   * @param {File} file - Resume file
-   * @param {string} jobTitle - Target job title
-   * @param {string} token - Auth token
-   * @returns {Promise<Object>} - Analysis results
+   * POST /api/resumes/upload  (multer field name: 'file')
+   * Returns 202: { message, resume_id }
    */
   async analyzeResume(file, jobTitle, token) {
     const formData = new FormData();
-    formData.append('resume', file);
+    formData.append('file', file);          // multer expects 'file'
     formData.append('jobTitle', jobTitle);
 
-    const response = await fetch(`${API_BASE_URL}/resumes/analyze`, {
+    const response = await fetch(`${API_BASE_URL}/resumes/upload`, {
       method: 'POST',
-      headers: getAuthHeaders(token),
+      headers: getAuthHeaders(token),       // no Content-Type — browser sets multipart boundary
       body: formData,
     });
 
     if (!response.ok) {
-      throw new Error('Failed to analyze resume');
+      await throwApiError(response, 'Failed to upload resume');
+    }
+
+    return response.json();
+  },
+
+  /**
+   * Poll resume analysis status
+   * GET /api/resumes/:resumeId/status
+   * Returns: { id, status, original_name, analyzed_at, normalized_skills, extracted_data,
+   *            jobTitle, readinessScore, matchedSkills, missingSkills, courseRecommendations, roadmap }
+   */
+  async pollResumeStatus(resumeId, token) {
+    const response = await fetch(`${API_BASE_URL}/resumes/${resumeId}/status`, {
+      method: 'GET',
+      cache: 'no-store',
+      headers: {
+        ...getAuthHeaders(token),
+      },
+    });
+
+    if (!response.ok) {
+      await throwApiError(response, 'Failed to fetch analysis status');
     }
 
     return response.json();
@@ -40,12 +77,9 @@ export const resumeAPI = {
 
   /**
    * Get analysis history
-   * @param {string} userId - User ID
-   * @param {string} token - Auth token
-   * @returns {Promise<Array>} - List of past analyses
    */
   async getAnalysisHistory(userId, token) {
-    const response = await fetch(`${API_BASE_URL}/resume/history/${userId}`, {
+    const response = await fetch(`${API_BASE_URL}/resumes`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -54,42 +88,24 @@ export const resumeAPI = {
     });
 
     if (!response.ok) {
-      throw new Error('Failed to fetch analysis history');
+      await throwApiError(response, 'Failed to fetch analysis history');
     }
 
     return response.json();
   },
 
   /**
-   * Get specific analysis by ID
-   * @param {string} analysisId - Analysis ID
-   * @param {string} token - Auth token
-   * @returns {Promise<Object>} - Analysis details
+   * Get specific analysis by ID (alias for pollResumeStatus)
    */
   async getAnalysisById(analysisId, token) {
-    const response = await fetch(`${API_BASE_URL}/resumes/${analysisId}/status`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        ...getAuthHeaders(token),
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch analysis');
-    }
-
-    return response.json();
+    return this.pollResumeStatus(analysisId, token);
   },
 
   /**
    * Create learning path from analysis
-   * @param {string} analysisId - Analysis ID
-   * @param {string} token - Auth token
-   * @returns {Promise<Object>} - Generated learning path
    */
   async createLearningPath(analysisId, token) {
-    const response = await fetch(`${API_BASE_URL}/resume/learning-path`, {
+    const response = await fetch(`${API_BASE_URL}/resumes/learning-path`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -99,7 +115,7 @@ export const resumeAPI = {
     });
 
     if (!response.ok) {
-      throw new Error('Failed to create learning path');
+      await throwApiError(response, 'Failed to create learning path');
     }
 
     return response.json();
@@ -107,12 +123,9 @@ export const resumeAPI = {
 
   /**
    * Get recommended courses based on skill gaps
-   * @param {string} analysisId - Analysis ID
-   * @param {string} token - Auth token
-   * @returns {Promise<Array>} - List of recommended courses
    */
   async getRecommendedCourses(analysisId, token) {
-    const response = await fetch(`${API_BASE_URL}/resume/recommendations/${analysisId}`, {
+    const response = await fetch(`${API_BASE_URL}/resumes/recommendations/${analysisId}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -121,30 +134,17 @@ export const resumeAPI = {
     });
 
     if (!response.ok) {
-      throw new Error('Failed to fetch recommendations');
+      await throwApiError(response, 'Failed to fetch recommendations');
     }
 
     return response.json();
   },
 
   /**
-   * Get resume analysis and match details
-   * @param {string} resumeId - Resume ID
-   * @param {string} token - Auth token
-   * @returns {Promise<Object>} - Consolidated analysis and match details
+   * Get consolidated resume analysis and match details
    */
   async getAnalysis(resumeId, token) {
-    const resumeResponse = await fetch(`${API_BASE_URL}/resume/analysis/${resumeId}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        ...getAuthHeaders(token),
-      },
-    });
-    if (!resumeResponse.ok) {
-      throw new Error('Failed to fetch resume status');
-    }
-    const resumeData = await resumeResponse.json();
+    const resumeData = await this.pollResumeStatus(resumeId, token);
 
     // Fetch matches for this user
     const matchesResponse = await fetch(`${API_BASE_URL}/matches`, {
@@ -158,10 +158,9 @@ export const resumeAPI = {
     let matchData = null;
     if (matchesResponse.ok) {
       const matches = await matchesResponse.json();
-      // Find the match belonging to this resumeId
       matchData = matches.find(m => m.resume_id === resumeId);
       if (!matchData && matches.length > 0) {
-        matchData = matches[0]; // fallback to latest match
+        matchData = matches[0];
       }
     }
 
@@ -169,17 +168,15 @@ export const resumeAPI = {
       ...resumeData,
       match: matchData,
       extractedSkills: resumeData.normalized_skills || [],
-      missingSkills: matchData ? matchData.missing_skills || [] : [],
-      readinessScore: matchData ? Math.round((matchData.skill_match_score || matchData.overall_score || 0) * 100) : 0
+      missingSkills: matchData ? matchData.missing_skills || [] : resumeData.missingSkills || [],
+      readinessScore: matchData
+        ? Math.round((matchData.skill_match_score || matchData.overall_score || 0) * 100)
+        : resumeData.readinessScore || 0
     };
   },
 
   /**
    * Run matching pipeline for resume and job posting
-   * @param {string} resumeId - Resume ID
-   * @param {string} jobId - Job Posting ID
-   * @param {string} token - Auth token
-   * @returns {Promise<Object>} - Matching results
    */
   async runMatching(resumeId, jobId, token) {
     const response = await fetch(`${API_BASE_URL}/matches/run`, {
@@ -192,7 +189,7 @@ export const resumeAPI = {
     });
 
     if (!response.ok) {
-      throw new Error('Failed to run matching pipeline');
+      await throwApiError(response, 'Failed to run matching pipeline');
     }
 
     return response.json();
@@ -216,11 +213,9 @@ export const resumeAPI = {
     });
 
     if (!response.ok) {
-      throw new Error('Failed to fetch roadmap');
+      await throwApiError(response, 'Failed to fetch roadmap');
     }
 
     return response.json();
   },
 };
-
-

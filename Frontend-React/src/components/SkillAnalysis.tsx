@@ -1,20 +1,38 @@
-import { useState } from 'react';
-import { Upload, Target, BookOpen, TrendingUp, FileText, CheckCircle2, ArrowRight } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { Upload, Target, BookOpen, TrendingUp, FileText, CheckCircle2, ArrowRight, AlertTriangle, ExternalLink, MapPin } from 'lucide-react';
 import { resumeAPI } from '../api/resume.api';
 
-interface Course {
+interface CourseRecommendation {
   title: string;
-  platform: string;
-  duration: string;
-  level: string;
-  impact: string;
+  provider?: string;
+  platform?: string;
+  url?: string;
+  link?: string;
+  duration?: string;
+  level?: string;
+  relevance_score?: number;
+  similarity_score?: number;
+  rating?: number;
+  description?: string;
 }
 
-interface SkillGap {
-  skill: string;
-  currentLevel: number;
-  requiredLevel: number;
-  gap: number;
+interface RoadmapStage {
+  week?: number;
+  week_number?: number;
+  theme?: string;
+  topic?: string;
+  skills?: string[];
+  resources?: any[];
+}
+
+interface AnalysisResult {
+  readinessScore: number;
+  matchedSkills: string[];
+  missingSkills: (string | { skill?: string; name?: string; skillId?: string })[];
+  courseRecommendations: CourseRecommendation[];
+  roadmap: { stages?: RoadmapStage[]; weeks?: RoadmapStage[] } | RoadmapStage[] | null;
+  normalized_skills: any[];
+  jobTitle: string;
 }
 
 interface SkillAnalysisProps {
@@ -26,81 +44,147 @@ export function SkillAnalysis({ onNavigate }: SkillAnalysisProps) {
   const [jobTitle, setJobTitle] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisComplete, setAnalysisComplete] = useState(false);
-  const [readinessScore, setReadinessScore] = useState(0);
-  const [skillGaps, setSkillGaps] = useState<SkillGap[]>([]);
-  const [recommendedCourses, setRecommendedCourses] = useState<Course[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [matchingSkillsCount, setMatchingSkillsCount] = useState(0);
-  const [skillGapsCount, setSkillGapsCount] = useState(0);
-  const [weeksToTarget, setWeeksToTarget] = useState(12);
+  const [pollCount, setPollCount] = useState(0);
+
+  // Result state — populated from the status endpoint
+  const [result, setResult] = useState<AnalysisResult | null>(null);
+
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
+      const selected = e.target.files[0];
+      const ext = selected.name.split('.').pop()?.toLowerCase();
+      if (ext !== 'pdf' && ext !== 'docx') {
+        setError('Only PDF and DOCX files are accepted.');
+        return;
+      }
+      setError(null);
+      setFile(selected);
+    }
+  };
+
+  const clearPoll = () => {
+    if (pollRef.current) {
+      clearInterval(pollRef.current);
+      pollRef.current = null;
     }
   };
 
   const handleAnalyze = async () => {
-    if (!file || !jobTitle) return;
-    
+    if (!file || !jobTitle.trim()) return;
+
     setIsAnalyzing(true);
     setAnalysisComplete(false);
     setError(null);
-    
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        setError("Session expired, please log in again");
-        setTimeout(() => onNavigate('login'), 2000);
-        return;
-      }
+    setResult(null);
+    setPollCount(0);
 
-      // 1. Upload and analyze resume
-      const uploadRes = await resumeAPI.analyzeResume(file, jobTitle, token);
-      const resId = uploadRes.resume_id;
-      if (!resId) throw new Error("Resume upload failed - no ID returned");
-
-      // 2. Poll status every 3 seconds until "analyzed"
-      let status = "processing";
-      let retries = 0;
-      const maxRetries = 20; // 60 seconds max
-      let analysisData: any = null;
-
-      while (status !== "analyzed" && retries < maxRetries) {
-        await new Promise((resolve) => setTimeout(resolve, 3000));
-        analysisData = await resumeAPI.getAnalysisById(resId, token);
-        status = analysisData.status;
-        retries++;
-        if (status === "failed") {
-          throw new Error("Resume analysis failed on the server.");
-        }
-      }
-
-      if (status !== "analyzed") {
-        throw new Error("Resume analysis timed out.");
-      }
-
-      // Save latest analysis ID
-      localStorage.setItem('latestAnalysisId', resId);
-      localStorage.setItem('latestResumeId', resId);
-
-      const extractedSkills = analysisData?.normalized_skills || [];
-      setReadinessScore(0);
-      setSkillGaps([]);
-      setRecommendedCourses([]);
-      setMatchingSkillsCount(extractedSkills.length);
-      setSkillGapsCount(0);
-      setWeeksToTarget(0);
-
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setError('Session expired. Please log in again.');
       setIsAnalyzing(false);
-      setAnalysisComplete(true);
+      setTimeout(() => onNavigate('login'), 2000);
+      return;
+    }
+
+    try {
+      // Step 1: Upload
+      const uploadRes = await resumeAPI.analyzeResume(file, jobTitle.trim(), token);
+      const resumeId = uploadRes.resume_id;
+      if (!resumeId) throw new Error('Resume upload failed — no ID returned.');
+
+      // Save for other pages to reference
+      localStorage.setItem('latestAnalysisId', resumeId);
+      localStorage.setItem('latestResumeId', resumeId);
+
+      // Step 2: Poll every 4s, max 30 polls (120s)
+      let polls = 0;
+      const MAX_POLLS = 30;
+      const POLL_INTERVAL = 4000;
+
+      pollRef.current = setInterval(async () => {
+        polls++;
+        setPollCount(polls);
+
+        try {
+          const statusData = await resumeAPI.pollResumeStatus(resumeId, token);
+
+          if (statusData.status === 'analyzed') {
+            clearPoll();
+            setResult(statusData);
+            setIsAnalyzing(false);
+            setAnalysisComplete(true);
+          } else if (statusData.status === 'failed') {
+            clearPoll();
+            setError('Analysis failed. Please try again.');
+            setIsAnalyzing(false);
+          } else if (polls >= MAX_POLLS) {
+            clearPoll();
+            setError('Analysis is taking longer than expected. Please check History later.');
+            setIsAnalyzing(false);
+          }
+        } catch (pollErr: any) {
+          clearPoll();
+          setError(pollErr.message || 'Error checking analysis status.');
+          setIsAnalyzing(false);
+          if (pollErr.status === 401) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('currentUser');
+            localStorage.removeItem('refresh_token');
+            setTimeout(() => onNavigate('login'), 2000);
+          }
+        }
+      }, POLL_INTERVAL);
 
     } catch (err: any) {
       console.error(err);
-      setError(err.message || 'An error occurred during analysis.');
+      setError(err.message || 'An error occurred during upload.');
       setIsAnalyzing(false);
+      if (err.status === 401) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('currentUser');
+        localStorage.removeItem('refresh_token');
+        setTimeout(() => onNavigate('login'), 2000);
+      }
     }
   };
+
+  // Normalize readiness score: if decimal (0–1), multiply by 100
+  const displayScore = (() => {
+    if (!result) return 0;
+    const raw = result.readinessScore;
+    if (raw == null || raw === undefined) return 0;
+    return raw <= 1 ? Math.round(raw * 100) : Math.round(raw);
+  })();
+
+  // Normalize missing skills to string array
+  const missingSkillNames: string[] = (result?.missingSkills || []).map((s) => {
+    if (typeof s === 'string') return s;
+    return (s as any).skill || (s as any).name || (s as any).skillId || '';
+  }).filter(Boolean);
+
+  // Normalize matched skills to string array
+  const matchedSkillNames: string[] = (result?.matchedSkills || []).map((s) => {
+    if (typeof s === 'string') return s;
+    return (s as any).skill || (s as any).name || (s as any).skillId || '';
+  }).filter(Boolean);
+
+  // Normalize roadmap stages
+  const roadmapStages: RoadmapStage[] = (() => {
+    if (!result?.roadmap) return [];
+    const rm: any = result.roadmap;
+    // Handle doubly-nested: {roadmap: {weeks: [...]}}
+    const inner = rm.roadmap || rm;
+    if (Array.isArray(inner)) return inner;
+    if (inner.weeks && Array.isArray(inner.weeks)) return inner.weeks;
+    if (inner.stages && Array.isArray(inner.stages)) return inner.stages;
+    return [];
+  })();
+
+  // Normalize courses
+  const courses: CourseRecommendation[] = result?.courseRecommendations || [];
 
   return (
     <section id="analysis" className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-green-50 to-lime-50 min-h-screen">
@@ -110,14 +194,17 @@ export function SkillAnalysis({ onNavigate }: SkillAnalysisProps) {
             Analyze Your Career Readiness
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Upload your resume and select your target job to receive AI-powered insights
+            Upload your resume and enter your target job to receive AI-powered insights
           </p>
         </div>
 
         {error && (
-          <div className="max-w-4xl mx-auto mb-8 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700">
-            <p className="font-semibold">Analysis Error</p>
-            <p className="text-sm">{error}</p>
+          <div className="max-w-4xl mx-auto mb-8 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 mt-0.5 flex-shrink-0" />
+            <div>
+              <p className="font-semibold">Analysis Error</p>
+              <p className="text-sm">{error}</p>
+            </div>
           </div>
         )}
 
@@ -135,7 +222,7 @@ export function SkillAnalysis({ onNavigate }: SkillAnalysisProps) {
               <input
                 type="file"
                 id="resume-upload"
-                accept=".pdf,.doc,.docx"
+                accept=".pdf,.docx"
                 onChange={handleFileChange}
                 className="hidden"
               />
@@ -143,13 +230,15 @@ export function SkillAnalysis({ onNavigate }: SkillAnalysisProps) {
                 <Upload className="w-12 h-12 text-green-600 mx-auto mb-4" />
                 {file ? (
                   <div>
-                    <p className="text-green-700 mb-2">{file.name}</p>
-                    <p className="text-sm text-gray-600">Click to change file</p>
+                    <p className="text-green-700 mb-2 font-medium">{file.name}</p>
+                    <p className="text-sm text-gray-500">
+                      {(file.size / 1024).toFixed(1)} KB — Click to change file
+                    </p>
                   </div>
                 ) : (
                   <div>
                     <p className="text-gray-700 mb-2">Drop your resume here or click to browse</p>
-                    <p className="text-sm text-gray-500">Supports PDF, DOC, DOCX</p>
+                    <p className="text-sm text-gray-500">Accepts PDF and DOCX only</p>
                   </div>
                 )}
               </label>
@@ -159,33 +248,33 @@ export function SkillAnalysis({ onNavigate }: SkillAnalysisProps) {
               <div className="mt-4 p-4 bg-green-50 rounded-lg border border-green-200">
                 <div className="flex items-center gap-2 text-green-700">
                   <CheckCircle2 className="w-5 h-5" />
-                  <span className="text-sm">Resume uploaded successfully</span>
+                  <span className="text-sm">Resume selected: {file.name}</span>
                 </div>
               </div>
             )}
           </div>
 
-          {/* Job Title Selection */}
+          {/* Job Title Section */}
           <div className="bg-white rounded-2xl shadow-lg p-8 border-2 border-green-100">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 bg-gradient-to-br from-green-600 to-green-500 rounded-lg flex items-center justify-center">
                 <Target className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-gray-900">Select Target Job</h3>
+              <h3 className="text-gray-900">Target Job Title</h3>
             </div>
 
             <div className="space-y-3">
-              <label className="text-sm text-gray-700">Choose your desired job role</label>
+              <label className="text-sm text-gray-700">Enter your desired job role</label>
               <input
                 type="text"
-                placeholder="e.g. Data Scientist, Frontend Developer, DevOps Engineer"
+                placeholder="e.g. Data Scientist, NLP Engineer"
                 value={jobTitle}
                 onChange={(e) => setJobTitle(e.target.value)}
                 className="w-full border rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
               />
             </div>
 
-            {jobTitle && (
+            {jobTitle.trim() && (
               <div className="mt-4 p-4 bg-green-50 rounded-lg border border-green-200">
                 <div className="flex items-center gap-2 text-green-700">
                   <CheckCircle2 className="w-5 h-5" />
@@ -196,13 +285,13 @@ export function SkillAnalysis({ onNavigate }: SkillAnalysisProps) {
 
             <button
               onClick={handleAnalyze}
-              disabled={!file || !jobTitle || isAnalyzing}
+              disabled={!file || !jobTitle.trim() || isAnalyzing}
               className="w-full mt-6 px-6 py-4 bg-gradient-to-r from-green-700 to-green-600 text-white rounded-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group"
             >
               {isAnalyzing ? (
                 <>
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  Analyzing...
+                  Analyzing your resume…
                 </>
               ) : (
                 <>
@@ -214,9 +303,24 @@ export function SkillAnalysis({ onNavigate }: SkillAnalysisProps) {
           </div>
         </div>
 
-        {/* Results Section */}
-        {(isAnalyzing || analysisComplete) && (
+        {/* Processing indicator */}
+        {isAnalyzing && (
+          <div className="max-w-4xl mx-auto mb-8 p-6 bg-white rounded-2xl shadow-lg border-2 border-green-100 text-center">
+            <div className="w-16 h-16 border-4 border-green-200 border-t-green-600 rounded-full animate-spin mx-auto mb-4"></div>
+            <h3 className="text-gray-900 mb-2">Analyzing your resume…</h3>
+            <p className="text-gray-500 text-sm">
+              Running AI pipeline: extraction → normalization → gap analysis → roadmap → courses
+            </p>
+            <p className="text-gray-400 text-xs mt-2">
+              Poll {pollCount} / 30 — this may take up to 2 minutes
+            </p>
+          </div>
+        )}
+
+        {/* ── Results ── */}
+        {analysisComplete && result && (
           <div className="space-y-8 animate-fadeIn">
+
             {/* Readiness Score */}
             <div className="bg-white rounded-2xl shadow-lg p-8 border-2 border-green-100">
               <div className="flex items-center gap-3 mb-6">
@@ -229,25 +333,16 @@ export function SkillAnalysis({ onNavigate }: SkillAnalysisProps) {
               <div className="flex flex-col md:flex-row items-center gap-8">
                 <div className="relative w-48 h-48">
                   <svg className="w-48 h-48 transform -rotate-90">
+                    <circle cx="96" cy="96" r="80" stroke="#e5e7eb" strokeWidth="16" fill="none" />
                     <circle
-                      cx="96"
-                      cy="96"
-                      r="80"
-                      stroke="#e5e7eb"
-                      strokeWidth="16"
-                      fill="none"
-                    />
-                    <circle
-                      cx="96"
-                      cy="96"
-                      r="80"
+                      cx="96" cy="96" r="80"
                       stroke="url(#gradient)"
                       strokeWidth="16"
                       fill="none"
                       strokeDasharray={`${2 * Math.PI * 80}`}
-                      strokeDashoffset={`${2 * Math.PI * 80 * (1 - readinessScore / 100)}`}
+                      strokeDashoffset={`${2 * Math.PI * 80 * (1 - displayScore / 100)}`}
                       strokeLinecap="round"
-                      className="transition-all duration-500"
+                      className="transition-all duration-1000"
                     />
                     <defs>
                       <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -259,7 +354,7 @@ export function SkillAnalysis({ onNavigate }: SkillAnalysisProps) {
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="text-center">
                       <div className="text-5xl bg-gradient-to-r from-green-700 to-green-600 bg-clip-text text-transparent">
-                        {readinessScore}%
+                        {displayScore}%
                       </div>
                       <p className="text-gray-600 text-sm mt-1">Ready</p>
                     </div>
@@ -270,73 +365,71 @@ export function SkillAnalysis({ onNavigate }: SkillAnalysisProps) {
                   <div>
                     <h4 className="text-gray-900 mb-2">Overall Assessment</h4>
                     <p className="text-gray-600">
-                      You're <span className="text-green-700">{readinessScore >= 80 ? 'highly ready' : readinessScore >= 50 ? 'moderately ready' : 'getting started'}</span> for the {jobTitle} role. 
-                      With focused learning in key areas, you can significantly improve your chances.
+                      You're <span className="text-green-700 font-semibold">
+                        {displayScore >= 80 ? 'highly ready' : displayScore >= 50 ? 'moderately ready' : 'getting started'}
+                      </span> for the <strong>{result.jobTitle || jobTitle}</strong> role.
+                      {displayScore < 80 && ' With focused learning in key areas, you can significantly improve your chances.'}
                     </p>
                   </div>
 
                   <div className="grid grid-cols-3 gap-4">
                     <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-                      <div className="text-2xl text-green-700">{matchingSkillsCount}</div>
-                      <p className="text-sm text-gray-600">Matching Skills</p>
+                      <div className="text-2xl text-green-700">{matchedSkillNames.length}</div>
+                      <p className="text-sm text-gray-600">Matched Skills</p>
                     </div>
                     <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-                      <div className="text-2xl text-yellow-700">{skillGapsCount}</div>
+                      <div className="text-2xl text-yellow-700">{missingSkillNames.length}</div>
                       <p className="text-sm text-gray-600">Skill Gaps</p>
                     </div>
                     <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                      <div className="text-2xl text-blue-700">{weeksToTarget}</div>
-                      <p className="text-sm text-gray-600">Weeks to Target</p>
+                      <div className="text-2xl text-blue-700">{courses.length}</div>
+                      <p className="text-sm text-gray-600">Courses</p>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Skill Gaps */}
-            {skillGaps.length > 0 && (
+            {/* Matched Skills */}
+            {matchedSkillNames.length > 0 && (
               <div className="bg-white rounded-2xl shadow-lg p-8 border-2 border-green-100">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-10 h-10 bg-gradient-to-br from-green-600 to-green-500 rounded-lg flex items-center justify-center">
+                    <CheckCircle2 className="w-6 h-6 text-white" />
+                  </div>
+                  <h3 className="text-gray-900">Matched Skills</h3>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {matchedSkillNames.map((skill, i) => (
+                    <span key={i} className="px-4 py-2 bg-green-100 text-green-800 rounded-full text-sm font-medium border border-green-200">
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Missing Skills */}
+            {missingSkillNames.length > 0 && (
+              <div className="bg-white rounded-2xl shadow-lg p-8 border-2 border-green-100">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 bg-gradient-to-br from-yellow-500 to-yellow-400 rounded-lg flex items-center justify-center">
                     <Target className="w-6 h-6 text-white" />
                   </div>
-                  <h3 className="text-gray-900">Identified Skill Gaps</h3>
+                  <h3 className="text-gray-900">Missing Skills (Gaps)</h3>
                 </div>
-
-                <div className="space-y-6">
-                  {skillGaps.map((gap, index) => (
-                    <div key={index} className="space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-900">{gap.skill}</span>
-                        <span className="text-sm text-gray-600">
-                          Current: {gap.currentLevel}% | Required: {gap.requiredLevel}%
-                        </span>
-                      </div>
-                      <div className="relative h-3 bg-gray-200 rounded-full overflow-hidden">
-                        <div
-                          className="absolute h-full bg-green-200 rounded-full transition-all duration-1000"
-                          style={{ width: `${gap.currentLevel}%` }}
-                        ></div>
-                        <div
-                          className="absolute h-full bg-gradient-to-r from-green-600 to-green-500 rounded-full transition-all duration-1000"
-                          style={{ width: `${gap.currentLevel}%` }}
-                        ></div>
-                        <div
-                          className="absolute h-full border-r-2 border-red-500"
-                          style={{ left: `${gap.requiredLevel}%` }}
-                        ></div>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-500">Gap: {gap.gap}%</span>
-                      </div>
-                    </div>
+                <div className="flex flex-wrap gap-2">
+                  {missingSkillNames.map((skill, i) => (
+                    <span key={i} className="px-4 py-2 bg-yellow-100 text-yellow-800 rounded-full text-sm font-medium border border-yellow-200">
+                      {skill}
+                    </span>
                   ))}
                 </div>
               </div>
             )}
 
             {/* Recommended Courses */}
-            {recommendedCourses.length > 0 && (
+            {courses.length > 0 && (
               <div className="bg-white rounded-2xl shadow-lg p-8 border-2 border-green-100">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-10 h-10 bg-gradient-to-br from-green-600 to-green-500 rounded-lg flex items-center justify-center">
@@ -346,40 +439,106 @@ export function SkillAnalysis({ onNavigate }: SkillAnalysisProps) {
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-6">
-                  {recommendedCourses.map((course, index) => (
-                    <div
-                      key={index}
-                      className="p-6 border-2 border-green-100 rounded-xl hover:border-green-300 hover:shadow-lg transition-all group"
-                    >
-                      <div className="flex items-start justify-between mb-3">
-                        <h4 className="text-gray-900 flex-1 group-hover:text-green-700 transition-colors">
-                          {course.title}
-                        </h4>
-                        <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs whitespace-nowrap ml-2">
-                          {course.impact}
-                        </span>
-                      </div>
-                      
-                      <div className="space-y-2 mb-4">
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <div className="w-1.5 h-1.5 bg-green-600 rounded-full"></div>
-                          <span>Platform: {course.platform}</span>
+                  {courses.map((course, index) => {
+                    const courseUrl = course.url || course.link;
+                    return (
+                      <div
+                        key={index}
+                        className="p-6 border-2 border-green-100 rounded-xl hover:border-green-300 hover:shadow-lg transition-all group"
+                      >
+                        <div className="flex items-start justify-between mb-3">
+                          <h4 className="text-gray-900 flex-1 group-hover:text-green-700 transition-colors font-medium">
+                            {course.title}
+                          </h4>
+                          {(course.similarity_score != null || course.relevance_score != null) && (
+                            <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs whitespace-nowrap ml-2">
+                              {Math.round((course.similarity_score ?? course.relevance_score ?? 0) * 100)}% match
+                            </span>
+                          )}
                         </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <div className="w-1.5 h-1.5 bg-green-600 rounded-full"></div>
-                          <span>Duration: {course.duration}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <div className="w-1.5 h-1.5 bg-green-600 rounded-full"></div>
-                          <span>Level: {course.level}</span>
-                        </div>
-                      </div>
 
-                      <button className="w-full px-4 py-2 bg-gradient-to-r from-green-700 to-green-600 text-white rounded-lg hover:shadow-md transition-all text-sm" onClick={() => onNavigate('courses')}>
-                        View Course Details
-                      </button>
-                    </div>
-                  ))}
+                        <div className="space-y-2 mb-4">
+                          <div className="flex items-center gap-2 text-sm text-gray-600">
+                            <div className="w-1.5 h-1.5 bg-green-600 rounded-full"></div>
+                            <span>Provider: {course.provider || course.platform || 'N/A'}</span>
+                          </div>
+                          {course.duration && (
+                            <div className="flex items-center gap-2 text-sm text-gray-600">
+                              <div className="w-1.5 h-1.5 bg-green-600 rounded-full"></div>
+                              <span>Duration: {course.duration}</span>
+                            </div>
+                          )}
+                          {course.level && (
+                            <div className="flex items-center gap-2 text-sm text-gray-600">
+                              <div className="w-1.5 h-1.5 bg-green-600 rounded-full"></div>
+                              <span>Level: {course.level}</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {courseUrl ? (
+                          <a
+                            href={courseUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-full px-4 py-2 bg-gradient-to-r from-green-700 to-green-600 text-white rounded-lg hover:shadow-md transition-all text-sm flex items-center justify-center gap-2"
+                          >
+                            View Course <ExternalLink className="w-4 h-4" />
+                          </a>
+                        ) : (
+                          <button
+                            className="w-full px-4 py-2 bg-gradient-to-r from-green-700 to-green-600 text-white rounded-lg hover:shadow-md transition-all text-sm"
+                            onClick={() => onNavigate('courses')}
+                          >
+                            Browse Courses
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Roadmap */}
+            {roadmapStages.length > 0 && (
+              <div className="bg-white rounded-2xl shadow-lg p-8 border-2 border-green-100">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-500 rounded-lg flex items-center justify-center">
+                    <MapPin className="w-6 h-6 text-white" />
+                  </div>
+                  <h3 className="text-gray-900">Learning Roadmap</h3>
+                </div>
+
+                <div className="space-y-4">
+                  {roadmapStages.map((stage: any, index: number) => {
+                    const weekNum = stage.week_num ?? stage.week ?? stage.week_number ?? (index + 1);
+                    const theme = stage.theme || stage.topic || `Stage ${index + 1}`;
+                    // skills may be an array or a space-separated string — if string, display as single label
+                    const skillsList: string[] = Array.isArray(stage.skills)
+                      ? stage.skills
+                      : (typeof stage.skills === 'string' && stage.skills.trim() ? [stage.skills] : []);
+                    return (
+                      <div key={index} className="flex gap-4 items-start">
+                        <div className="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-blue-100 to-blue-50 rounded-xl flex flex-col items-center justify-center border border-blue-200">
+                          <span className="text-xs text-blue-500 uppercase">Week</span>
+                          <span className="text-xl text-blue-700 font-semibold">{weekNum}</span>
+                        </div>
+                        <div className="flex-1 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                          <h4 className="text-gray-900 font-medium mb-1">{theme}</h4>
+                          {skillsList.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-2">
+                              {skillsList.map((s: string, si: number) => (
+                                <span key={si} className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs">
+                                  {s}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
 
                 <div className="mt-8 p-6 bg-gradient-to-br from-green-50 to-lime-50 rounded-xl border-2 border-green-200">
@@ -388,12 +547,15 @@ export function SkillAnalysis({ onNavigate }: SkillAnalysisProps) {
                       <TrendingUp className="w-6 h-6 text-white" />
                     </div>
                     <div>
-                      <h4 className="text-gray-900 mb-2">Potential Impact</h4>
+                      <h4 className="text-gray-900 mb-2">Your Personalized Path</h4>
                       <p className="text-gray-600 text-sm mb-3">
-                        Completing all recommended courses could increase your readiness score significantly, boosting your employability.
+                        Completing this roadmap and recommended courses could significantly boost your readiness score.
                       </p>
-                      <button className="px-6 py-2 bg-gradient-to-r from-green-700 to-green-600 text-white rounded-lg hover:shadow-lg transition-all text-sm flex items-center gap-2" onClick={() => onNavigate('learning-path')}>
-                        Create Learning Path
+                      <button
+                        className="px-6 py-2 bg-gradient-to-r from-green-700 to-green-600 text-white rounded-lg hover:shadow-lg transition-all text-sm flex items-center gap-2"
+                        onClick={() => onNavigate('learning-path')}
+                      >
+                        View Full Learning Path
                         <ArrowRight className="w-4 h-4" />
                       </button>
                     </div>
