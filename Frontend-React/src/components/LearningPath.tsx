@@ -1,12 +1,14 @@
 import { BookOpen, Target, CheckCircle, Clock, TrendingUp, Star, ArrowRight } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { resumeAPI } from '../api/resume.api';
+import { useAuth } from '../context/AuthContext';
 
 interface LearningPathProps {
   onNavigate: (page: string) => void;
 }
 
 export function LearningPath({ onNavigate }: LearningPathProps) {
+  const { token } = useAuth();
   const [expandedPhase, setExpandedPhase] = useState<number | null>(0);
   const [learningPath, setLearningPath] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -16,7 +18,6 @@ export function LearningPath({ onNavigate }: LearningPathProps) {
     setIsLoading(true);
     setError(null);
     try {
-      const token = localStorage.getItem('token');
       if (!token) {
         setError('Session expired, please log in again');
         onNavigate('login');
@@ -112,8 +113,8 @@ export function LearningPath({ onNavigate }: LearningPathProps) {
   };
 
   useEffect(() => {
-    fetchLearningPath();
-  }, []);
+    if (token) fetchLearningPath();
+  }, [token]);
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty.toLowerCase()) {

@@ -2,12 +2,14 @@ import { Briefcase, MapPin, DollarSign, Clock, Users, ArrowRight, AlertCircle } 
 import { useState } from 'react';
 import { validateRequired, validateTextLength } from '../utils/validation';
 import { jobsAPI } from '../api/jobs.api';
+import { useAuth } from '../context/AuthContext';
 
 interface JobPostingProps {
   onNavigate: (page: string) => void;
 }
 
 export function JobPosting({ onNavigate }: JobPostingProps) {
+  const { token } = useAuth();
   const [formData, setFormData] = useState({
     title: '',
     company: '',
@@ -78,13 +80,13 @@ export function JobPosting({ onNavigate }: JobPostingProps) {
         employment_type: formData.type === 'full-time' ? 'full_time' : formData.type === 'part-time' ? 'part_time' : formData.type
       };
 
-      const token = localStorage.getItem('token');
-      if (!token) {
+      const authToken = token;
+      if (!authToken) {
         alert('Session expired, please log in again');
         onNavigate('login');
         return;
       }
-      await jobsAPI.createJob(jobData, token);
+      await jobsAPI.createJob(jobData, authToken);
       
       setIsLoading(false);
       alert('Job posted successfully! Candidates will be matched based on their skills and readiness scores.');

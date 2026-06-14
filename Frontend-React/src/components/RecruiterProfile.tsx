@@ -1,6 +1,7 @@
 import { Building2, Mail, MapPin, Briefcase, Users, TrendingUp, Plus, Edit, Phone, X, Save, Search, Eye, CheckCircle } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { jobsAPI } from '../api/jobs.api';
+import { useAuth } from '../context/AuthContext';
 
 interface RecruiterProfileProps {
   onNavigate: (page: string) => void;
@@ -15,6 +16,7 @@ interface CompanyProfile {
 }
 
 export function RecruiterProfile({ onNavigate }: RecruiterProfileProps) {
+  const { token } = useAuth();
   const [companyProfile, setCompanyProfile] = useState<CompanyProfile>({
     name: 'TechCorp Inc.',
     description: 'Leading Technology Company',
@@ -48,7 +50,6 @@ export function RecruiterProfile({ onNavigate }: RecruiterProfileProps) {
     setIsLoading(true);
     setError(null);
     try {
-      const token = localStorage.getItem('token');
       if (!token) {
         setError('Session expired, please log in again');
         onNavigate('login');
@@ -119,7 +120,6 @@ export function RecruiterProfile({ onNavigate }: RecruiterProfileProps) {
     setShowViewApplicationsModal(true);
     setIsApplicantsLoading(true);
     try {
-      const token = localStorage.getItem('token');
       if (!token) {
         alert('Session expired, please log in again');
         onNavigate('login');

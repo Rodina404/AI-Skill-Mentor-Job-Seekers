@@ -1,5 +1,7 @@
 import { MessageSquare, X, FileText, Briefcase, TrendingUp, Calendar, ChevronRight } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { resumeAPI } from '../api/resume.api';
 
 interface ChatHistoryItem {
   id: string;
@@ -17,72 +19,37 @@ interface ChatHistorySidebarProps {
 }
 
 export function ChatHistorySidebar({ isOpen, onClose, onSelectItem }: ChatHistorySidebarProps) {
+  const { token } = useAuth();
   const [selectedCategory, setSelectedCategory] = useState<'all' | 'analysis' | 'job' | 'course'>('all');
+  const [historyItems, setHistoryItems] = useState<ChatHistoryItem[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const historyItems: ChatHistoryItem[] = [
-    {
-      id: '1',
-      type: 'analysis',
-      title: 'Software Engineer Resume Analysis',
-      date: '2025-01-15',
-      preview: 'Readiness Score: 67% - Identified 4 skill gaps including Machine Learning and Cloud Architecture',
-      score: 67,
-    },
-    {
-      id: '2',
-      type: 'job',
-      title: 'Applied: Senior Software Engineer at TechCorp',
-      date: '2025-01-14',
-      preview: 'Match Score: 92% - Strong alignment with JavaScript, React, and Node.js requirements',
-      score: 92,
-    },
-    {
-      id: '3',
-      type: 'course',
-      title: 'Recommended: Advanced ML Specialization',
-      date: '2025-01-13',
-      preview: 'This course will boost your readiness by 23% for your target role',
-    },
-    {
-      id: '4',
-      type: 'analysis',
-      title: 'Data Scientist Resume Analysis',
-      date: '2025-01-12',
-      preview: 'Readiness Score: 72% - Strong Python skills, recommended TensorFlow training',
-      score: 72,
-    },
-    {
-      id: '5',
-      type: 'job',
-      title: 'Saved: Product Manager at StartupXYZ',
-      date: '2025-01-11',
-      preview: 'Match Score: 85% - Good fit for leadership and product strategy skills',
-      score: 85,
-    },
-    {
-      id: '6',
-      type: 'analysis',
-      title: 'Full Stack Developer Analysis',
-      date: '2025-01-10',
-      preview: 'Readiness Score: 78% - Recommended courses in DevOps and System Design',
-      score: 78,
-    },
-    {
-      id: '7',
-      type: 'job',
-      title: 'Applied: UX Designer at DesignStudio',
-      date: '2025-01-09',
-      preview: 'Match Score: 82% - Strong Figma and User Research skills highlighted',
-      score: 82,
-    },
-    {
-      id: '8',
-      type: 'course',
-      title: 'Started: AWS Solutions Architect',
-      date: '2025-01-08',
-      preview: 'Expected to increase cloud computing skills by 15%',
-    },
-  ];
+  useEffect(() => {
+    if (isOpen && token) {
+      fetchHistory();
+    }
+  }, [isOpen, token]);
+
+  const fetchHistory = async () => {
+    setIsLoading(true);
+    try {
+      const data = await resumeAPI.getAnalysisHistory(null, token);
+      const resumes = Array.isArray(data) ? data : (data?.resumes || []);
+      const mapped: ChatHistoryItem[] = resumes.map((r: any) => ({
+        id: r.id,
+        type: 'analysis' as const,
+        title: r.original_name || 'Resume Analysis',
+        date: r.created_at ? new Date(r.created_at).toLocaleDateString() : 'Recent',
+        preview: r.jobTitle ? `Analyzed for: ${r.jobTitle}` : `Status: ${r.status}`,
+        score: r.readinessScore || undefined,
+      }));
+      setHistoryItems(mapped);
+    } catch (err) {
+      console.error('Failed to fetch sidebar history:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const filteredItems = selectedCategory === 'all' 
     ? historyItems 
@@ -193,7 +160,12 @@ export function ChatHistorySidebar({ isOpen, onClose, onSelectItem }: ChatHistor
 
         {/* History List */}
         <div className="flex-1 overflow-y-auto p-4 space-y-3">
-          {filteredItems.length === 0 ? (
+          {isLoading ? (
+            <div className="text-center py-8">
+              <div className="w-8 h-8 border-3 border-green-600 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+              <p className="text-gray-500 text-sm">Loading history...</p>
+            </div>
+          ) : filteredItems.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               <MessageSquare className="w-12 h-12 mx-auto mb-3 text-gray-400" />
               <p>No {selectedCategory === 'all' ? 'activity' : selectedCategory} history yet</p>

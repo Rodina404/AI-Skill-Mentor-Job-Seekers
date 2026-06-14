@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { Upload, Target, BookOpen, TrendingUp, FileText, CheckCircle2, ArrowRight, AlertTriangle, ExternalLink, MapPin } from 'lucide-react';
 import { resumeAPI } from '../api/resume.api';
+import { useAuth } from '../context/AuthContext';
 
 interface CourseRecommendation {
   title: string;
@@ -40,6 +41,7 @@ interface SkillAnalysisProps {
 }
 
 export function SkillAnalysis({ onNavigate }: SkillAnalysisProps) {
+  const { token, logout } = useAuth();
   const [file, setFile] = useState<File | null>(null);
   const [jobTitle, setJobTitle] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -81,8 +83,8 @@ export function SkillAnalysis({ onNavigate }: SkillAnalysisProps) {
     setResult(null);
     setPollCount(0);
 
-    const token = localStorage.getItem('token');
-    if (!token) {
+    const authToken = token;
+    if (!authToken) {
       setError('Session expired. Please log in again.');
       setIsAnalyzing(false);
       setTimeout(() => onNavigate('login'), 2000);
@@ -91,7 +93,7 @@ export function SkillAnalysis({ onNavigate }: SkillAnalysisProps) {
 
     try {
       // Step 1: Upload
-      const uploadRes = await resumeAPI.analyzeResume(file, jobTitle.trim(), token);
+      const uploadRes = await resumeAPI.analyzeResume(file, jobTitle.trim(), authToken);
       const resumeId = uploadRes.resume_id;
       if (!resumeId) throw new Error('Resume upload failed — no ID returned.');
 
@@ -109,7 +111,7 @@ export function SkillAnalysis({ onNavigate }: SkillAnalysisProps) {
         setPollCount(polls);
 
         try {
-          const statusData = await resumeAPI.pollResumeStatus(resumeId, token);
+          const statusData = await resumeAPI.pollResumeStatus(resumeId, authToken);
 
           if (statusData.status === 'analyzed') {
             clearPoll();
@@ -130,9 +132,7 @@ export function SkillAnalysis({ onNavigate }: SkillAnalysisProps) {
           setError(pollErr.message || 'Error checking analysis status.');
           setIsAnalyzing(false);
           if (pollErr.status === 401) {
-            localStorage.removeItem('token');
-            localStorage.removeItem('currentUser');
-            localStorage.removeItem('refresh_token');
+            logout();
             setTimeout(() => onNavigate('login'), 2000);
           }
         }
@@ -143,9 +143,7 @@ export function SkillAnalysis({ onNavigate }: SkillAnalysisProps) {
       setError(err.message || 'An error occurred during upload.');
       setIsAnalyzing(false);
       if (err.status === 401) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('currentUser');
-        localStorage.removeItem('refresh_token');
+        logout();
         setTimeout(() => onNavigate('login'), 2000);
       }
     }

@@ -1,12 +1,14 @@
 import { Mail, MapPin, Briefcase, Calendar, Target, Award, TrendingUp, Edit, FileText, Clock, Plus, X, CheckCircle } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { usersAPI } from '../api/users.api';
+import { useAuth } from '../context/AuthContext';
 
 interface UserProfileProps {
   onNavigate: (page: string) => void;
 }
 
 export function UserProfile({ onNavigate }: UserProfileProps) {
+  const { token, user } = useAuth();
   const [isAddingSkill, setIsAddingSkill] = useState(false);
   const [newSkill, setNewSkill] = useState({ name: '', level: 50, category: 'Programming' });
   const [isAddingSkillLoading, setIsAddingSkillLoading] = useState(false);
@@ -25,16 +27,13 @@ export function UserProfile({ onNavigate }: UserProfileProps) {
     setIsLoading(true);
     setError(null);
     try {
-      const token = localStorage.getItem('token');
       if (!token) {
         setError('Session expired, please log in again');
         onNavigate('login');
         return;
       }
 
-      const currentUserStr = localStorage.getItem('currentUser');
-      const currentUser = currentUserStr ? JSON.parse(currentUserStr) : null;
-      const userId = currentUser?.id || 'me';
+      const userId = user?.id || 'me';
 
       // 1. Fetch Profile
       const prof = await usersAPI.getProfile(userId, token);
@@ -102,8 +101,8 @@ export function UserProfile({ onNavigate }: UserProfileProps) {
   };
 
   useEffect(() => {
-    fetchProfileData();
-  }, []);
+    if (token) fetchProfileData();
+  }, [token]);
 
   const handleEditProfile = () => {
     onNavigate('edit-profile');
@@ -117,16 +116,13 @@ export function UserProfile({ onNavigate }: UserProfileProps) {
 
     setIsAddingSkillLoading(true);
     try {
-      const token = localStorage.getItem('token');
       if (!token) {
         alert('Session expired, please log in again');
         onNavigate('login');
         return;
       }
 
-      const currentUserStr = localStorage.getItem('currentUser');
-      const currentUser = currentUserStr ? JSON.parse(currentUserStr) : null;
-      const userId = currentUser?.id || 'me';
+      const userId = user?.id || 'me';
 
       const skillData = {
         name: newSkill.name.trim(),
@@ -152,11 +148,7 @@ export function UserProfile({ onNavigate }: UserProfileProps) {
   };
 
   const handleViewAnalysis = (analysisId: string) => {
-    if (analysisId) {
-      localStorage.setItem('latestAnalysisId', analysisId);
-      localStorage.setItem('latestResumeId', analysisId);
-    }
-    onNavigate('analysis');
+    onNavigate('history');
   };
 
   const handleViewJobDetails = () => {
@@ -175,7 +167,7 @@ export function UserProfile({ onNavigate }: UserProfileProps) {
   const userDisplayName = profile ? `${profile.user?.first_name || ''} ${profile.user?.last_name || ''}`.trim() || profile.user?.email || 'User' : 'Job Seeker';
   const userRole = profile?.user?.role === 'recruiter' ? 'Recruiter' : 'Job Seeker';
   const userEmail = profile?.user?.email || 'No email';
-  const userLocation = profile?.profile?.location || 'Egypt, Alex';
+  const userLocation = profile?.profile?.location || 'Not set';
   const userInitials = userDisplayName.split(' ').map((n: string) => n[0]).join('').toUpperCase().substring(0, 2) || 'US';
 
   return (

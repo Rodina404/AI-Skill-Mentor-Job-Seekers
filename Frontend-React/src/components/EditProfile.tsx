@@ -8,7 +8,7 @@ interface EditProfileProps {
 }
 
 export function EditProfile({ onNavigate }: EditProfileProps) {
-  const { updateUser } = useAuth();
+  const { updateUser, token, user } = useAuth();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -37,16 +37,13 @@ export function EditProfile({ onNavigate }: EditProfileProps) {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const token = localStorage.getItem('token');
         if (!token) {
           alert('Session expired, please log in again');
           onNavigate('login');
           return;
         }
 
-        const currentUserStr = localStorage.getItem('currentUser');
-        const currentUser = currentUserStr ? JSON.parse(currentUserStr) : null;
-        const userId = currentUser?.id || 'me';
+        const userId = user?.id || 'me';
 
         const prof = await usersAPI.getProfile(userId, token);
         if (prof) {
@@ -119,16 +116,13 @@ export function EditProfile({ onNavigate }: EditProfileProps) {
     setIsLoading(true);
     
     try {
-      const token = localStorage.getItem('token');
       if (!token) {
         alert('Session expired, please log in again');
         onNavigate('login');
         return;
       }
 
-      const currentUserStr = localStorage.getItem('currentUser');
-      const currentUser = currentUserStr ? JSON.parse(currentUserStr) : null;
-      const userId = currentUser?.id || 'me';
+      const userId = user?.id || 'me';
 
       const profileData = {
         name: formData.name.trim(),
