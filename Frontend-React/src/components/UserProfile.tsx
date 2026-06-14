@@ -1,6 +1,7 @@
 import { Mail, MapPin, Briefcase, Calendar, Target, Award, TrendingUp, Edit, FileText, Clock, Plus, X, CheckCircle } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { usersAPI } from '../api/users.api';
+import { resumeAPI } from '../api/resume.api';
 import { useAuth } from '../context/AuthContext';
 
 interface UserProfileProps {
@@ -19,7 +20,7 @@ export function UserProfile({ onNavigate }: UserProfileProps) {
   const [analysisHistory, setAnalysisHistory] = useState<any[]>([]);
   const [jobHistory, setJobHistory] = useState<any[]>([]);
   const [skillGaps, setSkillGaps] = useState<any[]>([]);
-  const [readinessScore, setReadinessScore] = useState(70);
+  const [readinessScore, setReadinessScore] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -39,16 +40,51 @@ export function UserProfile({ onNavigate }: UserProfileProps) {
       const prof = await usersAPI.getProfile(userId, token);
       setProfile(prof);
 
-      // 2. Fetch Skills
+      // 2. Fetch Skills from user_skills table
       const userSkills = await usersAPI.getSkills(token);
-      const mappedSkills = (userSkills || []).map((s: any) => ({
+      let mappedSkills = (userSkills || []).map((s: any) => ({
         name: s.skill_name || s.name || 'Skill',
         level: s.proficiency === 'expert' ? 90 : s.proficiency === 'intermediate' ? 70 : 50,
         category: s.category || 'General'
       }));
+
+      // FIX 7: If user_skills is empty, fallback to latest resume's normalized_skills
+      if (mappedSkills.length === 0) {
+        try {
+          const resumeList = await resumeAPI.getAnalysisHistory(null, token);
+          const resumes = Array.isArray(resumeList) ? resumeList : (resumeList?.resumes || []);
+          const latestAnalyzed = resumes.find((r: any) => r.status === 'analyzed');
+          if (latestAnalyzed) {
+            const detail = await resumeAPI.pollResumeStatus(latestAnalyzed.id, token);
+            const normalizedSkills = detail.normalized_skills || [];
+            mappedSkills = normalizedSkills.map((s: any) => ({
+              name: s.name || s.skill_name || s.skillId || 'Skill',
+              level: s.confidence ? Math.round(s.confidence * 100) : 50,
+              category: 'From Resume'
+            }));
+          }
+        } catch (e) {
+          console.warn('Could not fetch fallback skills from resume:', e);
+        }
+      }
       setSkills(mappedSkills);
 
-      // 3. Fetch Matches
+      // FIX 4: Fetch real resume analysis history from GET /api/resumes
+      try {
+        const resumeList = await resumeAPI.getAnalysisHistory(null, token);
+        const resumes = Array.isArray(resumeList) ? resumeList : (resumeList?.resumes || []);
+        const mappedAnalysis = resumes.map((r: any) => ({
+          id: r.id,
+          title: r.original_name || 'Resume',
+          date: r.created_at ? new Date(r.created_at).toLocaleDateString() : 'Recent',
+          status: r.status,
+        }));
+        setAnalysisHistory(mappedAnalysis);
+      } catch (e) {
+        console.warn('Could not fetch resume history:', e);
+      }
+
+      // 3. Fetch Matches (for job matching history, readiness score, skill gaps)
       const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
       const matchesRes = await fetch(`${API_BASE_URL}/matches`, {
         headers: { 'Authorization': `Bearer ${token}` }
@@ -56,16 +92,6 @@ export function UserProfile({ onNavigate }: UserProfileProps) {
       
       if (matchesRes.ok) {
         const matches = await matchesRes.json();
-        
-        const mappedAnalysis = matches.map((m: any) => ({
-          id: m.resume_id,
-          title: `${m.job_postings?.title || 'Target'} Role Assessment`,
-          date: m.created_at ? new Date(m.created_at).toLocaleDateString() : 'Recent',
-          score: m.match_score || Math.round((m.overall_score || 0) * 100),
-          skillsAnalyzed: (m.matched_skills?.length || 0) + (m.missing_skills?.length || 0),
-          gapsFound: m.missing_skills?.length || 0
-        }));
-        setAnalysisHistory(mappedAnalysis);
 
         const mappedJobs = matches.map((m: any) => ({
           title: m.job_postings?.title || 'Target Role',
@@ -76,17 +102,20 @@ export function UserProfile({ onNavigate }: UserProfileProps) {
         }));
         setJobHistory(mappedJobs);
 
+        // FIX 5+6: Normalize readiness score — if ≤ 1, multiply by 100
         if (matches.length > 0) {
           const latest = matches[0];
-          setReadinessScore(latest.match_score || Math.round((latest.overall_score || 0) * 100));
+          const rawScore = latest.match_score || latest.overall_score || 0;
+          const normalizedScore = rawScore > 0 && rawScore <= 1 ? Math.round(rawScore * 100) : Math.round(rawScore);
+          setReadinessScore(normalizedScore);
           
           const mappedGaps = (latest.missing_skills || []).map((skillName: string) => ({
-            skill: skillName,
+            skill: typeof skillName === 'string' ? skillName : (skillName as any).skill || (skillName as any).name || '',
             priority: 'High',
             currentLevel: 'None',
             targetLevel: 'Advanced',
             impact: 'Critical for the role',
-            suggestedFocus: `Enhance your proficiency in ${skillName} through online courses.`
+            suggestedFocus: `Enhance your proficiency in ${typeof skillName === 'string' ? skillName : (skillName as any).skill || ''} through online courses.`
           }));
           setSkillGaps(mappedGaps);
         }
@@ -212,7 +241,15 @@ export function UserProfile({ onNavigate }: UserProfileProps) {
                 </div>
                 <div className="flex items-center gap-2 text-gray-600">
                   <Calendar className="w-5 h-5 text-green-600" />
-                  <span className="text-sm">Joined January 2026</span>
+                <span className="text-sm">{(() => {
+                  const createdAt = profile?.user?.created_at || profile?.profile?.created_at;
+                  if (createdAt) {
+                    try {
+                      return 'Joined ' + new Date(createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+                    } catch { return 'Joined recently'; }
+                  }
+                  return 'Joined recently';
+                })()}</span>
                 </div>
               </div>
 
@@ -368,7 +405,7 @@ export function UserProfile({ onNavigate }: UserProfileProps) {
               </h3>
 
               {analysisHistory.length === 0 ? (
-                <p className="text-gray-600 text-sm italic">No analysis history found. Upload a resume to get started.</p>
+                <p className="text-gray-600 text-sm italic">No resume uploads found. Upload a resume to get started.</p>
               ) : (
                 <div className="space-y-4">
                   {analysisHistory.map((analysis, index) => (
@@ -381,27 +418,23 @@ export function UserProfile({ onNavigate }: UserProfileProps) {
                             <span>{analysis.date}</span>
                           </div>
                         </div>
-                        <div className="text-center">
-                          <div className="text-2xl text-green-700 font-bold">{analysis.score}%</div>
-                          <p className="text-xs text-gray-500">Readiness</p>
-                        </div>
+                        <span className={`text-xs px-2 py-1 rounded-full font-semibold border ${
+                          analysis.status === 'analyzed' ? 'bg-green-100 text-green-700 border-green-200' :
+                          analysis.status === 'processing' ? 'bg-yellow-100 text-yellow-700 border-yellow-200' :
+                          analysis.status === 'failed' ? 'bg-red-100 text-red-700 border-red-200' :
+                          'bg-gray-100 text-gray-700 border-gray-200'
+                        }`}>
+                          {analysis.status === 'analyzed' ? 'Analyzed' : analysis.status === 'processing' ? 'Processing' : analysis.status === 'failed' ? 'Failed' : analysis.status}
+                        </span>
                       </div>
-                      <div className="grid grid-cols-2 gap-4 mb-3">
-                        <div className="text-sm">
-                          <span className="text-gray-600">Skills Analyzed:</span>
-                          <span className="ml-1 text-green-700 font-semibold">{analysis.skillsAnalyzed}</span>
-                        </div>
-                        <div className="text-sm">
-                          <span className="text-gray-600">Gaps Found:</span>
-                          <span className="ml-1 text-orange-700 font-semibold">{analysis.gapsFound}</span>
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => handleViewAnalysis(analysis.id)}
-                        className="w-full px-4 py-2 bg-gradient-to-r from-green-700 to-green-600 text-white rounded-lg hover:shadow-lg transition-all text-sm font-semibold"
-                      >
-                        View Full Analysis
-                      </button>
+                      {analysis.status === 'analyzed' && (
+                        <button
+                          onClick={() => handleViewAnalysis(analysis.id)}
+                          className="w-full px-4 py-2 bg-gradient-to-r from-green-700 to-green-600 text-white rounded-lg hover:shadow-lg transition-all text-sm font-semibold"
+                        >
+                          View Full Analysis
+                        </button>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -528,10 +561,19 @@ export function UserProfile({ onNavigate }: UserProfileProps) {
                 </svg>
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="text-center">
-                    <div className="text-4xl bg-gradient-to-r from-green-700 to-green-600 bg-clip-text text-transparent font-bold">
-                      {readinessScore}%
-                    </div>
-                    <p className="text-gray-600 text-sm">Ready</p>
+                    {readinessScore > 0 ? (
+                      <>
+                        <div className="text-4xl bg-gradient-to-r from-green-700 to-green-600 bg-clip-text text-transparent font-bold">
+                          {readinessScore}%
+                        </div>
+                        <p className="text-gray-600 text-sm">Ready</p>
+                      </>
+                    ) : (
+                      <>
+                        <div className="text-2xl text-gray-400 font-bold">—</div>
+                        <p className="text-gray-500 text-xs">Run analysis to see your score</p>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>

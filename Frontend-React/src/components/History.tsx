@@ -65,16 +65,41 @@ export function History({ onNavigate }: HistoryProps) {
     setDetailError(null);
     try {
       const detail = await resumeAPI.pollResumeStatus(resumeId, token);
+
+      // FIX 1: readinessScore is decimal (0.0583) — normalize to percentage
+      const rawScore = detail.readinessScore || 0;
+      const normalizedScore = rawScore <= 1 && rawScore > 0 ? Math.round(rawScore * 100) : Math.round(rawScore);
+
+      // FIX 2: matchedSkills/missingSkills are objects {skill, weight, skillId}, extract strings
+      const matchedStrings = (detail.matchedSkills || []).map((s: any) =>
+        typeof s === 'string' ? s : (s.skill || s.name || s.skillId || '')
+      );
+      const missingStrings = (detail.missingSkills || []).map((s: any) =>
+        typeof s === 'string' ? s : (s.skill || s.name || s.skillId || '')
+      );
+
+      // FIX 3: roadmap is object {roadmap: {weeks: [...]}, cards_svg, timeline_svg}, extract weeks
+      const roadmapStages = (() => {
+        const rm = detail.roadmap;
+        if (!rm) return [];
+        const weeks = rm.roadmap?.weeks || rm.weeks || (Array.isArray(rm) ? rm : []);
+        return weeks.map((w: any) => ({
+          week: w.week_num || w.week || w.week_number,
+          theme: w.theme || w.focus || '',
+          skills: Array.isArray(w.skills) ? w.skills : (typeof w.skills === 'string' ? w.skills.split(', ') : []),
+        }));
+      })();
+
       setSelectedResume({
         id: detail.id,
         status: detail.status,
         original_name: detail.original_name,
         jobTitle: detail.jobTitle || 'N/A',
-        readinessScore: detail.readinessScore || 0,
-        matchedSkills: detail.matchedSkills || [],
-        missingSkills: detail.missingSkills || [],
+        readinessScore: normalizedScore,
+        matchedSkills: matchedStrings,
+        missingSkills: missingStrings,
         courseRecommendations: detail.courseRecommendations || [],
-        roadmap: detail.roadmap || [],
+        roadmap: roadmapStages,
       });
     } catch (err: any) {
       console.error('Failed to fetch details:', err);
@@ -256,11 +281,11 @@ export function History({ onNavigate }: HistoryProps) {
                     </div>
                     <div className="flex-1 pb-4">
                       <h4 className="text-gray-900 font-semibold">{stage.theme || stage.title || `Week ${stage.week || i + 1}`}</h4>
-                      {stage.focus_areas && (
+                      {stage.skills && stage.skills.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-1">
-                          {(Array.isArray(stage.focus_areas) ? stage.focus_areas : []).map((area: string, j: number) => (
+                          {stage.skills.map((skill: string, j: number) => (
                             <span key={j} className="px-2 py-0.5 bg-purple-50 text-purple-700 rounded text-xs border border-purple-200">
-                              {area}
+                              {skill}
                             </span>
                           ))}
                         </div>
