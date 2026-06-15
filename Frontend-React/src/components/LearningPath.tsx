@@ -125,7 +125,7 @@ export function LearningPath({ onNavigate }: LearningPathProps) {
         title: `${targetRole} Career Path`,
         targetRole,
         duration: `${mappedPhases.length} weeks`,
-        readinessBoost: roadmapData.readiness_boost || `+${mappedPhases.length * 5}%`,
+        readinessBoost: `+${mappedPhases.length * 5}%`,
         phases: mappedPhases,
       });
 
