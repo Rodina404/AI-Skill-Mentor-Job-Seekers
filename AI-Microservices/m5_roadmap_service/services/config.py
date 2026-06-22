@@ -25,7 +25,7 @@ class PathConfig:
     # Base directories (auto-detect Colab vs local)
     base_dir: Path = field(default_factory=lambda: Path.cwd())
     data_dir: Path = field(default_factory=lambda: Path.cwd() / "skill_mentor_data")
-    output_dir: Path = field(default_factory=lambda: Path.cwd() / "farah_outputs")
+    output_dir: Path = field(default_factory=lambda: Path.cwd() / "output")
     
     def __post_init__(self):
         """Create directories if they don't exist."""
@@ -456,23 +456,3 @@ class Config:
 
 # Default global config instance
 default_config = Config()
-
-
-if __name__ == "__main__":
-    # Test configuration
-    config = Config()
-    print(f"Output directory: {config.paths.output_dir}")
-    print(f"Python hours: {config.skill_hours.get_hours('Python')}")
-    print(f"ML prerequisites: {config.prerequisites.get_prerequisites('machine learning')}")
-    
-    # Test learning order
-    skills = ["deep learning", "Python", "statistics", "machine learning"]
-    ordered = config.prerequisites.get_learning_order(skills)
-    print(f"Learning order: {ordered}")
-    
-    # Validate
-    errors = config.validate()
-    if errors:
-        print(f"Validation errors: {errors}")
-    else:
-        print("Configuration valid!")

@@ -16,8 +16,8 @@ import hashlib
 from typing import Dict, List, Optional, Tuple
 from functools import lru_cache
 
-from skill_mentor_config import Config, default_config
-from skill_mentor_utils import ok, info, warn, SimpleCache
+from .config import Config, default_config
+from .utils import ok, info, warn, SimpleCache
 
 
 # Try to import sentence-transformers (optional dependency)
@@ -454,38 +454,3 @@ def get_semantic_matcher(config: Optional[Config] = None) -> SemanticMatcher:
     if _default_matcher is None:
         _default_matcher = SemanticMatcher(config)
     return _default_matcher
-
-
-if __name__ == "__main__":
-    # Test semantic matching
-    print("Testing semantic skill matching...\n")
-    
-    matcher = SemanticMatcher()
-    
-    # Test synonym matching
-    print("Synonym matching tests:")
-    test_cases = [
-        ("Power BI", ["powerbi", "excel"]),
-        ("machine learning", ["ml", "deep learning", "python"]),
-        ("SQL", ["mysql", "database", "excel"]),
-    ]
-    
-    for skill, course_skills in test_cases:
-        score, match = matcher.compute_similarity(skill, course_skills)
-        print(f"  '{skill}' vs {course_skills} -> {score:.2f} (matched: {match})")
-    
-    # Test course matching
-    print("\nCourse matching test:")
-    test_courses = [
-        {"id": "1", "title": "Python ML Bootcamp", "skills_taught": ["Python", "machine learning"], "rating": 4.8},
-        {"id": "2", "title": "Excel Basics", "skills_taught": ["Excel", "data visualization"], "rating": 4.5},
-        {"id": "3", "title": "Power BI Masterclass", "skills_taught": ["Power BI", "DAX"], "rating": 4.7},
-    ]
-    
-    course_matcher = CourseSkillMatcher()
-    ranked = course_matcher.rank_courses_for_skill("powerbi", test_courses)
-    
-    for course in ranked:
-        print(f"  {course['title']} - relevance: {course['relevance_score']:.2f}")
-    
-    print("\n✓ Semantic matching tests complete!")

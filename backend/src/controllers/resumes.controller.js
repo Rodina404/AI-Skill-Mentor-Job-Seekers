@@ -32,7 +32,7 @@ const uploadResume = async (req, res) => {
 
     res.status(202).json({ message: 'Resume uploaded. Processing started.', resume_id: resumeRecord.id });
 
-    _runAnalysisPipeline(resumeRecord.id, file, jobTitle).catch(async (err) => {
+    _runAnalysisPipeline(resumeRecord.id, userId, file, jobTitle).catch(async (err) => {
       console.error(`Pipeline failed for resume ${resumeRecord.id}:`, err.message);
       const { error } = await supabaseAdmin.from('resumes').update({ status: 'failed' }).eq('id', resumeRecord.id);
       if (error) {
@@ -45,7 +45,7 @@ const uploadResume = async (req, res) => {
   }
 };
 
-const _runAnalysisPipeline = async (resumeId, file, jobTitle = 'Software Engineer') => {
+const _runAnalysisPipeline = async (resumeId, userId, file, jobTitle = 'Software Engineer') => {
   const formData = new FormData();
   formData.append('resumeFile', file.buffer, { filename: file.originalname, contentType: file.mimetype });
 
@@ -125,7 +125,8 @@ const _runAnalysisPipeline = async (resumeId, file, jobTitle = 'Software Enginee
   const { data: roadmapResponse } = await axios.post(
     `${SERVICES.roadmap}/run/roadmap`,
     {
-      user_id: resumeId,
+      user_id: userId,
+      resume_id: resumeId,
       missing_skills: missingSkills,
       hours_per_week: 10,
       deadline_weeks: 8,
@@ -138,7 +139,7 @@ const _runAnalysisPipeline = async (resumeId, file, jobTitle = 'Software Enginee
   const { data: courseResponse } = await axios.post(
     `${SERVICES.courseRec}/run`,
     {
-      user_id: resumeId,
+      user_id: userId,
       user_profile: {
         skills: skillNames,
         experience_years: Math.round(parseFloat(exp.years) || 0),

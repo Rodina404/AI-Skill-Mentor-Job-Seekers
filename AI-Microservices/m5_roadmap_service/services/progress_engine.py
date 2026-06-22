@@ -17,8 +17,8 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, List, Optional
 
-from skill_mentor_config import Config, default_config
-from skill_mentor_utils import (
+from .config import Config, default_config
+from .utils import (
     header, ok, info, warn, row, progress_bar, safe_print, safe_char,
     validate_progress_events, TermColors
 )
@@ -380,53 +380,3 @@ class ProgressEngine:
         
         ok(f"Progress status saved → {path}")
         return path
-
-
-if __name__ == "__main__":
-    # Test progress engine
-    print("Testing L3 Progress Engine...\n")
-    
-    # Mock roadmap
-    test_roadmap = {
-        "user": "Test User",
-        "generated_at": datetime.now().isoformat(),
-        "total_weeks": 4,
-        "hours_per_week": 10,
-        "weeks": [
-            {
-                "week_num": 1,
-                "theme": "Python",
-                "tasks": [{"type": "course_section", "course_id": "c1", "duration_h": 10.0, "skill": "Python"}],
-                "is_buffer": False,
-            },
-            {
-                "week_num": 2,
-                "theme": "SQL",
-                "tasks": [{"type": "course_section", "course_id": "c2", "duration_h": 10.0, "skill": "SQL"}],
-                "is_buffer": False,
-            },
-        ],
-        "courses_used": [
-            {"id": "c1", "title": "Python Bootcamp", "hours": 25.0, "hours_source": "verified", "platform": "Udemy"},
-            {"id": "c2", "title": "SQL Masterclass", "hours": 15.0, "hours_source": "verified", "platform": "Coursera"},
-        ],
-        "user_exp_score": 0.5,
-        "user_edu_score": 0.6,
-    }
-    
-    engine = ProgressEngine(test_roadmap)
-    
-    # Simulate progress
-    base_date = datetime.now() - timedelta(days=14)
-    
-    events = [
-        {"course_id": "c1", "pct_complete": 20, "timestamp": (base_date + timedelta(days=3)).isoformat()},
-        {"course_id": "c1", "pct_complete": 50, "timestamp": (base_date + timedelta(days=7)).isoformat()},
-        {"course_id": "c1", "pct_complete": 80, "timestamp": (base_date + timedelta(days=10)).isoformat()},
-        {"course_id": "c2", "pct_complete": 30, "timestamp": (base_date + timedelta(days=14)).isoformat()},
-    ]
-    
-    status = engine.batch_update(events)
-    engine.print_status(status)
-    
-    safe_print(f"\n[OK] Progress engine tests complete!")

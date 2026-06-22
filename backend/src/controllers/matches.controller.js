@@ -309,9 +309,11 @@ const runMatching = async (req, res) => {
       console.log('[Pipeline] Calling m5_roadmap_service (roadmap)...');
       const roadmapPayload = {
         user_id: userId,
+        resume_id: resume_id,
+        job_id: job_id,
         missing_skills: missingSkillNames,
-        hours_per_week: 10,
-        deadline_weeks: 8,
+        hours_per_week: req.body.hours_per_week || 10,
+        deadline_weeks: req.body.deadline_weeks || 8,
         job_title: job.title
       };
 
@@ -319,60 +321,49 @@ const runMatching = async (req, res) => {
       if (roadmapRes.success && roadmapRes.data) {
         roadmapResult = roadmapRes.data;
 
-        // Call explain endpoint for each item in the generated roadmap to enrich it
-        if (Array.isArray(roadmapResult.roadmap)) {
-          console.log('[Pipeline] Enrichment - Calling m5_roadmap_service (explain) for roadmap steps...');
-          for (const item of roadmapResult.roadmap) {
-            try {
-              const explainPayload = {
-                user_id: userId,
-                skill: getSkillName(item),
-                course_title: item.course_title || item.title || 'Recommended Course',
-                match_score: 0.85,
-                market_freq: 1.0
-              };
-              const { data: explainRes } = await axios.post(`${SERVICES.roadmap}/run/explain`, explainPayload, { timeout: 15000 });
-              if (explainRes.success) {
-                item.explanation = explainRes.data.why_skill;
-                item.course_fit = explainRes.data.why_course;
-              }
-            } catch (explainErr) {
-              console.error(`[Pipeline] Explain failed for skill ${item.skill || item.title}:`, explainErr.message);
-            }
+        // Step 11.5: Initialize progress tracking via M5
+        if (roadmapResult.roadmap_id) {
+          try {
+            await axios.post(`${SERVICES.roadmap}/run/progress`, {
+              user_id: userId,
+              roadmap_id: roadmapResult.roadmap_id,
+              completed_items: [],
+              last_active_iso: new Date().toISOString()
+            }, { timeout: 15000 });
+          } catch (err) {
+            console.error('[Pipeline] M5 progress init failed:', err.message);
           }
         }
-
-        // 11. Save augmented roadmap to database
-        console.log('[Pipeline] Saving roadmap to database...');
-        await supabaseAdmin.from('roadmaps').insert({
-          user_id: userId,
-          resume_id: resume_id,
-          job_id: job_id,
-          roadmap_data: roadmapResult,
-          explanation: 'Timeline career roadmap generated successfully.',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        });
       }
     } catch (err) {
       console.error('[Pipeline] m5_roadmap_service error:', err.message, err.response?.data ? JSON.stringify(err.response.data) : '');
       errors.push({ step: 'm5_roadmap_service', message: err.message, response: err.response?.data });
     }
 
-    // 12. Create notification row
+    // 12. Create notification via M5 service (instead of direct DB insert)
     try {
-      console.log('[Pipeline] Creating notification...');
-      const { error: notifErr } = await supabaseAdmin.from('notifications').insert({
+      console.log('[Pipeline] Creating notification via M5...');
+      await axios.post(`${SERVICES.roadmap}/run/notify`, {
         user_id: userId,
-        type: 'new_match',
-        title: 'Career Roadmap Ready',
-        body: `Your career roadmap for ${job.title} is ready!`,
-        is_read: false,
-        created_at: new Date().toISOString()
-      });
-      if (notifErr) throw notifErr;
+        last_active_iso: new Date().toISOString(),
+        progress_pct: 0,
+        roadmap_id: roadmapResult?.roadmap_id || null
+      }, { timeout: 15000 });
     } catch (err) {
-      console.error('[Pipeline] Notification creation failed:', err.message);
+      console.error('[Pipeline] M5 notification creation failed, falling back to direct DB insert:', err.message);
+      // Fallback: direct DB insert
+      try {
+        await supabaseAdmin.from('notifications').insert({
+          user_id: userId,
+          type: 'new_match',
+          title: 'Career Roadmap Ready',
+          body: `Your career roadmap for ${job.title} is ready!`,
+          is_read: false,
+          created_at: new Date().toISOString()
+        });
+      } catch (dbErr) {
+        console.error('[Pipeline] Fallback notification failed:', dbErr.message);
+      }
     }
 
     // 13. Return combined JSON response

@@ -22,8 +22,8 @@ from datetime import datetime
 import pandas as pd
 import requests
 
-from skill_mentor_config import Config, default_config
-from skill_mentor_utils import (
+from .config import Config, default_config
+from .utils import (
     retry, RetryError, header, ok, info, warn, row,
     parse_hours_string
 )
@@ -678,25 +678,3 @@ class DataLoader:
             "courses": self.courses.courses,
             "oulad_thresholds": self.oulad.thresholds,
         }
-
-
-if __name__ == "__main__":
-    # Test data loaders
-    print("Testing data loaders...\n")
-    
-    loader = DataLoader()
-    
-    # Test O*NET
-    print(f"Python hours: {loader.onet.get_hours('Python')}")
-    print(f"Unknown skill hours: {loader.onet.get_hours('unknown_skill')}")
-    
-    # Test courses
-    tableau_courses = loader.courses.find_courses_for_skill("Tableau", limit=3)
-    print(f"\nTop Tableau courses:")
-    for c in tableau_courses:
-        print(f"  - {c['title']} ({c['hours']}h)")
-    
-    # Test OULAD
-    print(f"\nOULAD stats loaded: {len(loader.oulad.thresholds)} entries")
-    
-    print("\n[OK] Data loader tests complete!")

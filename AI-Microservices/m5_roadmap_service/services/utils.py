@@ -256,7 +256,7 @@ def validate_user_constraints(
     Raises:
         ValidationError: If constraints are invalid
     """
-    from skill_mentor_config import Config
+    from .config import Config
     config = config or Config()
     
     validated = {}
@@ -612,51 +612,3 @@ class SimpleCache:
     
     def __contains__(self, key: str) -> bool:
         return self.get(key) is not None
-
-
-if __name__ == "__main__":
-    # Test utilities
-    print("Testing utilities module...\n")
-    
-    # Test terminal formatting
-    header("Test Section")
-    ok("This is a success message")
-    info("This is an info message")
-    warn("This is a warning message")
-    error("This is an error message")
-    row("Key", "Value")
-    
-    # Test retry decorator
-    @retry(max_attempts=3, delay=0.1)
-    def failing_function(fail_count: List[int]):
-        fail_count[0] += 1
-        if fail_count[0] < 3:
-            raise ValueError(f"Attempt {fail_count[0]} failed")
-        return "Success!"
-    
-    print("\nTesting retry decorator...")
-    try:
-        result = failing_function([0])
-        print(f"Result: {result}")
-    except RetryError as e:
-        print(f"All retries failed: {e}")
-    
-    # Test validation
-    print("\nTesting validation...")
-    try:
-        validated = validate_user_constraints({
-            "name": "Test User",
-            "hours_per_week": 10,
-            "deadline_weeks": 12
-        })
-        print(f"Validated constraints: {validated}")
-    except ValidationError as e:
-        print(f"Validation error: {e}")
-    
-    # Test progress bar
-    print("\nProgress bar examples:")
-    for pct in [0, 25, 50, 75, 100]:
-        bar = progress_bar(pct, 100)
-        print(f"  {pct:3d}% [{bar}]")
-    
-    print("\n✓ All utility tests passed!")

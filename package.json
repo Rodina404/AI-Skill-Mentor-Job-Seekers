@@ -1,0 +1,28 @@
+{
+  "name": "ai-skill-mentor-job-seekers",
+  "version": "1.0.0",
+  "description": "**AI Skill Mentor** is an intelligent career platform that analyzes user CVs, detects skill gaps, and recommends personalized learning paths using AI and NLP techniques.  \r The system connects **students, employers, and administrators** through a smart dashboard and supports **job readiness evaluation** and **career growth tracking**.",
+  "main": "test-integration.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Rodina404/AI-Skill-Mentor-Job-Seekers.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Rodina404/AI-Skill-Mentor-Job-Seekers/issues"
+  },
+  "homepage": "https://github.com/Rodina404/AI-Skill-Mentor-Job-Seekers#readme",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.108.1",
+    "dotenv": "^17.4.2"
+  }
+}

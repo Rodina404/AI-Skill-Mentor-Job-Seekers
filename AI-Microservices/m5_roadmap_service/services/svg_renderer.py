@@ -15,8 +15,8 @@ No external libraries — pure SVG string generation.
 from pathlib import Path
 from typing import Dict, List, Optional
 
-from skill_mentor_config import Config, default_config
-from skill_mentor_utils import header, ok, info, safe_print
+from .config import Config, default_config
+from .utils import header, ok, info, safe_print
 
 
 class SVGGenerator:
@@ -469,55 +469,3 @@ class SVGGenerator:
         ok(f"HTML report saved → {path}")
         
         return html
-
-
-if __name__ == "__main__":
-    # Test SVG generation
-    print("Testing L2 SVG Generator...\n")
-    
-    # Mock roadmap
-    test_roadmap = {
-        "user": "Test User",
-        "generated_at": "2024-01-15T10:00:00",
-        "total_weeks": 4,
-        "hours_per_week": 10,
-        "deadline_weeks": 12,
-        "weeks": [
-            {
-                "week_num": 1,
-                "theme": "Focus: Python",
-                "tasks": [
-                    {"type": "course_section", "title": "Python Basics", "duration_h": 6.0, "skill": "Python"},
-                    {"type": "mini_project", "title": "Mini project: Apply Python", "duration_h": 2.0, "skill": "Python"},
-                ],
-                "milestone": None,
-                "is_buffer": False,
-                "total_hours": 8.0,
-                "skills": ["Python"],
-            },
-            {
-                "week_num": 2,
-                "theme": "Focus: SQL",
-                "tasks": [
-                    {"type": "course_section", "title": "SQL Fundamentals", "duration_h": 8.0, "skill": "SQL"},
-                ],
-                "milestone": "🏅 25% complete — 1 of 3 skills covered",
-                "is_buffer": False,
-                "total_hours": 8.0,
-                "skills": ["SQL"],
-            },
-        ],
-        "summary_stats": {
-            "total_hours": 16.0,
-            "skills_covered": 1,
-            "skills_total": 3,
-            "coverage_pct": 33.3,
-            "buffer_weeks": 0,
-            "mini_projects": 1,
-        },
-    }
-    
-    generator = SVGGenerator()
-    results = generator.generate_all(test_roadmap)
-    
-    safe_print(f"\n[OK] Generated {len(results)} visualizations")

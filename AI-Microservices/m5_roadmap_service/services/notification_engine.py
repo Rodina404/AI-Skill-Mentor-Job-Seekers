@@ -22,8 +22,8 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, List, Optional, Set
 
-from skill_mentor_config import Config, default_config
-from skill_mentor_utils import header, ok, info, warn, safe_print, safe_char, TermColors
+from .config import Config, default_config
+from .utils import header, ok, info, warn, safe_print, safe_char, TermColors
 
 
 class NotificationSystem:
@@ -430,69 +430,3 @@ class NotificationSystem:
         
         ok(f"Notifications saved → {path}")
         return path
-
-
-if __name__ == "__main__":
-    # Test notification system
-    print("Testing L4 Notification System...\n")
-    
-    # Mock roadmap
-    base_date = datetime.now() - timedelta(days=20)
-    
-    test_roadmap = {
-        "user": "Test User",
-        "generated_at": base_date.isoformat(),
-        "total_weeks": 12,
-        "hours_per_week": 10,
-        "deadline_weeks": 12,
-        "weeks": [
-            {
-                "week_num": 1,
-                "theme": "Focus: Python",
-                "tasks": [{"title": "Python Basics", "duration_h": 6.0}],
-                "total_hours": 10.0,
-            },
-            {
-                "week_num": 2,
-                "theme": "Focus: SQL",
-                "tasks": [{"title": "SQL Fundamentals", "duration_h": 8.0}],
-                "total_hours": 10.0,
-            },
-        ],
-    }
-    
-    test_status = {
-        "overall_pct": 25.5,
-        "readiness_score": 45.0,
-        "completed_milestones": [
-            {"threshold": 25, "label": "25% of roadmap complete", "reached_at": datetime.now().isoformat()}
-        ],
-        "course_progress": [
-            {"course_id": "c1", "title": "Python Bootcamp", "platform": "Udemy", "complete": True},
-            {"course_id": "c2", "title": "SQL Masterclass", "platform": "Coursera", "complete": False},
-        ],
-    }
-    
-    # Test active user (recent activity)
-    notif_sys = NotificationSystem(test_roadmap)
-    
-    notifications = notif_sys.generate(
-        test_status,
-        last_activity_date=(datetime.now() - timedelta(days=2)).isoformat(),
-    )
-    
-    print("Active user notifications:")
-    notif_sys.print_notifications(notifications)
-    
-    # Test stalled user (15 days inactive)
-    notif_sys_stalled = NotificationSystem(test_roadmap)
-    
-    notifications_stalled = notif_sys_stalled.generate(
-        test_status,
-        last_activity_date=(datetime.now() - timedelta(days=15)).isoformat(),
-    )
-    
-    print("\n\nStalled user notifications:")
-    notif_sys_stalled.print_notifications(notifications_stalled)
-    
-    safe_print(f"\n[OK] Notification system tests complete!")

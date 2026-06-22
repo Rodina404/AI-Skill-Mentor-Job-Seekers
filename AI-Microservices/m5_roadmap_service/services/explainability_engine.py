@@ -23,8 +23,8 @@ import re
 from pathlib import Path
 from typing import Dict, List, Optional
 
-from skill_mentor_config import Config, default_config
-from skill_mentor_utils import header, ok, info, warn, safe_print, SimpleCache
+from .config import Config, default_config
+from .utils import header, ok, info, warn, safe_print, SimpleCache
 
 
 # Try to import openai for Qwen (primary)
@@ -497,62 +497,3 @@ Return a JSON object with key: "roadmap_explanation"
         """Create cache key from gap and course."""
         key_data = f"{gap.get('skill', '')}{course.get('id', '')}"
         return hashlib.md5(key_data.encode()).hexdigest()
-
-
-if __name__ == "__main__":
-    # Test explainability
-    print("Testing L5 Explainability LLM...\n")
-    
-    # Mock data
-    test_gap = {
-        "skill": "Power BI",
-        "gap_score": 0.92,
-        "similarity": 0.08,
-        "priority": "high",
-        "market_freq": "61%",
-        "best_match": "Excel",
-    }
-    
-    test_course = {
-        "id": "rc01",
-        "title": "Microsoft Power BI Desktop for Business Intelligence",
-        "platform": "Udemy",
-        "rating": 4.8,
-        "reviews": 42000,
-        "skills_taught": ["Power BI", "DAX", "data visualization"],
-        "hours": 8.5,
-        "hours_source": "verified",
-    }
-    
-    test_roadmap = {
-        "user": "Test User",
-        "total_weeks": 9,
-        "hours_per_week": 10,
-        "skill_coverage": {"Power BI": "rc01"},
-        "courses_used": [test_course],
-        "summary_stats": {
-            "skills_covered": 1,
-            "skills_total": 3,
-            "buffer_weeks": 2,
-            "mini_projects": 3,
-        },
-    }
-    
-    # Test
-    explainer = ExplainabilityLLM()
-    
-    print(f"API available: {explainer.api_available}\n")
-    
-    # Test gap explanation
-    explanation = explainer.explain_gap(test_gap, test_course)
-    print("Skill explanation:")
-    print(f"  {explanation['skill_explanation'][:100]}...\n")
-    print("Course explanation:")
-    print(f"  {explanation['course_explanation'][:100]}...\n")
-    
-    # Test roadmap explanation
-    roadmap_expl = explainer.explain_roadmap(test_roadmap, [test_gap])
-    print("Roadmap explanation:")
-    print(f"  {roadmap_expl[:100]}...")
-    
-    safe_print("\n[OK] Explainability tests complete!")

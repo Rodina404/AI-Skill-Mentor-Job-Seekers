@@ -18,12 +18,12 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
-from skill_mentor_config import Config, default_config
-from skill_mentor_utils import (
+from .config import Config, default_config
+from .utils import (
     header, ok, info, warn, row, safe_print,
     validate_user_constraints, validate_skill_gaps, ValidationError
 )
-from skill_mentor_semantic import SemanticMatcher, CourseSkillMatcher
+from .semantic_matcher import SemanticMatcher, CourseSkillMatcher
 
 
 class RoadmapLogic:
@@ -416,38 +416,3 @@ class RoadmapLogic:
         ok(f"Roadmap saved → {output_path}")
         
         return output_path
-
-
-if __name__ == "__main__":
-    # Test roadmap generation
-    print("Testing L1 Roadmap Logic...\n")
-    
-    # Mock data
-    test_skills = [
-        {"skill": "Power BI", "gap_score": 0.9, "similarity": 0.1, "priority": "high"},
-        {"skill": "Python", "gap_score": 0.7, "similarity": 0.3, "priority": "medium"},
-        {"skill": "machine learning", "gap_score": 0.85, "similarity": 0.15, "priority": "high"},
-    ]
-    
-    test_courses = [
-        {"id": "c1", "title": "Power BI Masterclass", "skills_taught": ["Power BI", "DAX"],
-         "rating": 4.8, "hours": 10.0, "hours_source": "verified", "platform": "Udemy"},
-        {"id": "c2", "title": "Python for Data Science", "skills_taught": ["Python", "Pandas"],
-         "rating": 4.7, "hours": 25.0, "hours_source": "verified", "platform": "Coursera"},
-        {"id": "c3", "title": "ML Specialization", "skills_taught": ["machine learning", "Python"],
-         "rating": 4.9, "hours": 60.0, "hours_source": "verified", "platform": "Coursera"},
-    ]
-    
-    test_constraints = {
-        "name": "Test User",
-        "hours_per_week": 10,
-        "deadline_weeks": 12,
-    }
-    
-    # Generate roadmap
-    logic = RoadmapLogic()
-    roadmap = logic.generate(test_skills, test_courses, test_constraints)
-    
-    safe_print(f"\n✓ Generated roadmap with {roadmap['total_weeks']} weeks")
-    print(f"  Skills covered: {roadmap['summary_stats']['skills_covered']}")
-    print(f"  Total hours: {roadmap['summary_stats']['total_hours']}")

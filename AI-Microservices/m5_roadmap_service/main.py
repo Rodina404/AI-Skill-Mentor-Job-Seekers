@@ -2,12 +2,14 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from dotenv import load_dotenv
+from logging_config import setup_logging
 
 from routes import roadmap, progress, notify, explain
 from schemas import StandardResponse
 
 # Load env variables (API keys)
 load_dotenv()
+setup_logging()
 
 app = FastAPI(title="M5 Roadmap Service", version="1.0.0")
 
