@@ -68,7 +68,7 @@ def generate_notifications(
         try:
             notif_repo.create_notification(
                 user_id=req.user_id,
-                notif_type=f"roadmap_{alert['priority']}",
+                notif_type="system_alert",
                 title=n.get("title", f"Learning Alert: {alert['priority'].title()}"),
                 body=alert["message"],
             )

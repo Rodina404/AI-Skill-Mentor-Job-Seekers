@@ -85,3 +85,10 @@ def mock_supabase_client(mock_db_data):
         mock_client.table.side_effect = table_side_effect
         mock_create.return_value = mock_client
         yield mock_client
+
+@pytest.fixture(autouse=True)
+def mock_llm_calls():
+    with patch("services.explainability_engine.ExplainabilityLLM._call_llm", return_value=None), \
+         patch("services.explainability_engine.ExplainabilityLLM._call_llm_roadmap", return_value=None):
+        yield
+

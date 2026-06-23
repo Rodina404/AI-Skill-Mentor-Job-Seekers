@@ -12,3 +12,7 @@ __pycache__
 .idea
 *.log
 tests
+.pytest_cache
+output
+farah_outputs
+migrations
