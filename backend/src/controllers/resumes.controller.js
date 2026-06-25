@@ -62,21 +62,61 @@ const _runAnalysisPipeline = async (resumeId, file, jobTitle = 'Software Enginee
   const extractedData = extracted.extractedData || {};
   console.log(`[Pipeline] Extraction complete. Sending to normalization service...`);
 
-  const edu = (extractedData.education && extractedData.education.length > 0)
-    ? extractedData.education[0]
-    : { degree: "", field: "", university: "", year: 0 };
-  
-  const educationInput = {
-    degree: edu.degree || "",
-    field: edu.field || "",
-    university: edu.university || "",
-    year: edu.year ? parseInt(edu.year) || 0 : 0
+  // --- BUG_002 FIX: Extraction returns `institution` (not `university`) and `end`/`start`
+  //     date strings (not a `year` integer). Map all fields correctly.
+  const eduEntries = Array.isArray(extractedData.education) ? extractedData.education : [];
+  const edu = eduEntries.length > 0 ? eduEntries[0] : {};
+
+  // Parse a year integer out of a date string like "2022", "May 2022", or "2020 - 2023"
+  const _parseYear = (str) => {
+    if (!str) return 0;
+    const match = String(str).match(/(\d{4})/);
+    return match ? parseInt(match[1], 10) : 0;
   };
 
-  const exp = extractedData.experience || { titles: [], years: 0.0 };
+  const educationInput = {
+    degree:     edu.degree      || "",
+    field:      edu.field       || "",
+    // Extraction uses `institution`; normalization service expects `university`
+    university: edu.institution || edu.university || "",
+    year:       _parseYear(edu.end || edu.start)
+  };
+
+  // --- BUG_003 FIX: Extraction returns List[ExperienceEntry] with {title, company, duration},
+  //     NOT a flat {titles, years} object. Parse both arrays correctly.
+  const expEntries = Array.isArray(extractedData.experience) ? extractedData.experience : [];
+
+  // Collect all unique non-empty job titles across all experience entries
+  const expTitles = [...new Set(
+    expEntries.map(e => e.title).filter(t => typeof t === 'string' && t.trim())
+  )];
+
+  // Derive total years of experience by summing parsed durations.
+  // Duration strings like "Jan 2020 - Dec 2022" → ~2.9 years; fall back to entry count.
+  const _parseDurationYears = (dur) => {
+    if (!dur) return 0;
+    const years = String(dur).match(/([\d.]+)\s*(?:yr|year)/i);
+    if (years) return parseFloat(years[1]);
+    // Try to parse start/end year from "MMM YYYY - MMM YYYY" or "YYYY - YYYY"
+    const parts = String(dur).split(/[-–]/).map(p => p.trim());
+    if (parts.length >= 2) {
+      const startYr = _parseYear(parts[0]);
+      const endRaw  = parts[parts.length - 1].toLowerCase();
+      const endYr   = endRaw.includes('present') || endRaw.includes('current')
+        ? new Date().getFullYear()
+        : _parseYear(parts[parts.length - 1]);
+      if (startYr > 1950 && endYr >= startYr) return endYr - startYr;
+    }
+    return 0;
+  };
+
+  const totalExpYears = expEntries.reduce((sum, e) => sum + _parseDurationYears(e.duration), 0);
+  // If we couldn't parse any duration, use entry count as rough proxy (1 entry ≈ 1 year)
+  const expYears = totalExpYears > 0 ? parseFloat(totalExpYears.toFixed(1)) : expEntries.length * 1.0;
+
   const experienceInput = {
-    titles: exp.titles || [],
-    years: parseFloat(exp.years) || 0.0
+    titles: expTitles,
+    years:  expYears
   };
 
   const { data: normalized } = await axios.post(
@@ -98,6 +138,12 @@ const _runAnalysisPipeline = async (resumeId, file, jobTitle = 'Software Enginee
   const skillIds = normalizedSkills.map(skill => skill.skillId || skill.name || skill).filter(Boolean);
   const skillNames = normalizedSkills.map(skill => skill.name || skill.skill || skill.skillId || skill).filter(Boolean);
 
+  // --- BUG_004 FIX: Pass experience and education as human-readable strings so the gap engine
+  //     converters (experience_to_score / education_to_score) can calculate real scores
+  //     instead of falling through to the 0.5 default.
+  const experienceLevelStr = expYears > 0 ? `${expYears} years` : '';
+  const educationLevelStr  = educationInput.degree || '';
+
   console.log(`[Pipeline] Normalization complete. Calling gap engine with jobTitle="${jobTitle}"...`);
   const { data: gapResponse } = await axios.post(
     `${SERVICES.gapEngine}/run`,
@@ -105,8 +151,8 @@ const _runAnalysisPipeline = async (resumeId, file, jobTitle = 'Software Enginee
       jobTitle,
       userProfile: {
         skills: skillIds.map(skillId => ({ skillId })),
-        experienceLevel: exp.years ? `${exp.years} years` : '',
-        educationLevel: educationInput.degree
+        experienceLevel: experienceLevelStr,
+        educationLevel:  educationLevelStr
       }
     },
     { timeout: 30000 }

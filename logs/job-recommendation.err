@@ -1,0 +1,8 @@
+INFO:     Started server process [14192]
+INFO:     Waiting for application startup.
+2026-06-23 02:14:09,307 [INFO] main — Initializing Job Recommendation AI modules...
+2026-06-23 02:14:09,309 [INFO] core.data_preprocessor — Preprocessed data loaded from models
+2026-06-23 02:14:09,310 [INFO] core.job_recommender — Job recommender initialized successfully
+2026-06-23 02:14:09,311 [INFO] main — Job recommender fully initialized.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8007 (Press CTRL+C to quit)

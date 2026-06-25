@@ -130,8 +130,16 @@ app = FastAPI(
 # ============================================================================
 
 allowed_origins = [
-    "http://localhost:3000",  # Node.js frontend
-    "http://localhost:8003",  # This service
+    "http://localhost:3000",   # Node.js frontend
+    "http://localhost:5173",   # Vite frontend
+    "http://localhost:8001",   # Extraction service
+    "http://localhost:8002",   # This service (alt port)
+    "http://localhost:8003",   # This service
+    "http://localhost:8004",   # Gap engine
+    "http://localhost:5500",   # VS Code Live Server
+    "http://127.0.0.1:5500",  # VS Code Live Server (alt)
+    "http://localhost:8080",   # Generic dev server
+    "null",                    # file:// opened directly in browser
 ]
 
 # Add custom allowed origin from .env
