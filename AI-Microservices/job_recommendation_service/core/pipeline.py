@@ -3,6 +3,7 @@ import time
 from typing import Dict, Any
 
 from schemas import JobRecommendationRequest, StandardSuccessResponse, StandardErrorResponse, ErrorDetails, ResponseData, ResponseMeta
+from core.adzuna_client import AdzunaJobProvider
 from core.job_recommender import JobRecommender
 
 logger = logging.getLogger(__name__)
@@ -10,6 +11,7 @@ logger = logging.getLogger(__name__)
 class JobPipeline:
     def __init__(self, recommender: JobRecommender):
         self.recommender = recommender
+        self.adzuna_provider = AdzunaJobProvider()
 
     def run(self, request: JobRecommendationRequest) -> Dict[str, Any]:
         """
@@ -26,13 +28,21 @@ class JobPipeline:
             user_education = request.user_profile.education or ""
             desired_role = request.job_title
             
-            recommendations = self.recommender.recommend_jobs(
+            recommendations = self.adzuna_provider.recommend_jobs(
                 user_skills=user_skills,
-                user_experience=user_experience,
-                user_education=user_education,
                 desired_role=desired_role,
-                top_n=request.top_n
+                location=request.user_profile.location or "",
+                top_n=request.top_n,
             )
+
+            if not recommendations:
+                recommendations = self.recommender.recommend_jobs(
+                    user_skills=user_skills,
+                    user_experience=user_experience,
+                    user_education=user_education,
+                    desired_role=desired_role,
+                    top_n=request.top_n
+                )
             
             if not recommendations:
                 logger.warning("No recommendations found, falling back to popular jobs")

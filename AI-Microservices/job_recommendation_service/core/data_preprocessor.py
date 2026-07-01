@@ -148,8 +148,12 @@ class JobDataPreprocessor:
                 self.tfidf_vectorizer = joblib.load(vectorizer_path)
                 self.tfidf_matrix = joblib.load(matrix_path)
 
-            logger.info(f"Preprocessed data loaded from {input_dir}")
-            return True
+            if self.jobs_df is not None and self.tfidf_vectorizer is not None and self.tfidf_matrix is not None:
+                logger.info(f"Preprocessed data loaded from {input_dir}")
+                return True
+
+            logger.info(f"Preprocessed data not found in {input_dir}")
+            return False
 
         except Exception as e:
             logger.error(f"Error loading preprocessed data: {e}")
