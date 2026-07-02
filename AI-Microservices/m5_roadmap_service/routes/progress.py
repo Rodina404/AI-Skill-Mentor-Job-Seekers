@@ -8,9 +8,7 @@ router = APIRouter()
 
 @router.post("/progress", response_model=StandardResponse)
 def update_progress(req: ProgressRequest):
-    dummy_roadmap = {"id": req.roadmap_id, "weeks": [], "courses_used": []}
-    
-    engine = ProgressEngine(roadmap=dummy_roadmap, config=default_config)
+    engine = ProgressEngine(roadmap=req.roadmap_data, config=default_config)
     
     events_dict = [
         {"course_id": cid, "pct_complete": 100.0, "timestamp": req.last_active_iso} 

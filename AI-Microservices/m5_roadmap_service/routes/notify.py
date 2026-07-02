@@ -16,10 +16,9 @@ def generate_notifications(req: NotifyRequest):
         data = loader.load_all()
         OULAD_THRESHOLDS = data.get("oulad_thresholds", None)
 
-    dummy_roadmap = {"user": req.user_id}
     progress_status_stub = {"overall_pct": req.progress_pct}
 
-    system = NotificationSystem(roadmap=dummy_roadmap, oulad_thresholds=OULAD_THRESHOLDS, config=default_config)
+    system = NotificationSystem(roadmap=req.roadmap_data, oulad_thresholds=OULAD_THRESHOLDS, config=default_config)
     
     notifs = system.generate(
         progress_status=progress_status_stub, 
