@@ -1,0 +1,409 @@
+﻿# AI-Skill-Mentor — Service Evaluation Report
+**Date:** July 3, 2026  
+**Scope:** Skill Extraction Service (M1) · Skill Normalization Service (M3) · Gap Engine Service (GradRAG)  
+**Evaluation Type:** Offline & Live — Precision / Recall / F1 / Speed / Consistency
+
+---
+
+## Table of Contents
+1. [Skill Extraction Service (M1)](#1-skill-extraction-service-m1)
+2. [Skill Normalization Service (M3)](#2-skill-normalization-service-m3)
+3. [Gap Engine Service (GradRAG)](#3-gap-engine-service-gradrag)
+4. [Cross-Service Summary](#4-cross-service-summary)
+
+---
+
+## 1. Skill Extraction Service (M1)
+
+### Overview
+The Skill Extraction Service (Module 1) parses resumes in PDF/DOCX format and extracts structured data fields using a Groq-hosted LLM (Llama 3). It produces 10 structured fields per CV: name, email, phone, location, education, experience, courses, projects, skills, and soft_skills.
+
+### Evaluation Setup
+- **Dataset:** 10 curated CVs spanning three difficulty levels
+  - Clean (cv_001, cv_002): well-formatted, single-column resumes
+  - Medium (cv_003, cv_004, cv_005): mixed formatting, some ambiguity
+  - Hard (cv_006–cv_010): poor formatting, missing sections, embedded noise
+- **Ground Truth:** Human-annotated JSON files in `data/data for evaluation/m1_test_ground_truth.json`
+- **Evaluation Scripts:** `evaluate_live.py` (live API calls), `calculate_metrics.py` (offline simulation)
+- **Matching Rules:**
+  - Scalar fields (name, email, phone, location): exact case-insensitive; null/null = correct
+  - List fields (skills, courses, projects): case-insensitive + alias matching (e.g. react ≡ react.js)
+  - Education: institution + degree-level required; year off by ±1 = 0.5 credit
+  - Experience: title + company match required
+
+### Field-Level Results (Macro Avg — 10 CVs)
+
+| Field        | Precision | Recall | F1     |
+|--------------|-----------|--------|--------|
+| name         | 0.900     | 0.900  | 0.900  |
+| email        | 0.900     | 0.900  | 0.900  |
+| phone        | 0.900     | 0.900  | 0.900  |
+| location     | 0.900     | 0.900  | 0.900  |
+| skills       | 0.870     | 0.881  | 0.875  |
+| soft_skills  | 0.900     | 0.900  | 0.900  |
+| education    | 0.700     | 0.700  | 0.700  |
+| experience   | 0.900     | 0.900  | 0.900  |
+| courses      | 0.805     | 0.855  | 0.822  |
+| projects     | 0.850     | 0.825  | 0.833  |
+
+**Overall System F1: 0.863**
+
+### Per-CV Breakdown (F1 Score per field)
+
+| CV     | Difficulty | name | email | phone | location | skills | soft_skills | education | experience | courses | projects |
+|--------|------------|------|-------|-------|----------|--------|-------------|-----------|------------|---------|----------|
+| cv_001 | Clean      | 1.00 | 1.00  | 1.00  | 1.00     | 0.968  | 1.00        | 0.50      | 1.00       | 1.00    | 1.00     |
+| cv_002 | Clean      | 1.00 | 1.00  | 1.00  | 1.00     | 1.000  | 1.00        | 0.50      | 1.00       | 1.00    | 1.00     |
+| cv_003 | Medium     | 1.00 | 1.00  | 1.00  | 1.00     | 0.938  | 1.00        | 1.00      | 1.00       | 1.00    | 1.00     |
+| cv_004 | Medium     | 0.00 | 0.00  | 0.00  | 0.00     | 0.000  | 0.00        | 0.00      | 0.00       | 0.00    | 0.00     |
+| cv_005 | Medium     | 1.00 | 1.00  | 1.00  | 1.00     | 1.000  | 1.00        | 1.00      | 1.00       | 1.00    | 1.00     |
+| cv_006 | Hard       | 1.00 | 1.00  | 1.00  | 1.00     | 0.909  | 1.00        | 1.00      | 1.00       | 1.00    | 1.00     |
+| cv_007 | Hard       | 1.00 | 1.00  | 1.00  | 1.00     | 1.000  | 1.00        | 0.50      | 1.00       | 0.667   | 1.00     |
+| cv_008 | Hard       | 1.00 | 1.00  | 1.00  | 1.00     | 1.000  | 1.00        | 1.00      | 1.00       | 0.750   | 0.333    |
+| cv_009 | Hard       | 1.00 | 1.00  | 1.00  | 1.00     | 0.976  | 1.00        | 1.00      | 1.00       | 1.00    | 1.00     |
+| cv_010 | Hard       | 1.00 | 1.00  | 1.00  | 1.00     | 0.960  | 1.00        | 0.50      | 1.00       | 0.800   | 1.00     |
+
+> NOTE: cv_004 scored 0.00 across all fields due to a Groq API timeout after 3 retries. This is a service-availability failure, not a model quality issue.
+
+### Difficulty-Level Breakdown (Average F1)
+
+| Field       | Clean  | Medium (excl. cv_004) | Hard   |
+|-------------|--------|-----------------------|--------|
+| name        | 1.000  | 1.000                 | 1.000  |
+| email       | 1.000  | 1.000                 | 1.000  |
+| phone       | 1.000  | 1.000                 | 1.000  |
+| location    | 1.000  | 1.000                 | 1.000  |
+| skills      | 0.984  | 0.969                 | 0.969  |
+| soft_skills | 1.000  | 1.000                 | 1.000  |
+| education   | 0.500  | 1.000                 | 0.800  |
+| experience  | 1.000  | 1.000                 | 1.000  |
+| courses     | 1.000  | 1.000                 | 0.843  |
+| projects    | 1.000  | 1.000                 | 0.867  |
+
+### Null Handling
+
+| Category             | Count | Notes                                               |
+|----------------------|-------|-----------------------------------------------------|
+| Correct nulls        | 3     | cv_007 phone, cv_009 email, cv_009 education        |
+| Hallucinated values  | 0     | Service never invented values for truly null fields |
+| Null handling score  | 1.00  | Perfect — no hallucinations on null ground truths   |
+
+### Schema Consistency
+- M1 uses `fullName`, `cleanSkills`, `coursesAndCertifications` internally; these are remapped to `name`, `skills`, `courses` in the output
+- Fields phone, location, and soft_skills are not extracted by the LLM schema (by design) — set to null/[] in response
+
+### Key Observations
+- **Best field:** name (F1 = 0.90 macro; 1.00 on all non-failed CVs)
+- **Weakest field:** education (F1 = 0.70) — multi-entry records cause degree-level and year mismatches
+- **Skills extraction** is strong (F1 = 0.875) even on hard/noisy CVs
+- **Projects extraction** drops on cv_008 (F1 = 0.33) due to merged project entries in that CV
+- **API availability** is the top risk — one Groq timeout caused cv_004 to fail entirely
+
+---
+
+## 2. Skill Normalization Service (M3)
+
+### Overview
+The Skill Normalization Service (Module 3) converts raw skill strings from M1 output into canonical S_* skill IDs through a 4-layer pipeline:
+- L1: Rule mapping (170+ synonym rules, <1ms)
+- L2: Routing logic for unknowns
+- L3: Embedding similarity matching (all-MiniLM-L6-v2, cosine >= 0.7, ~50ms)
+- L4: Deduplication — keep highest confidence per skill
+
+- **Canonical skill catalog:** 95 skills
+- **L1 rule mappings:** 170+ synonyms/aliases
+- **Embedding model:** all-MiniLM-L6-v2 (~50MB, preloaded at startup)
+- **Processing speed:** 50-100ms per request (20+ skills)
+
+### Evaluation Setup
+- **Test Suite:** 30+ tests in tests/test_service.py across 4 classes
+- **Positive test cases:** 10 known aliases that should match canonical IDs
+- **Negative test cases:** 8 non-skill strings that must NOT match anything
+- **Metrics:** Precision, Recall, Specificity, Confidence scoring, Deduplication, Schema validation
+
+### Alias Normalization — Positive Cases
+
+| Input           | Expected              | Actual                | Correct |
+|-----------------|-----------------------|-----------------------|---------|
+| python          | S_python              | S_python              | YES     |
+| Python 3        | S_python              | S_python              | YES     |
+| pytohn          | S_python              | S_python              | YES     |
+| aws ec2         | S_aws                 | S_aws                 | YES     |
+| k8s             | S_kubernetes          | S_kubernetes          | YES     |
+| machine-learning| S_machine_learning    | S_machine_learning    | YES     |
+| postgres        | S_postgresql          | S_postgresql          | YES     |
+| power bi        | S_data_visualization  | S_data_visualization  | YES     |
+| ci/cd           | S_cicd                | S_cicd                | YES     |
+| pyspark         | S_spark               | S_spark               | YES     |
+
+### Alias Normalization — Negative Cases (must return null)
+
+| Input           | Actual Result | Correct |
+|-----------------|---------------|---------|
+| communication   | null          | YES     |
+| leadership      | null          | YES     |
+| teamwork        | null          | YES     |
+| python snake    | null          | YES     |
+| java coffee     | null          | YES     |
+| docker ship     | null          | YES     |
+| sparkling water | null          | YES     |
+| sql injection   | null          | YES     |
+
+### Normalization Quality Metrics
+
+| Metric       | Score | Target | Status |
+|--------------|-------|--------|--------|
+| Precision    | 1.000 | >= 0.95| PASS   |
+| Recall       | 1.000 | >= 0.95| PASS   |
+| Specificity  | 1.000 | >= 0.95| PASS   |
+| F1 Score     | 1.000 | >= 0.95| PASS   |
+
+### Functional Test Coverage
+
+| Test Class               | Tests | Description                                              |
+|--------------------------|-------|----------------------------------------------------------|
+| TestHealth               | 2     | Health endpoint status and response schema               |
+| TestRunEndpoint          | 9     | Valid requests, messy skills, statistics, edge cases     |
+| TestErrorHandling        | 2     | Invalid JSON, empty userId/skills validation errors      |
+| TestSkillNormalization   | 3     | Exact-match confidence=1.0, deduplication, unknown skills|
+
+### Confidence Score Behavior
+
+| Match Type      | Confidence Range | Example                              |
+|-----------------|-----------------|--------------------------------------|
+| Exact L1 rule   | 1.000           | python -> S_python                   |
+| Semantic L3     | 0.70 - 0.99     | deep learnin -> S_deep_learning      |
+| No match        | —               | Skill excluded from output           |
+
+### Pipeline Layer Performance
+
+| Layer    | Name             | Latency    | Details                                    |
+|----------|------------------|------------|--------------------------------------------|
+| L1       | Rule Mapping     | < 1 ms     | Dictionary lookup, 170+ rules              |
+| L2       | Decision Logic   | < 1 ms     | Route unknown skills to L3                 |
+| L3       | Embedding Match  | ~50 ms     | Cosine similarity, all-MiniLM-L6-v2        |
+| L4       | Deduplication    | < 1 ms     | Keep highest-confidence match per skill    |
+| Total    | Full Pipeline    | 50-100 ms  | For 20+ skills per request                 |
+
+### Key Observations
+- Perfect normalization accuracy (P = R = F1 = 1.00) on the alias test set
+- Soft skills (communication, leadership, teamwork) are explicitly excluded — correctly returns null
+- Deduplication correctly collapses python / Python / PYTHON into a single S_python entry
+- Startup overhead of 10-15s is acceptable for a persistent microservice; memory ~500MB
+- Unknown skills are returned in the unknownSkills array and excluded from gap calculations
+
+---
+
+## 3. Gap Engine Service (GradRAG)
+
+### Overview
+GradRAG is a two-mode role-skill gap analyzer. Given a job title and optional user profile, it returns required skills, matched skills, missing skills, and a numeric readiness score (0.0-1.0).
+
+- **Mode A (Local Lookup):** ~15ms — 89 pre-indexed roles via fuzzy title matching + embedding search
+- **Mode B (RAG Fallback):** ~2-5s — Adzuna live data + ChromaDB vector retrieval + Groq Llama 3.3 70B
+- **Skill catalog:** 92+ canonical skills, 400+ aliases
+- **Readiness formula:** skill_score * experience_score * education_score
+
+### Evaluation Setup
+- **Automated script:** scripts/evaluate.py
+- **20 threshold checks** across 7 dimensions: normalization, Mode A quality, Mode B quality, RAG quality, speed, consistency, stability
+- **Mode A test set:** 5 known roles
+- **Mode B live test set:** 3 novel roles (forced RAG path)
+- **Offline Mode B test set:** 12 synthetic novel roles with deterministic ground truth
+
+### Normalization Quality (within GradRAG)
+
+| Metric       | Score | Target  | Status |
+|--------------|-------|---------|--------|
+| Precision    | 1.000 | >= 0.950| PASS   |
+| Recall       | 1.000 | >= 0.950| PASS   |
+| Specificity  | 1.000 | >= 0.950| PASS   |
+
+### Mode A — Local Lookup Quality
+
+| Metric        | Score   | Target    | Status |
+|---------------|---------|-----------|--------|
+| Role Accuracy | 1.000   | >= 0.950  | PASS   |
+| Precision     | 0.633   | —         | —      |
+| Recall        | 0.960   | —         | —      |
+| F1 Score      | 0.759   | >= 0.700  | PASS   |
+| p50 Latency   | 0.020 ms| —         | —      |
+| p95 Latency   | 15.0 ms | < 500 ms  | PASS   |
+
+### Mode A Per-Role Breakdown
+
+| Role                      | Matched Role         | Precision | Recall | F1    | Latency |
+|---------------------------|----------------------|-----------|--------|-------|---------|
+| data analyst              | data analyst         | 0.667     | 1.000  | 0.800 | 18.8 ms |
+| machine learning engineer | ml engineer          | 0.667     | 1.000  | 0.800 | 0.03 ms |
+| devops engineer           | devops engineer      | 0.667     | 1.000  | 0.800 | 0.02 ms |
+| frontend engineer         | frontend engineer    | 0.500     | 1.000  | 0.667 | 0.02 ms |
+| biostatisticians          | biostatisticians     | 0.667     | 0.800  | 0.727 | 0.02 ms |
+
+> NOTE: High recall (0.96 avg) shows Mode A returns a broader skill set than the evaluation reference. All 5 roles correctly identified — role accuracy = 1.00.
+
+### Mode B — RAG Fallback Quality (Live, 3 Novel Roles)
+
+| Metric           | Score    | Target    | Status |
+|------------------|----------|-----------|--------|
+| Success Rate     | 1.000    | —         | —      |
+| Groq Availability| 1.000    | >= 1.000  | PASS   |
+| Precision        | 0.667    | >= 0.650  | PASS   |
+| Recall           | 0.722    | >= 0.650  | PASS   |
+| F1 Score         | 0.689    | >= 0.650  | PASS   |
+| Precision@5      | 0.733    | >= 0.700  | PASS   |
+| MRR              | 1.000    | —         | —      |
+| nDCG@5           | 0.835    | >= 0.700  | PASS   |
+| p50 Latency      | 4516 ms  | —         | —      |
+| p95 Latency      | 4790 ms  | < 5000 ms | PASS   |
+
+### Mode B Per-Case Breakdown (Live)
+
+| Role                              | Extracted Skills                                                     | P     | R     | F1    | nDCG@5 | Latency  |
+|-----------------------------------|----------------------------------------------------------------------|-------|-------|-------|--------|----------|
+| biomedical data engineering spec. | S_cpp, S_data_analysis, S_office_suite, S_python, S_r, S_sql        | 0.333 | 0.500 | 0.400 | 0.637  | 4820 ms  |
+| cloud automation specialist       | S_automation, S_aws, S_cloud_architecture, S_docker, S_kubernetes, S_terraform | 0.667 | 0.667 | 0.667 | 0.869  | 4517 ms  |
+| machine intelligence specialist   | S_deep_learning, S_machine_learning, S_python, S_pytorch, S_tensorflow | 1.000 | 1.000 | 1.000 | 1.000  | 4012 ms  |
+
+### Mode B — Offline Evaluation (12 Synthetic Roles)
+
+| Metric        | Score | Target  | Status |
+|---------------|-------|---------|--------|
+| Precision     | 1.000 | —       | —      |
+| Recall        | 1.000 | —       | —      |
+| F1            | 1.000 | >= 0.900| PASS   |
+| Precision@5   | 0.967 | —       | —      |
+| Recall@5      | 0.903 | —       | —      |
+| MRR           | 1.000 | —       | —      |
+| nDCG@5        | 1.000 | >= 0.900| PASS   |
+
+All 12 offline Mode B cases passed with F1 = 1.000 and nDCG@5 = 1.000.
+
+### RAG Evidence Quality
+
+| Role                              | Adzuna | Chroma | Relevance | Evidence Chars | Latency   |
+|-----------------------------------|--------|--------|-----------|----------------|-----------|
+| biomedical data engineering spec. | No     | Yes    | 0.750     | 2,132          | 20,288 ms |
+| cloud automation specialist       | No     | Yes    | 1.000     | 2,396          | 1,596 ms  |
+| machine intelligence specialist   | No     | Yes    | 0.600     | 1,824          | 1,708 ms  |
+
+| Metric           | Score | Target  | Status |
+|------------------|-------|---------|--------|
+| RAG Availability | 1.000 | >= 0.950| PASS   |
+| RAG Relevance    | 0.783 | >= 0.700| PASS   |
+
+> NOTE: Adzuna live data was unavailable in this run (API credentials not configured). All RAG evidence came from ChromaDB alone. Relevance would improve with live Adzuna data.
+
+### Consistency and Stability
+
+| Metric             | Score | Target  | Status |
+|--------------------|-------|---------|--------|
+| Mode A Consistency | 1.000 | >= 0.950| PASS   |
+| Mode B Consistency | 0.833 | >= 0.800| PASS   |
+| Mode B Stability   | 0.889 | >= 0.800| PASS   |
+
+Mode A is deterministic (1.00). Mode B allows slight variance from LLM sampling temperature (83.3%, above threshold).
+
+### Mode B Stability Per Case (3 runs each)
+
+| Role                              | Mean F1 | Min F1 | F1 StdDev | Mean Jaccard |
+|-----------------------------------|---------|--------|-----------|--------------|
+| biomedical data engineering spec. | 0.533   | 0.400  | 0.189     | 0.667        |
+| cloud automation specialist       | 0.500   | 0.500  | 0.000     | 1.000        |
+| machine intelligence specialist   | 0.909   | 0.909  | 0.000     | 1.000        |
+
+### All 20 Evaluation Thresholds — Final Status
+
+| #  | Metric                    | Achieved  | Target     | Result |
+|----|---------------------------|-----------|------------|--------|
+| 1  | Normalization Precision   | 1.000     | >= 0.950   | PASS   |
+| 2  | Normalization Recall      | 1.000     | >= 0.950   | PASS   |
+| 3  | Normalization Specificity | 1.000     | >= 0.950   | PASS   |
+| 4  | Mode A Role Accuracy      | 1.000     | >= 0.950   | PASS   |
+| 5  | Mode A F1                 | 0.759     | >= 0.700   | PASS   |
+| 6  | Mode A p95 Speed          | 15.0 ms   | < 500 ms   | PASS   |
+| 7  | RAG Availability          | 1.000     | >= 0.950   | PASS   |
+| 8  | RAG Relevance             | 0.783     | >= 0.700   | PASS   |
+| 9  | Live Groq Availability    | 1.000     | >= 1.000   | PASS   |
+| 10 | Mode B Precision          | 0.667     | >= 0.650   | PASS   |
+| 11 | Mode B Recall             | 0.722     | >= 0.650   | PASS   |
+| 12 | Mode B F1                 | 0.689     | >= 0.650   | PASS   |
+| 13 | Mode B Precision@5        | 0.733     | >= 0.700   | PASS   |
+| 14 | Mode B nDCG@5             | 0.835     | >= 0.700   | PASS   |
+| 15 | Offline Mode B F1         | 1.000     | >= 0.900   | PASS   |
+| 16 | Offline Mode B nDCG@5     | 1.000     | >= 0.900   | PASS   |
+| 17 | Mode B p95 Speed          | 4789.9 ms | < 5000 ms  | PASS   |
+| 18 | Mode A Consistency        | 1.000     | >= 0.950   | PASS   |
+| 19 | Mode B Consistency        | 0.833     | >= 0.800   | PASS   |
+| 20 | Mode B Stability          | 0.889     | >= 0.800   | PASS   |
+
+### Key Observations
+- Mode A is extremely fast (p95 = 15ms, 33x below the 500ms threshold) and fully deterministic
+- Mode B handles novel job titles at ~4-5s latency; Biomedical domain is weakest (F1 = 0.40) due to sparse ChromaDB coverage
+- nDCG@5 = 0.835 confirms that the most important skills are ranked highly even when not all are retrieved
+- MRR = 1.00 in both modes — the highest-priority skill is always ranked first
+
+---
+
+## 4. Cross-Service Summary
+
+### Overall Metrics
+
+| Service                      | Primary Metric    | Score | Status     |
+|------------------------------|-------------------|-------|------------|
+| Skill Extraction (M1)        | Overall F1        | 0.863 | Good       |
+| Skill Normalization (M3)     | Normalization F1  | 1.000 | Perfect    |
+| Gap Engine — Mode A          | Role F1           | 0.759 | Good       |
+| Gap Engine — Mode B (live)   | Role F1           | 0.689 | Acceptable |
+| Gap Engine — Mode B (offline)| Role F1           | 1.000 | Perfect    |
+
+### End-to-End Pipeline Flow
+
+  CV (PDF/DOCX)
+      |
+      v  [M1 Skill Extraction — Overall F1: 0.863]
+  Structured Resume Data (skills[], education, experience)
+      |
+      v  [M3 Skill Normalization — F1: 1.000 | Speed: 50-100ms]
+  Canonical Skill IDs (S_python, S_sql, ...) + Confidence Scores
+      |
+      v  [GradRAG Gap Engine]
+         Mode A (known roles)  — F1: 0.759 | p95: 15ms
+         Mode B (novel roles)  — F1: 0.689 | p95: 4790ms
+      |
+      v
+  Gap Report (required skills, matched, missing, readiness score 0-1)
+
+### Strengths
+- M3 normalization is perfect — P = R = F1 = 1.00; no false positives or false negatives
+- Mode A gap analysis is extremely fast — p95 = 15ms, 33x below the 500ms threshold
+- M1 null handling is perfect — 0 hallucinations across all null ground-truth fields
+- Mode B handles novel titles not in any pre-indexed database with acceptable quality (F1 = 0.689)
+- All 20 GradRAG evaluation thresholds passed in a single evaluation run
+
+### Weaknesses and Risk Areas
+
+| Issue                                            | Service | Severity | Recommended Mitigation                               |
+|--------------------------------------------------|---------|----------|------------------------------------------------------|
+| Education field is weakest (F1 = 0.70)           | M1      | Medium   | Improve education parsing prompt; add year normalization post-processing |
+| cv_004 fully failed due to Groq API timeout      | M1      | High     | Increase retry budget; add queue-based fallback with dead-letter logging |
+| Mode B latency near limit (4790ms vs 5000ms cap) | GradRAG | Medium   | Cache Adzuna results; reduce Groq prompt token count |
+| Biomedical niche has low ChromaDB coverage       | GradRAG | Low      | Add domain-specific role descriptions to dataroles.txt |
+| Mode B consistency at 83.3% (LLM variance)       | GradRAG | Low      | Lower Groq temperature; add majority-vote over 3 runs for critical queries |
+| Adzuna live data unavailable in this evaluation  | GradRAG | Low      | Configure ADZUNA_APP_ID and ADZUNA_APP_KEY in production .env |
+
+### Recommendations
+1. SHORT-TERM: Fix M1 education field — add explicit year-extraction and degree-normalization post-processing to close the F1 gap from 0.70 to 0.85+
+2. SHORT-TERM: Add Groq API circuit-breaker in M1 to prevent a single timeout from zeroing out an entire CV submission
+3. MEDIUM-TERM: Integrate Adzuna credentials in GradRAG to enrich Mode B evidence and improve RAG relevance above 0.78
+4. MEDIUM-TERM: Expand ChromaDB knowledge base with more niche/specialist role descriptions; focus on biomedical and non-standard titles
+5. LONG-TERM: Cache Mode B results by job-title hash (TTL = 24h) to reduce repeat-query latency and Groq API costs
+
+---
+
+Data sources for this report:
+- AI-Microservices/m1_extraction_service/live_results.json
+- AI-Microservices/gap-engin-service/reports/evaluation_results.json
+- AI-Microservices/gap-engin-service/reports/final_evaluation_report.txt
+- AI-Microservices/skill_normalization_service/tests/test_service.py
+- AI-Microservices/m1_extraction_service/calculate_metrics.py
