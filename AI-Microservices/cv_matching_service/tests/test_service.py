@@ -165,25 +165,13 @@ class TestMatchEndpoint:
     def test_empty_body_returns_422(self, client):
         assert client.post("/match", json={}).status_code == 422
 
-    # ── fallback to local candidates ─────────────────────────────────────────
+    # ── error when no candidates ─────────────────────────────────────────────
 
-    FALLBACK_CANDIDATE = {
-        "candidateId": "F001",
-        "name": "Fallback Frank",
-        "skills": ["SQL"],
-        "experience": 2.0,
-        "education": "BSc",
-        "tools": [],
-    }
-
-    @patch(_PATCH_VS)
-    @patch("routes.match.fallback_candidates", [FALLBACK_CANDIDATE])
-    def test_uses_fallback_when_no_candidates_provided(self, mock_vs, client):
-        mock_vs.return_value = _make_fake_vector_db(self.FALLBACK_CANDIDATE)
+    def test_fails_when_no_candidates_provided(self, client):
         payload = {
             "jobId": "J999",
             "jobDescription": "SQL analyst needed",
         }
-        data = client.post("/match", json=payload).json()
-        assert data["success"] is True
-        assert data["data"]["rankedCandidates"][0]["name"] == "Fallback Frank"
+        res = client.post("/match", json=payload)
+        assert res.status_code == 400
+        assert "Candidates list must not be empty" in res.json()["detail"]

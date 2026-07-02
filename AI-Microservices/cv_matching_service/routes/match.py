@@ -1,9 +1,8 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from schemas import MatchRequest, MatchResponse, MatchData, RankedCandidate, MatchMeta
 from core.matcher import match_candidates
 import time
 import logging
-from data.candidates import candidates as fallback_candidates
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -12,11 +11,10 @@ router = APIRouter()
 def run_match(request: MatchRequest):
     start_time = time.time()
     try:
-        if request.candidates:
-            cands = [c.model_dump() for c in request.candidates]
-        else:
-            cands = fallback_candidates
+        if not request.candidates:
+            raise HTTPException(status_code=400, detail="Candidates list must not be empty")
             
+        cands = [c.model_dump() for c in request.candidates]
         ranked = match_candidates(request.jobDescription, cands)
         
         return MatchResponse(
@@ -27,6 +25,8 @@ def run_match(request: MatchRequest):
             ),
             meta=MatchMeta(processingTimeMs=int((time.time() - start_time) * 1000))
         )
+    except HTTPException as he:
+        raise he
     except Exception as e:
         logger.error(f"Error matching candidates: {e}")
         return MatchResponse(
