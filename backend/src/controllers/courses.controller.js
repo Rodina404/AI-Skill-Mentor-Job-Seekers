@@ -304,11 +304,58 @@ const addCourse = async (req, res) => {
   }
 };
 
+/**
+ * Explain recommended course why it is recommended using AI (M5)
+ * POST /courses/:courseId/explain
+ */
+const explainCourse = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { courseId } = req.params;
+    const { skill, courseTitle, matchScore, marketFreq } = req.body;
+
+    if (!courseTitle) {
+      return res.status(400).json({ error: 'courseTitle is required' });
+    }
+
+    // 1. Fetch user's latest roadmap from Supabase
+    const { data: roadmap, error: roadmapErr } = await supabaseAdmin
+      .from('roadmaps')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (roadmapErr || !roadmap) {
+      return res.status(404).json({ error: 'Roadmap not found for user. Please generate a learning path first.' });
+    }
+
+    // 2. Call M5 Roadmap Service explain endpoint
+    const m5Url = process.env.M5_ROADMAP_URL || 'http://localhost:8005';
+    const axios = require('axios');
+    const response = await axios.post(`${m5Url}/run/explain`, {
+      user_id: userId,
+      skill: skill || 'General',
+      course_title: courseTitle,
+      match_score: Number(matchScore || 0.85),
+      market_freq: Number(marketFreq || 0.75),
+      roadmap_data: roadmap.roadmap_data || roadmap
+    });
+
+    res.json(response.data);
+  } catch (err) {
+    console.error('explainCourse error:', err.message);
+    res.status(500).json({ error: 'Failed to generate course explanation', details: err.message });
+  }
+};
+
 module.exports = {
   getAllCourses,
   getCourseById,
   enrollInCourse,
   getEnrolledCourses,
   updateProgress,
-  addCourse
+  addCourse,
+  explainCourse
 };

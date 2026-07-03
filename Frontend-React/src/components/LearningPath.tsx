@@ -1,4 +1,4 @@
-import { BookOpen, Target, CheckCircle, Clock, TrendingUp, Star, ArrowRight, AlertCircle, PlayCircle } from 'lucide-react';
+import { BookOpen, Target, CheckCircle, Clock, TrendingUp, Star, ArrowRight, AlertCircle, PlayCircle, Sparkles } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { resumeAPI } from '../api/resume.api';
 import { useAuth } from '../context/AuthContext';
@@ -19,6 +19,8 @@ export function LearningPath({ onNavigate }: LearningPathProps) {
   const [recommendations, setRecommendations] = useState<any[]>([]);
   const [progressRecords, setProgressRecords] = useState<any[]>([]);
   const [isUpdatingProgress, setIsUpdatingProgress] = useState<string | null>(null);
+  const [explanations, setExplanations] = useState<Record<string, string>>({});
+  const [explainingCourseId, setExplainingCourseId] = useState<string | null>(null);
 
   const fetchLearningPath = async () => {
     setIsLoading(true);
@@ -261,6 +263,84 @@ export function LearningPath({ onNavigate }: LearningPathProps) {
     }
   };
 
+  const handleExplainCourse = async (course: any, recId: string | null) => {
+    if (!token) {
+      alert('Session expired, please log in again');
+      onNavigate('login');
+      return;
+    }
+
+    const courseId = course.id || course.course_id || '';
+    const key = courseId || course.title;
+
+    // Toggle off if already showing
+    if (explanations[key]) {
+      setExplanations(prev => {
+        const next = { ...prev };
+        delete next[key];
+        return next;
+      });
+      return;
+    }
+
+    let targetRecId = recId;
+    setExplainingCourseId(key);
+
+    try {
+      // If we don't have a recommendation UUID (e.g. it is not persisted yet),
+      // we can try to enroll or find recommendation first.
+      if (!targetRecId) {
+        if (!courseId) {
+          throw new Error('Course ID is missing from roadmap data');
+        }
+        // Check if there's any existing recommendation in recommendations list
+        const existingRec = recommendations.find(r => 
+          r.course_id === courseId || 
+          r.course_title?.toLowerCase() === course.title?.toLowerCase()
+        );
+        if (existingRec) {
+          targetRecId = existingRec.id;
+        } else {
+          // Enroll to persist it
+          const enrollResult = await coursesAPI.enrollCourse(courseId, token);
+          targetRecId = enrollResult.enrollment?.course_recommendation_id || enrollResult.enrollment?.id;
+          
+          // Refresh list
+          const recs = await coursesAPI.getAllCourses({}, token);
+          setRecommendations(recs || []);
+        }
+      }
+
+      if (!targetRecId) {
+        throw new Error('Could not resolve course recommendation ID');
+      }
+
+      const response = await coursesAPI.explainCourse(targetRecId, {
+        skill: course.skill || 'General',
+        courseTitle: course.title,
+        matchScore: 0.85,
+        marketFreq: 0.75
+      }, token);
+
+      if (response.success && response.data) {
+        // M5 response shape:
+        // { why_skill: "...", why_course: "...", fallback_used: false }
+        const explanationText = response.data.why_course || 'No explanation available';
+        setExplanations(prev => ({
+          ...prev,
+          [key]: explanationText
+        }));
+      } else {
+        throw new Error(response.error || 'Failed to generate explanation');
+      }
+    } catch (err: any) {
+      console.error('Error explaining course:', err);
+      alert(err.message || 'Failed to explain course');
+    } finally {
+      setExplainingCourseId(null);
+    }
+  };
+
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty.toLowerCase()) {
       case 'beginner':
@@ -476,6 +556,13 @@ export function LearningPath({ onNavigate }: LearningPathProps) {
                               </div>
                             )}
 
+                            {/* AI Explanation Box */}
+                            {explanations[course.id || course.course_id || course.title] && (
+                              <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
+                                <strong>AI Explain: </strong> {explanations[course.id || course.course_id || course.title]}
+                              </div>
+                            )}
+
                             <div className="flex gap-2">
                               <button
                                 onClick={() => handleToggleComplete(course, live.status, live.recommendationId)}
@@ -494,6 +581,16 @@ export function LearningPath({ onNavigate }: LearningPathProps) {
                                   'Mark Completed'
                                 )}
                               </button>
+
+                              <button
+                                onClick={() => handleExplainCourse(course, live.recommendationId)}
+                                disabled={explainingCourseId === (course.id || course.course_id || course.title)}
+                                className="px-4 py-2 bg-gradient-to-r from-blue-700 to-blue-600 text-white rounded-lg hover:shadow transition-all text-sm flex items-center justify-center gap-1 disabled:opacity-50"
+                              >
+                                <Sparkles className="w-4 h-4" />
+                                {explainingCourseId === (course.id || course.course_id || course.title) ? 'Explaining...' : 'Ask AI Why'}
+                              </button>
+
                               <button
                                 onClick={() => onNavigate('courses')}
                                 className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all text-sm"

@@ -132,6 +132,27 @@ export const coursesAPI = {
     return response.json();
   },
 
+  /**
+   * Explain recommended course using AI (M5)
+   * @param {string} courseId - Course recommendation ID
+   * @param {Object} explainData - { skill, courseTitle, matchScore, marketFreq }
+   * @param {string} token - Auth token
+   * @returns {Promise<Object>} - The explanation response
+   */
+  async explainCourse(courseId, explainData, token) {
+    const response = await fetch(`${API_BASE_URL}/courses/${courseId}/explain`, {
+      method: 'POST',
+      headers: getAuthHeaders(token),
+      body: JSON.stringify(explainData),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch course explanation');
+    }
+
+    return response.json();
+  },
+
   // Aliases for compatibility
   async getCourses(filters = {}, token) {
     return this.getAllCourses(filters, token);
