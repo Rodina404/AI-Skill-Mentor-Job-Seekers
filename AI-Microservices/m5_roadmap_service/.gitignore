@@ -5,3 +5,7 @@ skill_mentor_data/
 venv/
 .pytest_cache/
 __pycache__/
+chroma_db/
+chroma_db_current/
+chroma_db_v0_4_24/
+output/

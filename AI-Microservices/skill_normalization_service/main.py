@@ -193,7 +193,7 @@ app.include_router(run.router, tags=["Normalization"])
 if __name__ == "__main__":
     import uvicorn
     
-    port = int(os.getenv('SERVICE_PORT', 8003))
+    port = int(os.getenv('SERVICE_PORT', 8002))
     
     uvicorn.run(
         app,

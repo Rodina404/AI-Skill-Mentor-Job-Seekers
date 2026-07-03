@@ -13,11 +13,13 @@ class ProgressRequest(BaseModel):
     roadmap_id: str
     completed_items: List[str]
     last_active_iso: str
+    roadmap_data: Dict[str, Any]
 
 class NotifyRequest(BaseModel):
     user_id: str
     last_active_iso: str
     progress_pct: float
+    roadmap_data: Dict[str, Any]
 
 class ExplainRequest(BaseModel):
     user_id: str
@@ -25,6 +27,7 @@ class ExplainRequest(BaseModel):
     course_title: str
     match_score: float
     market_freq: float
+    roadmap_data: Dict[str, Any]
 
 class StandardResponse(BaseModel):
     success: bool

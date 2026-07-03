@@ -1,0 +1,10 @@
+# Gap Engine Service Gitignore
+chroma_db/
+chroma_db_current/
+chroma_db_v0_4_24/
+farah_outputs/
+output/
+.env
+.pytest_cache/
+__pycache__/
+venv/

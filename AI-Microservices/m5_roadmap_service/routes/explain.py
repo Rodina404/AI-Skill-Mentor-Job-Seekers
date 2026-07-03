@@ -18,12 +18,11 @@ def generate_explanations(req: ExplainRequest):
 
     explainer = ExplainabilityLLM(default_config)
     
-    dummy_roadmap = {"user": req.user_id}
     gaps_stub = [{"skill": req.skill}]
     
     # Generate all explanations wrapper method
     explanations = explainer.generate_all_explanations(
-        roadmap=dummy_roadmap,
+        roadmap=req.roadmap_data,
         gaps=gaps_stub,
         all_courses=COURSES
     )
