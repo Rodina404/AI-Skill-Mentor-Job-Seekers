@@ -216,10 +216,58 @@ const removeSavedJob = async (req, res) => {
   }
 };
 
+/**
+ * Get user's enrolled courses
+ * GET /users/:userId/courses
+ */
+const getUserCourses = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    // Check authorization: user requesting their own courses, or admin
+    if (req.user.id !== userId && req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Forbidden: Access denied' });
+    }
+
+    // 1. Resolve job seeker profile ID
+    let { data: profile, error: profileErr } = await supabaseAdmin
+      .from('job_seeker_profiles')
+      .select('id')
+      .eq('user_id', userId)
+      .single();
+
+    if (profileErr || !profile) {
+      // Auto-create profile if missing
+      const { data: newProfile, error: createError } = await supabaseAdmin
+        .from('job_seeker_profiles')
+        .insert({ user_id: userId })
+        .select('id')
+        .single();
+
+      if (createError) {
+        return res.status(404).json({ error: 'Job seeker profile not found and could not be created' });
+      }
+      profile = newProfile;
+    }
+
+    // 2. Fetch enrolled courses (learning_progress with course_recommendations)
+    const { data, error } = await supabaseAdmin
+      .from('learning_progress')
+      .select('*, course_recommendations(*)')
+      .eq('job_seeker_profile_id', profile.id);
+
+    if (error) throw error;
+    res.json(data || []);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
 module.exports = {
   updateProfile,
   updateGoals,
   getSavedJobs,
   saveJob,
-  removeSavedJob
+  removeSavedJob,
+  getUserCourses
 };

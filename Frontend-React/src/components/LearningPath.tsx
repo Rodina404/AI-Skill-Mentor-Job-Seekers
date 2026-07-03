@@ -1,7 +1,9 @@
-import { BookOpen, Target, CheckCircle, Clock, TrendingUp, Star, ArrowRight, AlertCircle } from 'lucide-react';
+import { BookOpen, Target, CheckCircle, Clock, TrendingUp, Star, ArrowRight, AlertCircle, PlayCircle } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { resumeAPI } from '../api/resume.api';
 import { useAuth } from '../context/AuthContext';
+import { coursesAPI } from '../api/courses.api';
+import { progressAPI } from '../api/progress.api';
 
 interface LearningPathProps {
   onNavigate: (page: string) => void;
@@ -14,6 +16,9 @@ export function LearningPath({ onNavigate }: LearningPathProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [errorType, setErrorType] = useState<'no-resumes' | 'no-analyzed' | 'no-roadmap' | 'generic'>('generic');
+  const [recommendations, setRecommendations] = useState<any[]>([]);
+  const [progressRecords, setProgressRecords] = useState<any[]>([]);
+  const [isUpdatingProgress, setIsUpdatingProgress] = useState<string | null>(null);
 
   const fetchLearningPath = async () => {
     setIsLoading(true);
@@ -129,6 +134,16 @@ export function LearningPath({ onNavigate }: LearningPathProps) {
         phases: mappedPhases,
       });
 
+      // Fetch user's recommendations and progress
+      try {
+        const recs = await coursesAPI.getAllCourses({}, token);
+        const prog = await progressAPI.getProgress(token);
+        setRecommendations(recs || []);
+        setProgressRecords(prog || []);
+      } catch (err) {
+        console.error('Failed to load courses/progress data:', err);
+      }
+
     } catch (err: any) {
       console.error(err);
       setError(err.message || 'Failed to generate learning path');
@@ -140,6 +155,111 @@ export function LearningPath({ onNavigate }: LearningPathProps) {
   useEffect(() => {
     if (token) fetchLearningPath();
   }, [token]);
+
+  const getLiveStatus = (course: any) => {
+    // 1. Try to find matched recommendation by course_id or course_title
+    const rec = recommendations.find(r => 
+      (r.course_id && course.id && r.course_id === course.id) ||
+      (r.course_title && course.title && r.course_title.toLowerCase() === course.title.toLowerCase())
+    );
+
+    if (rec) {
+      // Find progress record
+      const prog = progressRecords.find(p => p.course_recommendation_id === rec.id);
+      if (prog) {
+        return {
+          recommendationId: rec.id,
+          status: prog.status === 'completed' ? 'Completed' : 'In Progress',
+          progress: prog.completion_percentage || 0,
+          isEnrolled: true
+        };
+      }
+      return {
+        recommendationId: rec.id,
+        status: 'Not Enrolled',
+        progress: 0,
+        isEnrolled: false
+      };
+    }
+
+    // Check defaults
+    const defaultIds = ['c1', 'c2', 'c3', 'c4', 'c5'];
+    const matchedDefault = recommendations.find(r => 
+      defaultIds.includes(r.id) && 
+      (r.course_id === course.id || r.course_title?.toLowerCase() === course.title?.toLowerCase())
+    );
+
+    if (matchedDefault) {
+      const prog = progressRecords.find(p => p.course_recommendation_id === matchedDefault.id);
+      if (prog) {
+        return {
+          recommendationId: matchedDefault.id,
+          status: prog.status === 'completed' ? 'Completed' : 'In Progress',
+          progress: prog.completion_percentage || 0,
+          isEnrolled: true
+        };
+      }
+      return {
+        recommendationId: matchedDefault.id,
+        status: 'Not Enrolled',
+        progress: 0,
+        isEnrolled: false
+      };
+    }
+
+    return {
+      recommendationId: null,
+      status: 'Not Enrolled',
+      progress: 0,
+      isEnrolled: false
+    };
+  };
+
+  const handleToggleComplete = async (course: any, currentStatus: string, recId: string | null) => {
+    if (!token) {
+      alert('Session expired, please log in again');
+      onNavigate('login');
+      return;
+    }
+    
+    let targetRecId = recId;
+    const courseId = course.id || course.course_id || '';
+    setIsUpdatingProgress(courseId || course.title);
+
+    try {
+      // If we don't have a recommendation UUID (e.g. it is not persisted yet),
+      // we can try to enroll or insert progress first.
+      if (!targetRecId) {
+        if (!courseId) {
+          throw new Error('Course ID is missing from roadmap data');
+        }
+        const enrollResult = await coursesAPI.enrollCourse(courseId, token);
+        targetRecId = enrollResult.enrollment?.course_recommendation_id || enrollResult.enrollment?.id;
+      }
+
+      if (!targetRecId) {
+        throw new Error('Could not resolve course recommendation ID');
+      }
+
+      const nextStatus = currentStatus === 'Completed' ? 'in_progress' : 'completed';
+      const nextProgress = nextStatus === 'completed' ? 100 : 0;
+
+      await progressAPI.updateProgress(targetRecId, nextStatus, nextProgress, token);
+      
+      // Refresh progress data
+      const prog = await progressAPI.getProgress(token);
+      setProgressRecords(prog || []);
+      
+      // Also refresh courses recommendation list (status changes)
+      const recs = await coursesAPI.getAllCourses({}, token);
+      setRecommendations(recs || []);
+    } catch (err: any) {
+      console.error('Error updating progress:', err);
+      alert(err.message || 'Failed to update progress');
+    } finally {
+      setIsUpdatingProgress(null);
+    }
+  };
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty.toLowerCase()) {
@@ -314,31 +434,76 @@ export function LearningPath({ onNavigate }: LearningPathProps) {
                       Courses in This Phase
                     </h4>
                     <div className="space-y-3">
-                      {phase.courses.map((course: any, idx: number) => (
-                        <div key={idx} className="p-4 bg-white rounded-lg border border-green-200">
-                          <div className="flex items-start justify-between mb-3">
-                            <div className="flex-1">
-                              <h5 className="text-gray-900 mb-1">{course.title}</h5>
-                              <div className="flex items-center gap-4 text-sm text-gray-600">
-                                <span>{course.platform}</span>
-                                <span className="flex items-center gap-1">
-                                  <Clock className="w-4 h-4" />
-                                  {course.duration}
+                      {phase.courses.map((course: any, idx: number) => {
+                        const live = getLiveStatus(course);
+                        const isToggling = isUpdatingProgress === (course.id || course.course_id || course.title);
+
+                        return (
+                          <div key={idx} className="p-4 bg-white rounded-lg border border-green-200">
+                            <div className="flex items-start justify-between mb-3">
+                              <div className="flex-1">
+                                <h5 className="text-gray-900 mb-1">{course.title}</h5>
+                                <div className="flex items-center gap-4 text-sm text-gray-600">
+                                  <span>{course.platform}</span>
+                                  <span className="flex items-center gap-1">
+                                    <Clock className="w-4 h-4" />
+                                    {course.duration}
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="flex flex-col items-end gap-2">
+                                <span className={`text-xs px-2 py-1 rounded border ${
+                                  live.status === 'Completed'
+                                    ? 'bg-green-100 text-green-700 border-green-200'
+                                    : live.status === 'In Progress'
+                                    ? 'bg-blue-100 text-blue-700 border-blue-200'
+                                    : 'bg-gray-100 text-gray-700 border-gray-200'
+                                }`}>
+                                  {live.status}
                                 </span>
+                                {live.status === 'In Progress' && (
+                                  <span className="text-xs text-blue-600">{live.progress}% Complete</span>
+                                )}
                               </div>
                             </div>
-                            <span className="text-xs px-2 py-1 rounded bg-gray-100 text-gray-700 border border-gray-200">
-                              {course.status}
-                            </span>
+
+                            {live.status === 'In Progress' && (
+                              <div className="mb-4 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                                <div
+                                  className="h-full bg-blue-600 transition-all duration-300"
+                                  style={{ width: `${live.progress}%` }}
+                                ></div>
+                              </div>
+                            )}
+
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => handleToggleComplete(course, live.status, live.recommendationId)}
+                                disabled={isToggling}
+                                className={`flex-1 px-4 py-2 text-white rounded-lg hover:shadow transition-all text-sm flex items-center justify-center gap-2 ${
+                                  live.status === 'Completed'
+                                    ? 'bg-amber-600 hover:bg-amber-700'
+                                    : 'bg-green-700 hover:bg-green-800'
+                                }`}
+                              >
+                                {isToggling ? (
+                                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                ) : live.status === 'Completed' ? (
+                                  'Mark Incomplete'
+                                ) : (
+                                  'Mark Completed'
+                                )}
+                              </button>
+                              <button
+                                onClick={() => onNavigate('courses')}
+                                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all text-sm"
+                              >
+                                Details
+                              </button>
+                            </div>
                           </div>
-                          <button
-                            onClick={() => onNavigate('courses')}
-                            className="w-full px-4 py-2 bg-gradient-to-r from-green-700 to-green-600 text-white rounded-lg hover:shadow-lg transition-all text-sm"
-                          >
-                            View Course Details
-                          </button>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 </div>

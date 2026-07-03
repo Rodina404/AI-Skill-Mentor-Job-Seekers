@@ -1,6 +1,7 @@
-import { Brain, Menu, X, MessageSquare, User, LogOut, BookmarkIcon } from 'lucide-react';
-import { useState } from 'react';
+import { Brain, Menu, X, MessageSquare, User, LogOut, BookmarkIcon, Bell } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { notificationsAPI } from '../api/notifications.api';
 
 interface NavigationProps {
   onNavigate: (page: string) => void;
@@ -9,9 +10,12 @@ interface NavigationProps {
 }
 
 export function Navigation({ onNavigate, currentPage, onToggleSidebar }: NavigationProps) {
-  const { user, isAuthenticated, logout, hasRole } = useAuth();
+  const { user, isAuthenticated, logout, hasRole, token } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const handleNavigation = (page: string) => {
     onNavigate(page);
@@ -23,6 +27,26 @@ export function Navigation({ onNavigate, currentPage, onToggleSidebar }: Navigat
     logout();
     handleNavigation('home');
   };
+
+  const fetchNotifications = async () => {
+    if (!token) return;
+    try {
+      const data = await notificationsAPI.getNotifications(token);
+      setNotifications(data || []);
+      const unread = (data || []).filter((n: any) => !n.is_read);
+      setUnreadCount(unread.length);
+    } catch (err) {
+      console.error('Failed to fetch notifications:', err);
+    }
+  };
+
+  useEffect(() => {
+    if (isAuthenticated && token) {
+      fetchNotifications();
+      const interval = setInterval(fetchNotifications, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [isAuthenticated, token]);
 
   // Role-based navigation items
   const getNavigationItems = () => {
@@ -122,22 +146,78 @@ export function Navigation({ onNavigate, currentPage, onToggleSidebar }: Navigat
                 </button>
               </>
             ) : (
-              <div className="relative">
-                <button
-                  onClick={() => setShowUserMenu(!showUserMenu)}
-                  className="flex items-center gap-2 px-3 py-2 text-gray-700 hover:bg-green-50 rounded-lg transition-colors"
-                >
-                  <User className="w-5 h-5" />
-                  <span className="text-sm">{user.name}</span>
-                </button>
+              <div className="flex items-center gap-2">
+                {/* Notifications Bell */}
+                <div className="relative">
+                  <button
+                    onClick={() => {
+                      setShowNotifications(!showNotifications);
+                      setShowUserMenu(false);
+                    }}
+                    className="p-2 text-gray-700 hover:bg-green-50 rounded-lg transition-colors flex items-center justify-center relative"
+                  >
+                    <Bell className="w-5 h-5" />
+                    {unreadCount > 0 && (
+                      <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                    )}
+                  </button>
 
-                {showUserMenu && (
-                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 py-2">
-                    <div className="px-4 py-2 border-b border-gray-200">
-                      <p className="text-sm font-semibold text-gray-900">{user.name}</p>
-                      <p className="text-xs text-gray-500">{user.email}</p>
-                      <p className="text-xs text-green-600 capitalize mt-1">{user.role}</p>
+                  {showNotifications && (
+                    <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50">
+                      <div className="px-4 py-2 border-b border-gray-200 flex justify-between items-center bg-gray-50/50">
+                        <span className="text-sm font-semibold text-gray-900">Notifications</span>
+                        {unreadCount > 0 && (
+                          <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">
+                            {unreadCount} new
+                          </span>
+                        )}
+                      </div>
+                      <div className="max-h-64 overflow-y-auto">
+                        {notifications.length === 0 ? (
+                          <div className="px-4 py-6 text-center text-sm text-gray-500">
+                            No notifications yet
+                          </div>
+                        ) : (
+                          notifications.map((n) => (
+                            <div
+                              key={n.id}
+                              className={`px-4 py-3 border-b border-gray-100 last:border-b-0 hover:bg-gray-50 transition-colors ${
+                                !n.is_read ? 'bg-green-50/20' : ''
+                              }`}
+                            >
+                              <p className="text-sm font-medium text-gray-900">{n.title}</p>
+                              <p className="text-xs text-gray-600 mt-0.5">{n.body}</p>
+                              <p className="text-[10px] text-gray-400 mt-1">
+                                {new Date(n.created_at).toLocaleDateString()}
+                              </p>
+                            </div>
+                          ))
+                        )}
+                      </div>
                     </div>
+                  )}
+                </div>
+
+                {/* User Menu */}
+                <div className="relative">
+                  <button
+                    onClick={() => {
+                      setShowUserMenu(!showUserMenu);
+                      setShowNotifications(false);
+                    }}
+                    className="flex items-center gap-2 px-3 py-2 text-gray-700 hover:bg-green-50 rounded-lg transition-colors"
+                  >
+                    <User className="w-5 h-5" />
+                    <span className="text-sm">{user.name}</span>
+                  </button>
+
+                  {showUserMenu && (
+                    <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 py-2">
+                      <div className="px-4 py-2 border-b border-gray-200">
+                        <p className="text-sm font-semibold text-gray-900">{user.name}</p>
+                        <p className="text-xs text-gray-500">{user.email}</p>
+                        <p className="text-xs text-green-600 capitalize mt-1">{user.role}</p>
+                      </div>
                     
                     {hasRole('jobseeker') && (
                       <>
@@ -189,6 +269,7 @@ export function Navigation({ onNavigate, currentPage, onToggleSidebar }: Navigat
                     </div>
                   </div>
                 )}
+                </div>
               </div>
             )}
           </div>
@@ -253,6 +334,25 @@ export function Navigation({ onNavigate, currentPage, onToggleSidebar }: Navigat
                   <p className="text-sm font-semibold text-gray-900">{user.name}</p>
                   <p className="text-xs text-gray-500">{user.email}</p>
                   <p className="text-xs text-green-600 capitalize mt-1">{user.role}</p>
+                </div>
+
+                {/* Mobile Notifications list */}
+                <div className="border-b border-gray-200 pb-3 mb-3">
+                  <div className="px-2 py-1 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                    Recent Notifications
+                  </div>
+                  <div className="space-y-2">
+                    {notifications.length === 0 ? (
+                      <p className="px-2 text-sm text-gray-500">No notifications</p>
+                    ) : (
+                      notifications.slice(0, 3).map((n) => (
+                        <div key={n.id} className="px-2 py-1.5 rounded bg-gray-50 border border-gray-100">
+                          <p className="text-xs font-semibold text-gray-900">{n.title}</p>
+                          <p className="text-[11px] text-gray-600">{n.body}</p>
+                        </div>
+                      ))
+                    )}
+                  </div>
                 </div>
 
                 {hasRole('jobseeker') && (
