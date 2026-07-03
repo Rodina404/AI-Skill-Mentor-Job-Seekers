@@ -263,15 +263,14 @@ export function LearningPath({ onNavigate }: LearningPathProps) {
     }
   };
 
-  const handleExplainCourse = async (course: any, recId: string | null) => {
+  const handleExplainCourse = async (course: any, phase: any) => {
     if (!token) {
       alert('Session expired, please log in again');
       onNavigate('login');
       return;
     }
 
-    const courseId = course.id || course.course_id || '';
-    const key = courseId || course.title;
+    const key = course.title;
 
     // Toggle off if already showing
     if (explanations[key]) {
@@ -283,55 +282,44 @@ export function LearningPath({ onNavigate }: LearningPathProps) {
       return;
     }
 
-    let targetRecId = recId;
     setExplainingCourseId(key);
 
     try {
-      // If we don't have a recommendation UUID (e.g. it is not persisted yet),
-      // we can try to enroll or find recommendation first.
-      if (!targetRecId) {
-        if (!courseId) {
-          throw new Error('Course ID is missing from roadmap data');
-        }
-        // Check if there's any existing recommendation in recommendations list
-        const existingRec = recommendations.find(r => 
-          r.course_id === courseId || 
-          r.course_title?.toLowerCase() === course.title?.toLowerCase()
-        );
-        if (existingRec) {
-          targetRecId = existingRec.id;
-        } else {
-          // Enroll to persist it
-          const enrollResult = await coursesAPI.enrollCourse(courseId, token);
-          targetRecId = enrollResult.enrollment?.course_recommendation_id || enrollResult.enrollment?.id;
-          
-          // Refresh list
-          const recs = await coursesAPI.getAllCourses({}, token);
-          setRecommendations(recs || []);
-        }
+      // Use the phase's first skill or fall back to the phase theme
+      const skill = (phase.skills && phase.skills.length > 0)
+        ? phase.skills[0]
+        : (phase.title || 'General');
+
+      const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      const response = await fetch(`${API_BASE_URL}/roadmap/explain`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          skill,
+          course_title: course.title,
+        }),
+      });
+
+      if (!response.ok) {
+        const errBody = await response.json().catch(() => ({}));
+        throw new Error(errBody.error || `Server error ${response.status}`);
       }
 
-      if (!targetRecId) {
-        throw new Error('Could not resolve course recommendation ID');
-      }
+      const result = await response.json();
 
-      const response = await coursesAPI.explainCourse(targetRecId, {
-        skill: course.skill || 'General',
-        courseTitle: course.title,
-        matchScore: 0.85,
-        marketFreq: 0.75
-      }, token);
-
-      if (response.success && response.data) {
-        // M5 response shape:
-        // { why_skill: "...", why_course: "...", fallback_used: false }
-        const explanationText = response.data.why_course || 'No explanation available';
+      if (result.success && result.data) {
+        const whyCourse = result.data.why_course || '';
+        const whySkill = result.data.why_skill || '';
+        const explanationText = whyCourse || whySkill || 'No explanation available';
         setExplanations(prev => ({
           ...prev,
           [key]: explanationText
         }));
       } else {
-        throw new Error(response.error || 'Failed to generate explanation');
+        throw new Error('Failed to generate explanation');
       }
     } catch (err: any) {
       console.error('Error explaining course:', err);
@@ -557,9 +545,9 @@ export function LearningPath({ onNavigate }: LearningPathProps) {
                             )}
 
                             {/* AI Explanation Box */}
-                            {explanations[course.id || course.course_id || course.title] && (
+                            {explanations[course.title] && (
                               <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
-                                <strong>AI Explain: </strong> {explanations[course.id || course.course_id || course.title]}
+                                <strong>AI Explain: </strong> {explanations[course.title]}
                               </div>
                             )}
 
@@ -583,12 +571,12 @@ export function LearningPath({ onNavigate }: LearningPathProps) {
                               </button>
 
                               <button
-                                onClick={() => handleExplainCourse(course, live.recommendationId)}
-                                disabled={explainingCourseId === (course.id || course.course_id || course.title)}
+                                onClick={() => handleExplainCourse(course, phase)}
+                                disabled={explainingCourseId === course.title}
                                 className="px-4 py-2 bg-gradient-to-r from-blue-700 to-blue-600 text-white rounded-lg hover:shadow transition-all text-sm flex items-center justify-center gap-1 disabled:opacity-50"
                               >
                                 <Sparkles className="w-4 h-4" />
-                                {explainingCourseId === (course.id || course.course_id || course.title) ? 'Explaining...' : 'Ask AI Why'}
+                                {explainingCourseId === course.title ? 'Explaining...' : 'Ask AI Why'}
                               </button>
 
                               <button
