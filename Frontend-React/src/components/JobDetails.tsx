@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
-import { MapPin, Clock, Briefcase, Building, CheckCircle, ArrowLeft, Send } from 'lucide-react';
+import { MapPin, Clock, Briefcase, Building, CheckCircle, ArrowLeft, Send, Target, TrendingUp, AlertCircle, Sparkles } from 'lucide-react';
 import { jobsAPI } from '../api/jobs.api';
 import { usersAPI } from '../api/users.api';
+import { matchesAPI } from '../api/matches.api';
+import { resumeAPI } from '../api/resume.api';
 import { useAuth } from '../context/AuthContext';
 
 interface JobDetailsProps {
@@ -61,6 +63,11 @@ export function JobDetails({ onNavigate, jobId }: JobDetailsProps) {
   const [hasApplied, setHasApplied] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+
+  // Match / "Check My Fit" state
+  const [isMatching, setIsMatching] = useState(false);
+  const [matchResult, setMatchResult] = useState<any>(null);
+  const [matchError, setMatchError] = useState('');
 
   useEffect(() => {
     const loadJob = async () => {
@@ -159,6 +166,37 @@ export function JobDetails({ onNavigate, jobId }: JobDetailsProps) {
     }
   };
 
+  const handleCheckFit = async () => {
+    if (!token) {
+      setMatchError('Please sign in to check your fit');
+      return;
+    }
+
+    setIsMatching(true);
+    setMatchError('');
+    setMatchResult(null);
+
+    try {
+      // 1. Get the user's latest analyzed resume
+      const resumeList = await resumeAPI.getAnalysisHistory(null, token);
+      const resumes = Array.isArray(resumeList) ? resumeList : (resumeList?.resumes || []);
+      const latestAnalyzed = resumes.find((r: any) => r.status === 'analyzed');
+
+      if (!latestAnalyzed) {
+        throw new Error('No analyzed resume found. Please upload and analyze your resume first.');
+      }
+
+      // 2. Run the matching pipeline
+      const result = await matchesAPI.runMatching(latestAnalyzed.id, selectedJobId, token);
+      setMatchResult(result);
+    } catch (error) {
+      const apiError = error as ApiError;
+      setMatchError(apiError.message || 'Failed to run matching');
+    } finally {
+      setIsMatching(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen pt-28 bg-gradient-to-br from-green-50 to-lime-50 text-center text-gray-700">
@@ -252,8 +290,144 @@ export function JobDetails({ onNavigate, jobId }: JobDetailsProps) {
               <Briefcase className="w-5 h-5" />
               {isSaving ? 'Saving...' : isSaved ? 'Saved' : 'Save Job'}
             </button>
+            <button
+              onClick={handleCheckFit}
+              disabled={isMatching || !!matchResult}
+              className="px-6 py-3 bg-gradient-to-r from-blue-700 to-blue-600 text-white rounded-lg hover:shadow-lg transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Sparkles className="w-5 h-5" />
+              {isMatching ? 'Analyzing...' : matchResult ? 'Analysis Complete' : 'Check My Fit'}
+            </button>
           </div>
         </div>
+
+        {/* Match Results Section */}
+        {matchError && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 flex items-center gap-2">
+            <AlertCircle className="w-5 h-5 flex-shrink-0" />
+            {matchError}
+          </div>
+        )}
+
+        {isMatching && (
+          <div className="mb-6 bg-white rounded-2xl shadow-lg p-8 border-2 border-blue-100 text-center">
+            <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-600 font-medium">Running AI matching pipeline...</p>
+            <p className="text-sm text-gray-500 mt-1">This may take a moment — analyzing skills, gaps, and recommendations.</p>
+          </div>
+        )}
+
+        {matchResult && (
+          <div className="mb-6 space-y-6">
+            {/* Score Overview */}
+            <div className="bg-white rounded-2xl shadow-lg p-6 border-2 border-blue-100">
+              <h2 className="text-gray-900 text-lg mb-4 flex items-center gap-2">
+                <TrendingUp className="w-6 h-6 text-blue-600" />
+                Your Match Results
+              </h2>
+              <div className="grid md:grid-cols-3 gap-6">
+                <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl">
+                  <div className="text-4xl font-bold text-blue-700 mb-1">{matchResult.match_score || 0}%</div>
+                  <p className="text-sm text-gray-600">Match Score</p>
+                </div>
+                <div className="text-center p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-xl">
+                  <div className="text-4xl font-bold text-green-700 mb-1">{matchResult.readiness_score || 0}%</div>
+                  <p className="text-sm text-gray-600">Readiness Score</p>
+                </div>
+                <div className="text-center p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl">
+                  <div className="text-4xl font-bold text-purple-700 mb-1">
+                    {(matchResult.matched_skills || []).length}/{(matchResult.matched_skills || []).length + (matchResult.missing_skills || []).length}
+                  </div>
+                  <p className="text-sm text-gray-600">Skills Matched</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Skill Breakdown */}
+            <div className="grid md:grid-cols-2 gap-6">
+              {(matchResult.matched_skills || []).length > 0 && (
+                <div className="bg-white rounded-2xl shadow-lg p-6 border-2 border-green-100">
+                  <h3 className="text-gray-900 mb-3 flex items-center gap-2">
+                    <CheckCircle className="w-5 h-5 text-green-600" />
+                    Matched Skills
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {(matchResult.matched_skills || []).map((skill: string, i: number) => (
+                      <span key={i} className="px-3 py-1 bg-green-50 text-green-700 rounded-full text-sm border border-green-200">
+                        {typeof skill === 'string' ? skill : (skill as any).name || (skill as any).skill || String(skill)}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {(matchResult.missing_skills || []).length > 0 && (
+                <div className="bg-white rounded-2xl shadow-lg p-6 border-2 border-amber-100">
+                  <h3 className="text-gray-900 mb-3 flex items-center gap-2">
+                    <Target className="w-5 h-5 text-amber-600" />
+                    Missing Skills
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {(matchResult.missing_skills || []).map((skill: string, i: number) => (
+                      <span key={i} className="px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-sm border border-amber-200">
+                        {typeof skill === 'string' ? skill : (skill as any).name || (skill as any).skill || String(skill)}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Recommended Similar Jobs */}
+            {(matchResult.recommended_jobs || []).length > 0 && (
+              <div className="bg-white rounded-2xl shadow-lg p-6 border-2 border-blue-100">
+                <h2 className="text-gray-900 text-lg mb-4 flex items-center gap-2">
+                  <Briefcase className="w-6 h-6 text-blue-600" />
+                  Similar Jobs You Might Like
+                </h2>
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {(matchResult.recommended_jobs || []).map((rj: any, i: number) => (
+                    <div
+                      key={i}
+                      className="p-4 border border-gray-200 rounded-xl hover:shadow-md transition-shadow cursor-pointer hover:border-blue-300"
+                      onClick={() => {
+                        if (rj.id || rj.job_id) {
+                          localStorage.setItem('latestJobId', rj.id || rj.job_id);
+                          onNavigate('job-details');
+                        }
+                      }}
+                    >
+                      <h4 className="text-gray-900 font-medium mb-1">{rj.title || rj.job_title || 'Job'}</h4>
+                      <p className="text-sm text-gray-600 mb-2">{rj.company || rj.employer || ''}</p>
+                      {(rj.location) && (
+                        <p className="text-xs text-gray-500 flex items-center gap-1">
+                          <MapPin className="w-3 h-3" />
+                          {rj.location}
+                        </p>
+                      )}
+                      {(rj.score || rj.similarity_score) && (
+                        <div className="mt-2 text-xs text-blue-600 font-medium">
+                          Similarity: {Math.round((rj.score || rj.similarity_score) * 100)}%
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Pipeline Errors (non-fatal) */}
+            {(matchResult.errors || []).length > 0 && (
+              <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
+                <strong>Some services returned warnings:</strong>
+                <ul className="mt-1 list-disc list-inside">
+                  {(matchResult.errors || []).map((e: any, i: number) => (
+                    <li key={i}>{e.step}: {e.message}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
 
         <div className="grid lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
