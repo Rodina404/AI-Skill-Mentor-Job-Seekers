@@ -39,11 +39,7 @@ async def extract_resume(
             return _error(415, f"Unsupported file type: '{Path(filename).suffix}'. Only PDF, DOCX, and TXT are accepted.")
         file_bytes = await resumeFile.read()
         print(f"[INFO] FastAPI received file: {filename}, size: {len(file_bytes)} bytes")
-        import uuid
-        save_path = f"d:/Grad/Repo/AI-Skill-Mentor-Job-Seekers/scratch/received_{uuid.uuid4().hex[:8]}.pdf"
-        with open(save_path, "wb") as f:
-            f.write(file_bytes)
-        print(f"[INFO] Saved file to {save_path}")
+
 
     start_ts = time.time()
 
