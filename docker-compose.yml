@@ -1,30 +1,120 @@
 version: '3.8'
 
+networks:
+  app-network:
+    driver: bridge
+
 services:
+  # ── Backend & Frontend ───────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+    container_name: grad_backend
+    ports:
+      - "5000:5000"
+    environment:
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-7d}
+      - JWT_REFRESH_EXPIRES_IN=${JWT_REFRESH_EXPIRES_IN:-30d}
+      - M1_EXTRACTION_URL=http://m1-extraction:8001
+      - SKILL_NORMALIZATION_URL=http://skill-normalization:8002
+      - CV_MATCHING_URL=http://cv-matching:8003
+      - GAP_ENGINE_URL=http://gap-engine:8004
+      - M5_ROADMAP_URL=http://m5-roadmap:8005
+      - COURSE_RECOMMENDATION_URL=http://course-recommendation:8006
+      - JOB_RECOMMENDATION_URL=http://job-recommendation:8007
+    networks:
+      - app-network
+
+  frontend:
+    build:
+      context: ./Frontend-React
+      args:
+        # Pass the host port because the browser makes the request, not the container
+        VITE_API_URL: http://localhost:5000/api
+    container_name: grad_frontend
+    ports:
+      - "3000:80"
+    networks:
+      - app-network
+    depends_on:
+      - backend
+
+  # ── Microservices ────────────────────────────────────────────────────────────
   m1-extraction:
     build:
       context: ./AI-Microservices/m1_extraction_service
     container_name: ai_m1_extraction
     ports:
-      - "8001:8000"
+      - "8001:8001"
     environment:
       - GROQ_API_KEY=${GROQ_API_KEY}
-    restart: unless-stopped
-    
+    networks:
+      - app-network
+
   skill-normalization:
     build:
       context: ./AI-Microservices/skill_normalization_service
     container_name: ai_skill_normalization
     ports:
-      - "8002:8003"
-    restart: unless-stopped
+      - "8002:8002"
+    networks:
+      - app-network
+
+  cv-matching:
+    build:
+      context: ./AI-Microservices/cv_matching_service
+    container_name: ai_cv_matching
+    ports:
+      - "8003:8003"
+    networks:
+      - app-network
 
   gap-engine:
     build:
       context: ./AI-Microservices/gap-engin-service
     container_name: ai_gap_engine
     ports:
-      - "8004:8003"
+      - "8004:8004"
     environment:
       - GROQ_API_KEY=${GROQ_API_KEY}
-    restart: unless-stopped
+      - ADZUNA_APP_ID=${ADZUNA_APP_ID:-}
+      - ADZUNA_APP_KEY=${ADZUNA_APP_KEY:-}
+    networks:
+      - app-network
+
+  m5-roadmap:
+    build:
+      context: ./AI-Microservices/m5_roadmap_service
+    container_name: ai_m5_roadmap
+    ports:
+      - "8005:8005"
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - QWEN_API_KEY=${QWEN_API_KEY:-}
+      - DASHSCOPE_API_KEY=${DASHSCOPE_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - OPENAI_BASE_URL=${OPENAI_BASE_URL:-}
+    networks:
+      - app-network
+
+  course-recommendation:
+    build:
+      context: ./AI-Microservices/course_recommendation_service
+    container_name: ai_course_recommendation
+    ports:
+      - "8006:8006"
+    networks:
+      - app-network
+
+  job-recommendation:
+    build:
+      context: ./AI-Microservices/job_recommendation_service
+    container_name: ai_job_recommendation
+    ports:
+      - "8007:8007"
+    networks:
+      - app-network
