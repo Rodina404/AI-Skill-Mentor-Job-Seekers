@@ -46,12 +46,14 @@ const explainRoadmapCourse = async (req, res) => {
     }
 
     // Same defaults used in matches.controller.js enrichment loop
+    // M5 ExplainRequest requires roadmap_data (Dict); pass a minimal stub
     const explainPayload = {
       user_id: userId,
       skill: skill || 'General',
       course_title,
       match_score: 0.85,
-      market_freq: 1.0
+      market_freq: 1.0,
+      roadmap_data: { phases: [], metadata: { source: 'explain_endpoint' } }
     };
 
     console.log('[roadmap/explain] Calling M5:', JSON.stringify(explainPayload));
