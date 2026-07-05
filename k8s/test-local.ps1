@@ -51,15 +51,15 @@ Start-Sleep -Seconds 25
 
 # ── Health checks ─────────────────────────────────────────────────────────
 $checks = @(
-    @{ name="m1-extraction";   url="http://localhost:8001/health" },
-    @{ name="skill-norm";      url="http://localhost:8002/health" },
-    @{ name="cv-matching";     url="http://localhost:8003/health" },
-    @{ name="gap-engine";      url="http://localhost:8004/health" },
-    @{ name="m5-roadmap";      url="http://localhost:8005/health" },
-    @{ name="course-rec";      url="http://localhost:8006/health" },
-    @{ name="job-rec";         url="http://localhost:8007/health" },
-    @{ name="express-backend"; url="http://localhost:5000/api/health" },
-    @{ name="frontend";        url="http://localhost:3000" }
+    @{ name="m1-extraction";   url="http://127.0.0.1:8001/health" },
+    @{ name="skill-norm";      url="http://127.0.0.1:8002/health" },
+    @{ name="cv-matching";     url="http://127.0.0.1:8003/health" },
+    @{ name="gap-engine";      url="http://127.0.0.1:8004/health" },
+    @{ name="m5-roadmap";      url="http://127.0.0.1:8005/health" },
+    @{ name="course-rec";      url="http://127.0.0.1:8006/health" },
+    @{ name="job-rec";         url="http://127.0.0.1:8007/health" },
+    @{ name="express-backend"; url="http://127.0.0.1:5000/api/health" },
+    @{ name="frontend";        url="http://127.0.0.1:3000" }
 )
 
 $allPassed = $true

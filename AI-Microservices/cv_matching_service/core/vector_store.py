@@ -18,13 +18,24 @@ logger = logging.getLogger(__name__)
 # Attempt FAISS + HuggingFace (semantic)
 # ---------------------------------------------------------------------------
 
+_embeddings_instance = None
+
 def _try_get_hf_embeddings():
-    try:
-        from langchain_huggingface import HuggingFaceEmbeddings
-        return HuggingFaceEmbeddings(model_name=config.EMBEDDING_MODEL)
-    except Exception as e:
-        logger.warning(f"HuggingFace embeddings unavailable: {e}. Using TF-IDF fallback.")
-        return None
+    global _embeddings_instance
+    if _embeddings_instance is None:
+        try:
+            from langchain_huggingface import HuggingFaceEmbeddings
+            _embeddings_instance = HuggingFaceEmbeddings(model_name=config.EMBEDDING_MODEL)
+        except Exception as e:
+            logger.warning(f"HuggingFace embeddings unavailable: {e}. Using TF-IDF fallback.")
+            _embeddings_instance = None
+    return _embeddings_instance
+
+
+def pre_load_model():
+    """Trigger eager model loading on startup."""
+    logger.info("Pre-loading CV matching HuggingFace embeddings model...")
+    _try_get_hf_embeddings()
 
 
 # ---------------------------------------------------------------------------

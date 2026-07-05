@@ -25,11 +25,22 @@ from fastapi.middleware.cors import CORSMiddleware
 load_dotenv(override=True)
 
 from api.routes import health, role_gap
+from contextlib import asynccontextmanager
 
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
 )
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Pre-load resources on startup
+    try:
+        from src.loaders import pre_load_resources
+        pre_load_resources()
+    except Exception as e:
+        logger.error(f"Failed to pre-load resources on startup: {e}")
+    yield
 
 app = FastAPI(
     title="GradRAG API",
@@ -39,6 +50,7 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc",
     openapi_url="/openapi.json",
+    lifespan=lifespan,
 )
 
 # --- CORS ---

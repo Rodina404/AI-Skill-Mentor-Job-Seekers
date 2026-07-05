@@ -310,3 +310,15 @@ def find_best_match(title: str, semantic_threshold: float = 0.74) -> Optional[tu
 
     logger.debug(f"No match for '{title}' (best_sim={best_sim:.3f}, overlap={overlap:.2f})")
     return None
+
+
+def pre_load_resources():
+    """Pre-load all index data, model, and pre-compute embeddings on startup."""
+    logger.info("Pre-loading job title index...")
+    roles, _ = load_job_title_index()
+    logger.info("Pre-loading sentence transformer model...")
+    model = _get_model()
+    if model is not None:
+        logger.info("Pre-computing role embeddings...")
+        _get_embeddings(roles)
+    logger.info("All gap-engine-service resources pre-loaded successfully.")

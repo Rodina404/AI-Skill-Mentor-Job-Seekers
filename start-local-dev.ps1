@@ -31,15 +31,15 @@ Write-Host "Logs directory configured at: $logDir" -ForegroundColor Gray
 
 # 3. Service Definitions
 $services = @(
-    @{ name="m1-extraction";        port=8001; path="AI-Microservices/m1_extraction_service";        url="http://localhost:8001/health" },
-    @{ name="skill-normalization";  port=8002; path="AI-Microservices/skill_normalization_service";  url="http://localhost:8002/health" },
-    @{ name="cv-matching";           port=8003; path="AI-Microservices/cv_matching_service";           url="http://localhost:8003/health" },
-    @{ name="gap-engine";            port=8004; path="AI-Microservices/gap-engin-service";            url="http://localhost:8004/health" },
-    @{ name="roadmap-service";       port=8005; path="AI-Microservices/m5_roadmap_service";            url="http://localhost:8005/health" },
-    @{ name="course-recommendation"; port=8006; path="AI-Microservices/course_recommendation_service"; url="http://localhost:8006/health" },
-    @{ name="job-recommendation";    port=8007; path="AI-Microservices/job_recommendation_service";    url="http://localhost:8007/health" },
-    @{ name="express-backend";       port=5000; path="backend";                                       url="http://localhost:5000/api/health"; isNode=$true },
-    @{ name="react-frontend";        port=3000; path="Frontend-React";                                url="http://localhost:3000"; isNode=$true }
+    @{ name="m1-extraction";        port=8001; path="AI-Microservices/m1_extraction_service";        url="http://127.0.0.1:8001/health" },
+    @{ name="skill-normalization";  port=8002; path="AI-Microservices/skill_normalization_service";  url="http://127.0.0.1:8002/health" },
+    @{ name="cv-matching";           port=8003; path="AI-Microservices/cv_matching_service";           url="http://127.0.0.1:8003/health" },
+    @{ name="gap-engine";            port=8004; path="AI-Microservices/gap-engin-service";            url="http://127.0.0.1:8004/health" },
+    @{ name="roadmap-service";       port=8005; path="AI-Microservices/m5_roadmap_service";            url="http://127.0.0.1:8005/health" },
+    @{ name="course-recommendation"; port=8006; path="AI-Microservices/course_recommendation_service"; url="http://127.0.0.1:8006/health" },
+    @{ name="job-recommendation";    port=8007; path="AI-Microservices/job_recommendation_service";    url="http://127.0.0.1:8007/health" },
+    @{ name="express-backend";       port=5000; path="backend";                                       url="http://127.0.0.1:5000/api/health"; isNode=$true },
+    @{ name="react-frontend";        port=3000; path="Frontend-React";                                url="http://127.0.0.1:3000"; isNode=$true }
 )
 
 # 4. Launch Services
@@ -62,8 +62,11 @@ foreach ($s in $services) {
         $uvicornPath = "uvicorn"
         # Check for virtual environment uvicorn first
         $localVenvUvicorn = Join-Path $path ".venv\Scripts\uvicorn.exe"
+        $localVenvUvicorn2 = Join-Path $path "venv\Scripts\uvicorn.exe"
         if (Test-Path $localVenvUvicorn) {
             $uvicornPath = $localVenvUvicorn
+        } elseif (Test-Path $localVenvUvicorn2) {
+            $uvicornPath = $localVenvUvicorn2
         }
         Start-Process $uvicornPath -ArgumentList "main:app --host 0.0.0.0 --port $port" -WorkingDirectory $path -NoNewWindow -RedirectStandardOutput $stdout -RedirectStandardError $stderr
     }

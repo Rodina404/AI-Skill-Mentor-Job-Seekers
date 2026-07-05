@@ -9,7 +9,24 @@ from schemas import StandardResponse
 # Load env variables (API keys)
 load_dotenv()
 
-app = FastAPI(title="M5 Roadmap Service", version="1.0.0")
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Pre-load embedding model on startup
+    try:
+        from core.skill_mentor_semantic import SemanticMatcher
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info("Pre-loading roadmap SentenceTransformer model...")
+        matcher = SemanticMatcher()
+        _ = matcher.model
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).error(f"Failed to pre-load roadmap embedding model: {e}")
+    yield
+
+app = FastAPI(title="M5 Roadmap Service", version="1.0.0", lifespan=lifespan)
 
 # CORS middleware
 app.add_middleware(
