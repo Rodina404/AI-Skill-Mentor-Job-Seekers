@@ -386,6 +386,104 @@ const approveJob = async (req, res) => {
   }
 };
 
+/**
+ * Get job recommendations from Adzuna (Job Recommendation Service)
+ * GET /jobs/recommended
+ */
+const getRecommendedJobs = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { search, location } = req.query;
+
+    // 1. Fetch latest analyzed resume for the user
+    const { data: resume, error: resumeError } = await supabaseAdmin
+      .from('resumes')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('status', 'analyzed')
+      .order('analyzed_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (resumeError) throw resumeError;
+
+    if (!resume) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'RESUME_NOT_FOUND',
+          message: 'No analyzed resume found. Please upload and analyze a resume first to get recommendations.'
+        }
+      });
+    }
+
+    // 2. Extract profile details
+    const skills = (resume.normalized_skills || []).map(s => s.name || s.skill || s.skillId || s).filter(Boolean);
+    const exp = resume.extracted_data?.experience || {};
+    const experienceYears = Math.round(parseFloat(exp.years) || 0);
+
+    const edu = (resume.extracted_data?.education && resume.extracted_data.education.length > 0)
+      ? resume.extracted_data.education[0]
+      : null;
+    const education = edu ? edu.degree || "" : "";
+
+    // 3. Fetch location preference fallback
+    const { data: profile } = await supabaseAdmin
+      .from('job_seeker_profiles')
+      .select('location')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    const finalLocation = location || profile?.location || "";
+    const jobTitle = search || resume.extracted_data?.jobTitle || "Software Engineer";
+
+    // 4. Build payload and POST to job_recommendation_service
+    const jobRecUrl = process.env.JOB_REC_URL || 'http://localhost:8007';
+    const payload = {
+      user_id: resume.id,
+      user_profile: {
+        skills,
+        experience_years: experienceYears,
+        education,
+        location: finalLocation
+      },
+      job_title: jobTitle,
+      top_n: 20
+    };
+
+    console.log(`[JobRec] POSTing to ${jobRecUrl}/run for user ${userId} with job_title="${jobTitle}"`);
+    const axios = require('axios');
+    const { data: responseData } = await axios.post(`${jobRecUrl}/run`, payload, { timeout: 10000 });
+
+    if (!responseData.success) {
+      return res.status(500).json({
+        success: false,
+        error: responseData.error || { message: 'Recommendation service returned failure status' }
+      });
+    }
+
+    return res.json({
+      success: true,
+      data: {
+        jobs: responseData.data?.recommendations || []
+      }
+    });
+
+  } catch (err) {
+    console.error('[getRecommendedJobs] Error:', err.message);
+    if (err.response && err.response.data) {
+      return res.status(err.response.status || 500).json(err.response.data);
+    }
+    return res.status(500).json({
+      success: false,
+      error: {
+        code: 'RECOMMENDATION_FAILED',
+        message: err.message || 'Failed to fetch job recommendations'
+      }
+    });
+  }
+};
+
 module.exports = {
   getAllJobs,
   getJobById,
@@ -394,5 +492,6 @@ module.exports = {
   deleteJob,
   applyToJob,
   getJobApplicants,
-  approveJob
+  approveJob,
+  getRecommendedJobs
 };

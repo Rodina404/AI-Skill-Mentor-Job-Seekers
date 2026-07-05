@@ -9,11 +9,13 @@ const {
   deleteJob,
   applyToJob,
   getJobApplicants,
-  approveJob
+  approveJob,
+  getRecommendedJobs
 } = require('../controllers/jobs.controller');
 
 // Public routes
 router.get('/', getAllJobs);
+router.get('/recommended', protect, getRecommendedJobs);
 router.get('/:jobId', getJobById);
 
 // Protected routes (require token)
