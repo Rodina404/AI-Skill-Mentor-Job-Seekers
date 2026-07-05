@@ -184,4 +184,24 @@ export const jobsAPI = {
 
     return response.json();
   },
+
+  /**
+   * Get recommended jobs from Adzuna (Job Recommendation Service)
+   * @param {Object} filters - Optional filters (search, location, type)
+   * @param {string} token - Auth token
+   * @returns {Promise<Object>} - Recommendations
+   */
+  async getRecommendedJobs(filters = {}, token) {
+    const queryParams = new URLSearchParams(filters).toString();
+    const response = await fetch(`${API_BASE_URL}/jobs/recommended?${queryParams}`, {
+      method: 'GET',
+      headers: getAuthHeaders(token),
+    });
+
+    if (!response.ok) {
+      throw await createApiError(response, 'Failed to fetch recommended jobs');
+    }
+
+    return response.json();
+  },
 };

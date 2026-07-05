@@ -11,82 +11,131 @@ interface JobsListingProps {
 export function JobsListing({ onNavigate }: JobsListingProps) {
   const { user, token } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
+  const [locationSearch, setLocationSearch] = useState('');
   const [filterType, setFilterType] = useState('all');
+  const [activeTab, setActiveTab] = useState<'recommended' | 'platform'>('recommended');
+  
   const [savedJobs, setSavedJobs] = useState<string[]>([]);
   const [savingJobId, setSavingJobId] = useState<string | null>(null);
   const [jobs, setJobs] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Debounced filter states for recommended server-side search
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [debouncedLocation, setDebouncedLocation] = useState('');
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedLocation(locationSearch);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [locationSearch]);
+
   const fetchJobs = async () => {
     if (!token) return;
     setIsLoading(true);
     setError(null);
     try {
-      // 1. Fetch matches for user
-      const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-      
-      let matches: any[] = [];
-      const matchesRes = await fetch(`${API_BASE_URL}/matches`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (matchesRes.ok) {
-        matches = await matchesRes.json();
-      }
+      if (activeTab === 'recommended') {
+        const filters: any = {};
+        if (debouncedSearch) filters.search = debouncedSearch;
+        if (debouncedLocation) filters.location = debouncedLocation;
+        if (filterType !== 'all') filters.type = filterType;
 
-      // 2. Fetch all jobs
-      const jobsRes = await jobsAPI.getAllJobs({}, token);
-      const allJobs = jobsRes?.data?.jobs || [];
-
-      // 3. Map matches & jobs together
-      const mapped = allJobs.map((j: any) => {
-        const matchRecord = matches.find((m: any) => m.job_postings?.id === j.id);
-        const matchScore = matchRecord ? matchRecord.match_score || Math.round((matchRecord.overall_score || 0) * 100) : 75;
+        const res = await jobsAPI.getRecommendedJobs(filters, token);
+        const recJobs = res?.data?.jobs || [];
         
-        let requiredSkills: string[] = [];
-        if (Array.isArray(j.required_skills)) {
-          requiredSkills = j.required_skills;
-        } else if (typeof j.required_skills === 'string') {
-          try {
-            requiredSkills = JSON.parse(j.required_skills);
-          } catch {
-            requiredSkills = j.required_skills ? [j.required_skills] : [];
-          }
+        const mapped = recJobs.map((j: any) => {
+          const matchScore = Math.round((j.score || 0) * 100);
+          
+          return {
+            id: j.id,
+            title: j.title,
+            company: j.company || 'Company',
+            location: j.location || 'Remote',
+            type: j.type || 'Full-time',
+            salary: j.salary || 'Competitive',
+            posted: j.posted ? new Date(j.posted).toLocaleDateString() : 'Recent',
+            applicants: Math.floor(Math.random() * 30) + 5,
+            match: matchScore,
+            skills: j.breakdown?.matching_skills || [],
+            description: j.description || '',
+            url: j.url || '',
+            explanation: j.explanation || ''
+          };
+        });
+        
+        setJobs(mapped);
+      } else {
+        // Platform jobs flow: unchanged, fetch all jobs and user matches
+        const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+        
+        let matches: any[] = [];
+        const matchesRes = await fetch(`${API_BASE_URL}/matches`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (matchesRes.ok) {
+          matches = await matchesRes.json();
         }
 
-        const skillsToDisplay = requiredSkills.length > 0 ? requiredSkills : [j.title];
+        const jobsRes = await jobsAPI.getAllJobs({}, token);
+        const allJobs = jobsRes?.data?.jobs || [];
 
-        return {
-          id: j.id,
-          title: j.title,
-          company: j.company || 'Company',
-          location: j.location || 'Remote',
-          type: j.job_type === 'full_time' ? 'Full-time' : j.job_type === 'part_time' ? 'Part-time' : j.job_type || 'Full-time',
-          salary: j.salary || '$100k - $140k',
-          posted: j.created_at ? new Date(j.created_at).toLocaleDateString() : 'Recent',
-          applicants: Math.floor(Math.random() * 30) + 5,
-          match: matchScore,
-          skills: skillsToDisplay,
-          description: j.job_description || j.description
-        };
-      });
-
-      mapped.sort((a: any, b: any) => b.match - a.match);
-      setJobs(mapped);
-
-      // Fetch saved jobs for the user
-      const userId = user?.id;
-      if (userId) {
-        try {
-          const savedJobsRes = await usersAPI.getSavedJobs(userId, token);
-          if (Array.isArray(savedJobsRes)) {
-            setSavedJobs(savedJobsRes.map((sj: any) => sj.job_posting_id || sj.job_postings?.id || sj.job_id || sj.id));
+        const mapped = allJobs.map((j: any) => {
+          const matchRecord = matches.find((m: any) => m.job_postings?.id === j.id);
+          const matchScore = matchRecord ? matchRecord.match_score || Math.round((matchRecord.overall_score || 0) * 100) : 75;
+          
+          let requiredSkills: string[] = [];
+          if (Array.isArray(j.required_skills)) {
+            requiredSkills = j.required_skills;
+          } else if (typeof j.required_skills === 'string') {
+            try {
+              requiredSkills = JSON.parse(j.required_skills);
+            } catch {
+              requiredSkills = j.required_skills ? [j.required_skills] : [];
+            }
           }
-        } catch (err) {
-          console.error("Failed to load saved jobs:", err);
+
+          const skillsToDisplay = requiredSkills.length > 0 ? requiredSkills : [j.title];
+
+          return {
+            id: j.id,
+            title: j.title,
+            company: j.company || 'Company',
+            location: j.location || 'Remote',
+            type: j.job_type === 'full_time' ? 'Full-time' : j.job_type === 'part_time' ? 'Part-time' : j.job_type || 'Full-time',
+            salary: j.salary || '$100k - $140k',
+            posted: j.created_at ? new Date(j.created_at).toLocaleDateString() : 'Recent',
+            applicants: Math.floor(Math.random() * 30) + 5,
+            match: matchScore,
+            skills: skillsToDisplay,
+            description: j.job_description || j.description
+          };
+        });
+
+        mapped.sort((a: any, b: any) => b.match - a.match);
+        setJobs(mapped);
+        
+        const userId = user?.id;
+        if (userId) {
+          try {
+            const savedJobsRes = await usersAPI.getSavedJobs(userId, token);
+            if (Array.isArray(savedJobsRes)) {
+              setSavedJobs(savedJobsRes.map((sj: any) => sj.job_posting_id || sj.job_postings?.id || sj.job_id || sj.id));
+            }
+          } catch (err) {
+            console.error("Failed to load saved jobs:", err);
+          }
         }
       }
-
     } catch (err: any) {
       console.error(err);
       setError(err.message || 'Failed to fetch jobs');
@@ -99,7 +148,7 @@ export function JobsListing({ onNavigate }: JobsListingProps) {
     if (token) {
       fetchJobs();
     }
-  }, [token]);
+  }, [debouncedSearch, debouncedLocation, filterType, activeTab, token]);
 
   const handleSaveJob = async (jobId: string) => {
     if (!token || !user?.id) {
@@ -110,7 +159,6 @@ export function JobsListing({ onNavigate }: JobsListingProps) {
     setSavingJobId(jobId);
     try {
       const userId = user.id;
-      
       await usersAPI.saveJob(userId, jobId, token);
       setSavedJobs(prev => [...prev, jobId]);
     } catch (err: any) {
@@ -121,13 +169,13 @@ export function JobsListing({ onNavigate }: JobsListingProps) {
     }
   };
 
-  const filteredJobs = jobs.filter(job => {
+  const filteredJobs = activeTab === 'platform' ? jobs.filter(job => {
     const matchesSearch = job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          job.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          job.skills.some((skill: string) => skill.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesFilter = filterType === 'all' || job.type.toLowerCase().replace('-', '').includes(filterType.replace('-', ''));
     return matchesSearch && matchesFilter;
-  });
+  }) : jobs;
 
   return (
     <div className="min-h-screen pt-20 pb-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-green-50 to-lime-50">
@@ -139,6 +187,42 @@ export function JobsListing({ onNavigate }: JobsListingProps) {
           <p className="text-gray-600">Discover opportunities matched to your skills</p>
         </div>
 
+        {/* Tab Toggle */}
+        <div className="flex gap-6 mb-6 border-b border-green-150 pb-2">
+          <button
+            onClick={() => {
+              setActiveTab('recommended');
+              setJobs([]);
+              setError(null);
+              setSearchTerm('');
+              setLocationSearch('');
+            }}
+            className={`pb-2 px-2 font-semibold text-lg border-b-4 transition-all ${
+              activeTab === 'recommended'
+                ? 'border-green-600 text-green-700'
+                : 'border-transparent text-gray-500 hover:text-green-600'
+            }`}
+          >
+            Recommended for You
+          </button>
+          <button
+            onClick={() => {
+              setActiveTab('platform');
+              setJobs([]);
+              setError(null);
+              setSearchTerm('');
+              setLocationSearch('');
+            }}
+            className={`pb-2 px-2 font-semibold text-lg border-b-4 transition-all ${
+              activeTab === 'platform'
+                ? 'border-green-600 text-green-700'
+                : 'border-transparent text-gray-500 hover:text-green-600'
+            }`}
+          >
+            Platform Jobs
+          </button>
+        </div>
+
         {/* Search and Filter */}
         <div className="bg-white rounded-xl shadow-lg p-6 border-2 border-green-100 mb-8">
           <div className="flex flex-col md:flex-row gap-4">
@@ -148,10 +232,22 @@ export function JobsListing({ onNavigate }: JobsListingProps) {
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search jobs, companies, or skills..."
+                placeholder={activeTab === 'recommended' ? "Search by keyword or job title..." : "Search jobs, companies, or skills..."}
                 className="w-full pl-11 pr-4 py-3 border-2 border-green-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent bg-green-50/50"
               />
             </div>
+            {activeTab === 'recommended' && (
+              <div className="flex-1 relative">
+                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="text"
+                  value={locationSearch}
+                  onChange={(e) => setLocationSearch(e.target.value)}
+                  placeholder="Filter by location (e.g. London, US)..."
+                  className="w-full pl-11 pr-4 py-3 border-2 border-green-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent bg-green-50/50"
+                />
+              </div>
+            )}
             <div className="flex items-center gap-2">
               <Filter className="w-5 h-5 text-green-600" />
               <select
@@ -243,6 +339,14 @@ export function JobsListing({ onNavigate }: JobsListingProps) {
                         </div>
                       </div>
 
+                      {/* Detailed Fit Explanation for Recommended Jobs */}
+                      {activeTab === 'recommended' && job.explanation && (
+                        <div className="mb-4 p-3 bg-green-50/50 border border-green-100 rounded-lg text-sm text-green-800 flex items-start gap-2">
+                          <TrendingUp className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
+                          <span><strong>Fit Analysis:</strong> {job.explanation}</span>
+                        </div>
+                      )}
+
                       <div className="flex flex-wrap gap-4 mb-4 text-sm text-gray-600">
                         <div className="flex items-center gap-1">
                           <MapPin className="w-4 h-4 text-green-600" />
@@ -277,22 +381,35 @@ export function JobsListing({ onNavigate }: JobsListingProps) {
                     </div>
 
                     <div className="flex lg:flex-col gap-3">
-                      <button 
-                        onClick={() => {
-                          localStorage.setItem('latestJobId', job.id);
-                          onNavigate('job-details');
-                        }}
-                        className="flex-1 lg:w-40 px-6 py-3 bg-gradient-to-r from-green-700 to-green-600 text-white rounded-lg hover:shadow-lg transition-all text-center font-medium"
-                      >
-                        View Details
-                      </button>
-                      <button
-                        className="flex-1 lg:w-40 px-6 py-3 border-2 border-green-600 text-green-700 rounded-lg hover:bg-green-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center justify-center gap-1"
-                        onClick={() => handleSaveJob(job.id)}
-                        disabled={isSaving || isSaved}
-                      >
-                        {isSaving ? 'Saving...' : isSaved ? 'Saved' : 'Save Job'}
-                      </button>
+                      {activeTab === 'recommended' ? (
+                        <a 
+                          href={job.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex-1 lg:w-48 px-6 py-3 bg-gradient-to-r from-green-700 to-green-600 text-white rounded-lg hover:shadow-lg transition-all text-center font-medium flex items-center justify-center"
+                        >
+                          View Original Posting
+                        </a>
+                      ) : (
+                        <>
+                          <button 
+                            onClick={() => {
+                              localStorage.setItem('latestJobId', job.id);
+                              onNavigate('job-details');
+                            }}
+                            className="flex-1 lg:w-40 px-6 py-3 bg-gradient-to-r from-green-700 to-green-600 text-white rounded-lg hover:shadow-lg transition-all text-center font-medium"
+                          >
+                            View Details
+                          </button>
+                          <button
+                            className="flex-1 lg:w-40 px-6 py-3 border-2 border-green-600 text-green-700 rounded-lg hover:bg-green-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center justify-center gap-1"
+                            onClick={() => handleSaveJob(job.id)}
+                            disabled={isSaving || isSaved}
+                          >
+                            {isSaving ? 'Saving...' : isSaved ? 'Saved' : 'Save Job'}
+                          </button>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -310,14 +427,15 @@ export function JobsListing({ onNavigate }: JobsListingProps) {
               </div>
               <h3 className="text-gray-900 mb-2">No jobs found</h3>
               <p className="text-gray-600 mb-6">
-                {searchTerm || filterType !== 'all' 
+                {searchTerm || locationSearch || filterType !== 'all' 
                   ? 'No jobs match your search criteria. Try adjusting your filters.' 
                   : 'There are currently no job listings available.'}
               </p>
-              {(searchTerm || filterType !== 'all') && (
+              {(searchTerm || locationSearch || filterType !== 'all') && (
                 <button
                   onClick={() => {
                     setSearchTerm('');
+                    setLocationSearch('');
                     setFilterType('all');
                   }}
                   className="px-6 py-3 bg-gradient-to-r from-green-700 to-green-600 text-white rounded-lg hover:shadow-lg transition-all"
@@ -331,4 +449,4 @@ export function JobsListing({ onNavigate }: JobsListingProps) {
       </div>
     </div>
   );
-}
+}
