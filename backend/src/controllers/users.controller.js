@@ -149,23 +149,56 @@ const getSavedJobs = async (req, res) => {
 const saveJob = async (req, res) => {
   try {
     const { userId } = req.params;
-    const { jobId } = req.body;
+    const { jobId, source = 'platform', externalJob } = req.body;
 
     // Check authorization
     if (req.user.id !== userId && req.user.role !== 'admin') {
       return res.status(403).json({ error: 'Forbidden: Access denied' });
     }
 
-    if (!jobId) {
-      return res.status(400).json({ error: 'jobId is required' });
+    if (!['platform', 'adzuna'].includes(source)) {
+      return res.status(400).json({ error: 'source must be platform or adzuna' });
+    }
+
+    let savedJob;
+    if (source === 'platform') {
+      if (!jobId) {
+        return res.status(400).json({ error: 'jobId is required for platform jobs' });
+      }
+      savedJob = {
+        user_id: userId,
+        source: 'platform',
+        job_posting_id: jobId
+      };
+    } else {
+      const externalId = String(externalJob?.id || jobId || '').trim();
+      const title = String(externalJob?.title || '').trim();
+      const url = String(externalJob?.url || '').trim();
+      let parsedUrl;
+      try {
+        parsedUrl = new URL(url);
+      } catch {
+        return res.status(400).json({ error: 'A valid external job URL is required' });
+      }
+      if (!externalId || !title || !['http:', 'https:'].includes(parsedUrl.protocol)) {
+        return res.status(400).json({ error: 'External jobs require id, title, and an HTTP(S) URL' });
+      }
+      savedJob = {
+        user_id: userId,
+        source: 'adzuna',
+        job_posting_id: null,
+        external_job_id: externalId,
+        external_url: parsedUrl.toString(),
+        external_title: title.slice(0, 300),
+        external_company: String(externalJob?.company || '').trim().slice(0, 300) || null,
+        external_location: String(externalJob?.location || '').trim().slice(0, 300) || null,
+        external_description: String(externalJob?.description || '').trim().slice(0, 2000) || null
+      };
     }
 
     const { data, error } = await supabaseAdmin
       .from('saved_jobs')
-      .insert({
-        user_id: userId,
-        job_posting_id: jobId
-      })
+      .insert(savedJob)
       .select()
       .single();
 
@@ -188,11 +221,11 @@ const saveJob = async (req, res) => {
 
 /**
  * Remove saved job
- * DELETE /users/:userId/saved-jobs/:jobId
+ * DELETE /users/:userId/saved-jobs/:savedJobId
  */
 const removeSavedJob = async (req, res) => {
   try {
-    const { userId, jobId } = req.params;
+    const { userId, savedJobId } = req.params;
 
     // Check authorization
     if (req.user.id !== userId && req.user.role !== 'admin') {
@@ -203,7 +236,7 @@ const removeSavedJob = async (req, res) => {
       .from('saved_jobs')
       .delete()
       .eq('user_id', userId)
-      .eq('job_posting_id', jobId);
+      .eq('id', savedJobId);
 
     if (error) throw error;
 

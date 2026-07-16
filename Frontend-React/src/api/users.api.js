@@ -142,11 +142,11 @@ export const usersAPI = {
    * @param {string} token - Auth token
    * @returns {Promise<Object>} - Success message
    */
-  async saveJob(userId, jobId, token) {
+  async saveJob(userId, jobId, token, options = {}) {
     const response = await fetch(`${API_BASE_URL}/users/${userId}/saved-jobs`, {
       method: 'POST',
       headers: getAuthHeaders(token),
-      body: JSON.stringify({ jobId }),
+      body: JSON.stringify({ jobId, ...options }),
     });
 
     if (!response.ok) {
@@ -159,12 +159,12 @@ export const usersAPI = {
   /**
    * Remove saved job
    * @param {string} userId - User ID
-   * @param {string} jobId - Job ID
+   * @param {string} savedJobId - Saved-job record ID
    * @param {string} token - Auth token
    * @returns {Promise<Object>} - Success message
    */
-  async removeSavedJob(userId, jobId, token) {
-    const response = await fetch(`${API_BASE_URL}/users/${userId}/saved-jobs/${jobId}`, {
+  async removeSavedJob(userId, savedJobId, token) {
+    const response = await fetch(`${API_BASE_URL}/users/${userId}/saved-jobs/${savedJobId}`, {
       method: 'DELETE',
       headers: getAuthHeaders(token),
     });

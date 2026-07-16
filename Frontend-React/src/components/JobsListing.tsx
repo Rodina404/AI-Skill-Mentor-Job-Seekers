@@ -14,7 +14,7 @@ export function JobsListing({ onNavigate }: JobsListingProps) {
   const [locationSearch, setLocationSearch] = useState('');
   const [filterType, setFilterType] = useState('all');
   const [activeTab, setActiveTab] = useState<'recommended' | 'platform'>('recommended');
-  
+
   const [savedJobs, setSavedJobs] = useState<string[]>([]);
   const [savingJobId, setSavingJobId] = useState<string | null>(null);
   const [jobs, setJobs] = useState<any[]>([]);
@@ -52,32 +52,33 @@ export function JobsListing({ onNavigate }: JobsListingProps) {
 
         const res = await jobsAPI.getRecommendedJobs(filters, token);
         const recJobs = res?.data?.jobs || [];
-        
+
         const mapped = recJobs.map((j: any) => {
-          const matchScore = Math.round((j.score || 0) * 100);
-          
+          const matchScore = Math.round((j.hybrid_score ?? j.similarity_score ?? j.score ?? 0) * 100);
+
           return {
             id: j.id,
             title: j.title,
             company: j.company || 'Company',
             location: j.location || 'Remote',
-            type: j.type || 'Full-time',
+            type: j.type || (j.source === 'adzuna' ? 'External' : 'Recommendation'),
             salary: j.salary || 'Competitive',
-            posted: j.posted ? new Date(j.posted).toLocaleDateString() : 'Recent',
+            posted: (j.posted_date || j.posted) ? new Date(j.posted_date || j.posted).toLocaleDateString() : 'Recent',
             applicants: Math.floor(Math.random() * 30) + 5,
             match: matchScore,
-            skills: j.breakdown?.matching_skills || [],
+            skills: j.matched_skills || j.breakdown?.matching_skills || [],
             description: j.description || '',
             url: j.url || '',
-            explanation: j.explanation || ''
+            explanation: j.relevance_explanation || j.explanation || '',
+            source: j.source || 'local'
           };
         });
-        
+
         setJobs(mapped);
       } else {
         // Platform jobs flow: unchanged, fetch all jobs and user matches
         const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-        
+
         let matches: any[] = [];
         const matchesRes = await fetch(`${API_BASE_URL}/matches`, {
           headers: { 'Authorization': `Bearer ${token}` }
@@ -92,7 +93,7 @@ export function JobsListing({ onNavigate }: JobsListingProps) {
         const mapped = allJobs.map((j: any) => {
           const matchRecord = matches.find((m: any) => m.job_postings?.id === j.id);
           const matchScore = matchRecord ? matchRecord.match_score || Math.round((matchRecord.overall_score || 0) * 100) : 75;
-          
+
           let requiredSkills: string[] = [];
           if (Array.isArray(j.required_skills)) {
             requiredSkills = j.required_skills;
@@ -123,17 +124,21 @@ export function JobsListing({ onNavigate }: JobsListingProps) {
 
         mapped.sort((a: any, b: any) => b.match - a.match);
         setJobs(mapped);
-        
-        const userId = user?.id;
-        if (userId) {
-          try {
-            const savedJobsRes = await usersAPI.getSavedJobs(userId, token);
-            if (Array.isArray(savedJobsRes)) {
-              setSavedJobs(savedJobsRes.map((sj: any) => sj.job_posting_id || sj.job_postings?.id || sj.job_id || sj.id));
-            }
-          } catch (err) {
-            console.error("Failed to load saved jobs:", err);
+
+      }
+
+      if (user?.id) {
+        try {
+          const savedJobsRes = await usersAPI.getSavedJobs(user.id, token);
+          if (Array.isArray(savedJobsRes)) {
+            setSavedJobs(savedJobsRes.map((saved: any) =>
+              saved.source === 'adzuna'
+                ? saved.external_job_id
+                : saved.job_posting_id || saved.job_postings?.id
+            ).filter(Boolean));
           }
+        } catch (savedJobsError) {
+          console.error("Failed to load saved jobs:", savedJobsError);
         }
       }
     } catch (err: any) {
@@ -150,17 +155,34 @@ export function JobsListing({ onNavigate }: JobsListingProps) {
     }
   }, [debouncedSearch, debouncedLocation, filterType, activeTab, token]);
 
-  const handleSaveJob = async (jobId: string) => {
+  const handleSaveJob = async (job: any) => {
     if (!token || !user?.id) {
       alert('Session expired, please log in again');
       onNavigate('login');
       return;
     }
-    setSavingJobId(jobId);
+    if (activeTab === 'recommended' && (job.source !== 'adzuna' || !job.url)) {
+      alert('This fallback recommendation cannot be saved as an external job.');
+      return;
+    }
+    setSavingJobId(job.id);
     try {
       const userId = user.id;
-      await usersAPI.saveJob(userId, jobId, token);
-      setSavedJobs(prev => [...prev, jobId]);
+      const options = activeTab === 'recommended'
+        ? {
+            source: 'adzuna',
+            externalJob: {
+              id: job.id,
+              title: job.title,
+              company: job.company,
+              location: job.location,
+              description: job.description,
+              url: job.url
+            }
+          }
+        : { source: 'platform' };
+      await usersAPI.saveJob(userId, job.id, token, options);
+      setSavedJobs(prev => [...prev, job.id]);
     } catch (err: any) {
       console.error(err);
       alert(err.message || 'Failed to save job');
@@ -283,7 +305,7 @@ export function JobsListing({ onNavigate }: JobsListingProps) {
             <div className="bg-white rounded-xl shadow-lg p-6 border-2 border-green-100">
               <TrendingUp className="w-8 h-8 text-green-600 mb-2" />
               <div className="text-2xl text-gray-900">
-                {filteredJobs.length > 0 
+                {filteredJobs.length > 0
                   ? `${Math.round(filteredJobs.reduce((acc, curr) => acc + curr.match, 0) / filteredJobs.length)}%`
                   : 'N/A'}
               </div>
@@ -382,7 +404,7 @@ export function JobsListing({ onNavigate }: JobsListingProps) {
 
                     <div className="flex lg:flex-col gap-3">
                       {activeTab === 'recommended' ? (
-                        <a 
+                        <a
                           href={job.url}
                           target="_blank"
                           rel="noopener noreferrer"
@@ -392,7 +414,7 @@ export function JobsListing({ onNavigate }: JobsListingProps) {
                         </a>
                       ) : (
                         <>
-                          <button 
+                          <button
                             onClick={() => {
                               localStorage.setItem('latestJobId', job.id);
                               onNavigate('job-details');
@@ -403,8 +425,8 @@ export function JobsListing({ onNavigate }: JobsListingProps) {
                           </button>
                           <button
                             className="flex-1 lg:w-40 px-6 py-3 border-2 border-green-600 text-green-700 rounded-lg hover:bg-green-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center justify-center gap-1"
-                            onClick={() => handleSaveJob(job.id)}
-                            disabled={isSaving || isSaved}
+                            onClick={() => handleSaveJob(job)}
+                            disabled={isSaving || isSaved || (activeTab === 'recommended' && (job.source !== 'adzuna' || !job.url))}
                           >
                             {isSaving ? 'Saving...' : isSaved ? 'Saved' : 'Save Job'}
                           </button>
@@ -427,8 +449,8 @@ export function JobsListing({ onNavigate }: JobsListingProps) {
               </div>
               <h3 className="text-gray-900 mb-2">No jobs found</h3>
               <p className="text-gray-600 mb-6">
-                {searchTerm || locationSearch || filterType !== 'all' 
-                  ? 'No jobs match your search criteria. Try adjusting your filters.' 
+                {searchTerm || locationSearch || filterType !== 'all'
+                  ? 'No jobs match your search criteria. Try adjusting your filters.'
                   : 'There are currently no job listings available.'}
               </p>
               {(searchTerm || locationSearch || filterType !== 'all') && (
@@ -449,4 +471,4 @@ export function JobsListing({ onNavigate }: JobsListingProps) {
       </div>
     </div>
   );
-}
+}

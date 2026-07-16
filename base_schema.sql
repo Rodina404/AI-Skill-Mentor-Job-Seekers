@@ -154,10 +154,28 @@ CREATE TABLE IF NOT EXISTS public.job_applications (
 CREATE TABLE IF NOT EXISTS public.saved_jobs (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-    job_posting_id UUID NOT NULL REFERENCES public.job_postings(id) ON DELETE CASCADE,
+    job_posting_id UUID REFERENCES public.job_postings(id) ON DELETE CASCADE,
+    source TEXT DEFAULT 'platform' NOT NULL,
+    external_job_id TEXT,
+    external_url TEXT,
+    external_title TEXT,
+    external_company TEXT,
+    external_location TEXT,
+    external_description TEXT,
     saved_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
-    CONSTRAINT saved_jobs_user_job_unique UNIQUE (user_id, job_posting_id)
+    CONSTRAINT saved_jobs_user_job_unique UNIQUE (user_id, job_posting_id),
+    CONSTRAINT saved_jobs_source_check CHECK (source IN ('platform', 'adzuna')),
+    CONSTRAINT saved_jobs_identity_check CHECK (
+        (source = 'platform' AND job_posting_id IS NOT NULL AND external_job_id IS NULL)
+        OR
+        (source = 'adzuna' AND job_posting_id IS NULL AND external_job_id IS NOT NULL
+            AND external_url IS NOT NULL AND external_title IS NOT NULL)
+    )
 );
+
+CREATE UNIQUE INDEX IF NOT EXISTS saved_jobs_user_external_unique
+    ON public.saved_jobs (user_id, source, external_job_id)
+    WHERE source = 'adzuna';
 
 -- ==========================================
 -- Enable Row Level Security (RLS)

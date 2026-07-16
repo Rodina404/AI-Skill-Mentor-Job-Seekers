@@ -290,6 +290,7 @@ class AdzunaJobProvider:
         )
 
         return {
+            "id": str(job.get("id") or redirect_url or f"{title}:{company}"),
             "title": title,
             "company": company,
             "location": location,

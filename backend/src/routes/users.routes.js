@@ -17,7 +17,7 @@ router.put('/:userId', updateProfile);
 router.put('/:userId/goals', updateGoals);
 router.get('/:userId/saved-jobs', getSavedJobs);
 router.post('/:userId/saved-jobs', saveJob);
-router.delete('/:userId/saved-jobs/:jobId', removeSavedJob);
+router.delete('/:userId/saved-jobs/:savedJobId', removeSavedJob);
 router.get('/:userId/courses', getUserCourses);
 
 module.exports = router;

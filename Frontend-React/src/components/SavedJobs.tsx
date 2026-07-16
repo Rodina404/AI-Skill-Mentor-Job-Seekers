@@ -74,7 +74,7 @@ export function SavedJobs({ onNavigate }: SavedJobsProps) {
 
     try {
       await usersAPI.removeSavedJob(user.id, jobToRemove, token);
-      setSavedJobs(prev => prev.filter(item => (item.job_postings?.id || item.job_posting_id) !== jobToRemove));
+      setSavedJobs(prev => prev.filter(item => item.id !== jobToRemove));
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 3000);
     } catch (err: any) {
@@ -91,7 +91,11 @@ export function SavedJobs({ onNavigate }: SavedJobsProps) {
     setJobToRemove(null);
   };
 
-  const handleViewDetails = (jobId: string) => {
+  const handleViewDetails = (jobId: string, externalUrl?: string) => {
+    if (externalUrl) {
+      window.open(externalUrl, '_blank', 'noopener,noreferrer');
+      return;
+    }
     localStorage.setItem('latestJobId', jobId);
     onNavigate('job-details');
   };
@@ -139,7 +143,14 @@ export function SavedJobs({ onNavigate }: SavedJobsProps) {
         ) : (
           <div className="space-y-4">
             {savedJobs.map((item) => {
-              const job = item.job_postings || {};
+              const isExternal = item.source === 'adzuna';
+              const job = isExternal ? {
+                id: item.external_job_id,
+                title: item.external_title,
+                company: item.external_company,
+                location: item.external_location,
+                description: item.external_description
+              } : (item.job_postings || {});
               const jobId = job.id || item.job_posting_id;
               const title = job.title || 'Untitled Job';
               const company = job.company || 'Company';
@@ -148,8 +159,10 @@ export function SavedJobs({ onNavigate }: SavedJobsProps) {
               const salary = job.salary || '$100k - $140k';
               const savedDate = item.saved_at ? new Date(item.saved_at).toLocaleDateString() : 'Recent';
               const matchRecord = matches.find((m: any) => m.job_postings?.id === jobId);
-              const matchScore = matchRecord ? matchRecord.match_score || Math.round((matchRecord.overall_score || 0) * 100) : 85;
-              const status = job.status || 'Open';
+              const matchScore = !isExternal && matchRecord
+                ? matchRecord.match_score || Math.round((matchRecord.overall_score || 0) * 100)
+                : null;
+              const status = isExternal ? 'External' : (job.status || 'Open');
 
               return (
                 <div
@@ -169,8 +182,8 @@ export function SavedJobs({ onNavigate }: SavedJobsProps) {
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-3xl text-green-700 mb-1">{matchScore}%</div>
-                      <p className="text-sm text-gray-500">Match</p>
+                      <div className="text-3xl text-green-700 mb-1">{matchScore === null ? '—' : `${matchScore}%`}</div>
+                      <p className="text-sm text-gray-500">{isExternal ? 'Market job' : 'Match'}</p>
                     </div>
                   </div>
 
@@ -205,18 +218,18 @@ export function SavedJobs({ onNavigate }: SavedJobsProps) {
 
                   <div className="mt-4 flex gap-3">
                     <button
-                      onClick={() => handleViewDetails(jobId)}
+                      onClick={() => handleViewDetails(jobId, isExternal ? item.external_url : undefined)}
                       className="flex-1 px-4 py-2 bg-gradient-to-r from-green-700 to-green-600 text-white rounded-lg hover:shadow-lg transition-all flex items-center justify-center gap-2 font-medium"
                     >
                       <Eye className="w-4 h-4" />
-                      View Details
+                      {isExternal ? 'Open Original Posting' : 'View Details'}
                     </button>
                     <button
-                      onClick={() => handleRemoveClick(jobId)}
-                      disabled={isRemoving === jobId}
+                      onClick={() => handleRemoveClick(item.id)}
+                      disabled={isRemoving === item.id}
                       className="px-4 py-2 border-2 border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
                     >
-                      {isRemoving === jobId ? (
+                      {isRemoving === item.id ? (
                         <>
                           <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
                           Removing...
