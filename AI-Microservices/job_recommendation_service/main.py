@@ -6,11 +6,11 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
+load_dotenv()
+
 from routes.run import router as run_router
 from routes.run import recommender
 from routes.health import router as health_router
-
-load_dotenv()
 
 logging.basicConfig(
     level=logging.INFO,

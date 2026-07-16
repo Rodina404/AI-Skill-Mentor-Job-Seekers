@@ -236,7 +236,7 @@ class AdzunaJobProvider:
             response.raise_for_status()
             return response.json()
         except Exception as exc:
-            logger.error("Adzuna request failed for query '%s': %s", query, exc)
+            logger.error("Adzuna request failed for query '%s' (%s)", query, type(exc).__name__)
             return {}
 
     def _build_recommendation(
