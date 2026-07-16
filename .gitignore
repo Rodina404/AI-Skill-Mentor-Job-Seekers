@@ -1,0 +1,12 @@
+# Python environments, caches, and local configuration
+.venv/
+.venv-*/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.env
+.worktrees/
+
+# Generated recommendation artifacts and local sample data
+AI-Microservices/job_recommendation_service/models/
+AI-Microservices/job_recommendation_service/data/

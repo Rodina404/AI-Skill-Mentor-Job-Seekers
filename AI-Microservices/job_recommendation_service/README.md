@@ -68,6 +68,18 @@ Compute recommendations for a user profile and target role.
 uvicorn main:app --host 0.0.0.0 --port 8007 --reload
 ```
 
+## Local data setup
+The service uses a local TF-IDF fallback when Adzuna is not configured or returns no results. That fallback depends on the local dataset at `./data` and the trained TF-IDF artifacts in `./models`.
+
+If these files are absent and Adzuna returns no jobs, the endpoint returns a controlled `PIPELINE_ERROR` explaining that no recommendation source is available.
+
+To create sample data locally:
+```bash
+python scripts/prepare_sample_data.py
+```
+
+After creating `./data`, start the service and allow it to generate `./models` automatically.
+
 ## Environment
 ```bash
 PORT=8007

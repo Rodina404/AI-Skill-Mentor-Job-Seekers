@@ -26,6 +26,7 @@ class JobDataPreprocessor:
         self.tfidf_vectorizer = None
         self.tfidf_matrix = None
         self.scaler = StandardScaler()
+        self.last_error = None
 
     def load_data(self) -> bool:
         """Load job and job skills data"""
@@ -34,7 +35,8 @@ class JobDataPreprocessor:
             skills_path = self.data_path / "job_skills.csv"
 
             if not jobs_path.exists():
-                logger.error(f"Jobs data file not found: {jobs_path}")
+                self.last_error = f"Jobs data file not found: {jobs_path}"
+                logger.error(self.last_error)
                 return False
 
             self.jobs_df = pd.read_csv(jobs_path)
@@ -55,7 +57,8 @@ class JobDataPreprocessor:
     def preprocess_jobs_data(self) -> bool:
         """Clean and preprocess jobs data"""
         if self.jobs_df is None:
-            logger.error("Jobs data not loaded")
+            self.last_error = "Jobs data not loaded"
+            logger.error(self.last_error)
             return False
 
         try:
@@ -64,39 +67,51 @@ class JobDataPreprocessor:
 
             # Create combined text features for TF-IDF
             text_columns = ['title', 'company', 'description', 'requirements', 'location']
+            # Ensure we coerce all parts to string and handle missing values to avoid
+            # pandas .str accessor errors when non-string types are present.
             self.jobs_df['combined_text'] = self.jobs_df[text_columns].apply(
-                lambda x: ' '.join(x.astype(str)), axis=1
+                lambda x: ' '.join(x.fillna('').astype(str)), axis=1
             )
 
-            # Clean text data
-            self.jobs_df['combined_text'] = self.jobs_df['combined_text'].str.lower()
+            # Clean text data (safe due to explicit string coercion above)
+            self.jobs_df['combined_text'] = self.jobs_df['combined_text'].astype(str).str.lower()
             self.jobs_df['combined_text'] = self.jobs_df['combined_text'].str.replace(
                 r'[^\w\s]', '', regex=True
             )
 
             # Process salary information
             if 'salary' in self.jobs_df.columns:
+                salary_text = self.jobs_df['salary'].fillna('').astype(str)
                 self.jobs_df['salary_numeric'] = pd.to_numeric(
-                    self.jobs_df['salary'].str.extract(r'(\d+)')[0], errors='coerce'
+                    salary_text.str.extract(r'(\d+)')[0], errors='coerce'
                 ).fillna(0)
 
+            self.last_error = None
             logger.info("Jobs data preprocessing completed")
             return True
 
         except Exception as e:
-            logger.error(f"Error preprocessing jobs data: {e}")
+            self.last_error = f"Error preprocessing jobs data: {e}"
+            logger.error(self.last_error)
             return False
 
     def create_tfidf_matrix(self, max_features: int = 5000, min_df: int = 2) -> bool:
         """Create TF-IDF matrix from job descriptions"""
         if self.jobs_df is None or 'combined_text' not in self.jobs_df.columns:
-            logger.error("Jobs data not preprocessed")
+            self.last_error = "Jobs data not preprocessed"
+            logger.error(self.last_error)
+            return False
+
+        if self.jobs_df.empty:
+            self.last_error = "Jobs data is empty"
+            logger.error(self.last_error)
             return False
 
         try:
+            effective_min_df = min(min_df, len(self.jobs_df))
             self.tfidf_vectorizer = TfidfVectorizer(
                 max_features=max_features,
-                min_df=min_df,
+                min_df=effective_min_df,
                 stop_words='english',
                 ngram_range=(1, 2)
             )
@@ -105,11 +120,13 @@ class JobDataPreprocessor:
                 self.jobs_df['combined_text']
             )
 
+            self.last_error = None
             logger.info(f"Created TF-IDF matrix with shape: {self.tfidf_matrix.shape}")
             return True
 
         except Exception as e:
-            logger.error(f"Error creating TF-IDF matrix: {e}")
+            self.last_error = f"Error creating TF-IDF matrix: {e}"
+            logger.error(self.last_error)
             return False
 
     def save_preprocessed_data(self, output_dir: str = "models") -> bool:

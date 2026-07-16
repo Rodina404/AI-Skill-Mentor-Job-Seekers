@@ -35,6 +35,16 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+@app.get("/")
+async def root():
+    return {
+        "status": "ok",
+        "service": "job_recommendation",
+        "health": "/health",
+        "docs": "/docs",
+        "recommendations": "POST /run",
+    }
+
 allowed_origins = [
     "http://localhost:3000",
 ]
