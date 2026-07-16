@@ -1,7 +1,11 @@
 # Job Recommendation Microservice
 
-Microservice for computing TF-IDF job gaps for the Node.js/Express backend.
+Microservice for computing job recommendations for the Node.js/Express backend.
 Runs on port `8007`.
+
+When `ADZUNA_APP_ID` and `ADZUNA_APP_KEY` are set, `/run` fetches live jobs from Adzuna and ranks them against the user's skills. If Adzuna is not configured or returns no results, the service falls back to the local TF-IDF recommender using `./models` or `./data`.
+
+Optional semantic ranking can be enabled with `ENABLE_SEMANTIC_RANKING=true`. When enabled and the model is available, the service blends sentence-transformer similarity into the final job ranking. If the model cannot load, the service keeps using the keyword/alias ranking.
 
 ## Endpoints
 
@@ -62,4 +66,31 @@ Compute recommendations for a user profile and target role.
 ## Running the Service
 ```bash
 uvicorn main:app --host 0.0.0.0 --port 8007 --reload
+```
+
+## Local data setup
+The service uses a local TF-IDF fallback when Adzuna is not configured or returns no results. That fallback depends on the local dataset at `./data` and the trained TF-IDF artifacts in `./models`.
+
+If these files are absent and Adzuna returns no jobs, the endpoint returns a controlled `PIPELINE_ERROR` explaining that no recommendation source is available.
+
+To create sample data locally:
+```bash
+python scripts/prepare_sample_data.py
+```
+
+After creating `./data`, start the service and allow it to generate `./models` automatically.
+
+## Environment
+```bash
+PORT=8007
+ALLOWED_ORIGIN=http://localhost:3000
+DATA_PATH=./data
+MODEL_PATH=./models
+ADZUNA_APP_ID=your_adzuna_app_id
+ADZUNA_APP_KEY=your_adzuna_app_key
+ADZUNA_COUNTRY=us
+ENABLE_SEMANTIC_RANKING=true
+SEMANTIC_MODEL=sentence-transformers/all-MiniLM-L6-v2
+SEMANTIC_WEIGHT=0.40
+MIN_JOB_QUALITY_SCORE=0.28
 ```

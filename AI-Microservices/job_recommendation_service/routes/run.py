@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Request, HTTPException
 from fastapi.responses import JSONResponse
 import logging
+import os
 from typing import Dict, Any
 
 from schemas import JobRecommendationRequest, StandardErrorResponse, ErrorDetails
@@ -20,6 +21,10 @@ async def run_job_recommendation(request: JobRecommendationRequest) -> Dict[str,
     Zero business logic. Passes request to core pipeline and returns StandardResponse.
     """
     try:
+        recommender.configure(
+            data_path=os.getenv("DATA_PATH", "./data"),
+            model_path=os.getenv("MODEL_PATH", "./models"),
+        )
         if not recommender.is_initialized:
             # Try to initialize if not ready
             recommender.initialize()

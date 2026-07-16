@@ -24,21 +24,42 @@ class JobRecommender:
         self.model_path = Path(model_path)
         self.preprocessor = JobDataPreprocessor(data_path)
         self.is_initialized = False
+        self.initialization_error: Optional[str] = None
+
+    def configure(self, data_path: str, model_path: str) -> None:
+        """Apply runtime paths when environment configuration changes."""
+        new_data_path = Path(data_path)
+        new_model_path = Path(model_path)
+        if new_data_path == self.data_path and new_model_path == self.model_path:
+            return
+
+        self.data_path = new_data_path
+        self.model_path = new_model_path
+        self.preprocessor = JobDataPreprocessor(str(new_data_path))
+        self.is_initialized = False
+        self.initialization_error = None
 
     def initialize(self) -> bool:
         """Initialize the recommendation system"""
+        self.initialization_error = None
         try:
             # Try to load preprocessed data first
             if not self.preprocessor.load_preprocessed_data(str(self.model_path)):
                 # If not available, process data from scratch
                 logger.info("Preprocessed data not found, processing raw data...")
                 if not self.preprocessor.load_data():
+                    self.initialization_error = self.preprocessor.last_error or "Failed to load raw data for job recommender"
+                    logger.error(self.initialization_error)
                     return False
 
                 if not self.preprocessor.preprocess_jobs_data():
+                    self.initialization_error = self.preprocessor.last_error or "Failed to preprocess job data"
+                    logger.error(self.initialization_error)
                     return False
 
                 if not self.preprocessor.create_tfidf_matrix():
+                    self.initialization_error = self.preprocessor.last_error or "Failed to create TF-IDF matrix"
+                    logger.error(self.initialization_error)
                     return False
 
                 # Save processed data for future use
@@ -49,7 +70,8 @@ class JobRecommender:
             return True
 
         except Exception as e:
-            logger.error(f"Error initializing job recommender: {e}")
+            self.initialization_error = str(e)
+            logger.error(f"Error initializing job recommender: {self.initialization_error}")
             return False
 
     def _create_user_profile_vector(self, user_skills: List[str],
@@ -183,15 +205,46 @@ class JobRecommender:
             return None
 
     def get_popular_jobs(self, top_n: int = 10) -> List[Dict[str, Any]]:
-        """Get most popular/relevant jobs (fallback recommendations)"""
+        """Rank fallback jobs using available engagement, recency, and data quality."""
         if not self.is_initialized or self.preprocessor.jobs_df is None:
             return []
 
         try:
-            # For now, return first N jobs as popular ones
-            # In a real system, this would be based on application counts or ratings
-            popular_jobs = self.preprocessor.jobs_df.head(top_n).to_dict('records')
-            return popular_jobs
+            jobs = self.preprocessor.jobs_df.copy()
+            score = pd.Series(0.0, index=jobs.index)
+
+            for column, weight in (("application_count", 0.5), ("view_count", 0.3)):
+                if column in jobs.columns:
+                    values = pd.to_numeric(jobs[column], errors="coerce").fillna(0)
+                    maximum = values.max()
+                    if maximum > 0:
+                        score += weight * (values / maximum)
+
+            date_column = next(
+                (column for column in ("posted_at", "published_at", "created_at") if column in jobs.columns),
+                None,
+            )
+            if date_column:
+                dates = pd.to_datetime(jobs[date_column], errors="coerce", utc=True)
+                valid_dates = dates.dropna()
+                if not valid_dates.empty:
+                    age_days = (valid_dates.max() - dates).dt.total_seconds().div(86400).fillna(365)
+                    score += 0.15 * (1 / (1 + age_days.clip(lower=0)))
+
+            quality_columns = [
+                column for column in ("title", "company", "description", "requirements", "location")
+                if column in jobs.columns
+            ]
+            if quality_columns:
+                completeness = jobs[quality_columns].apply(
+                    lambda row: sum(bool(str(value).strip()) for value in row) / len(quality_columns),
+                    axis=1,
+                )
+                score += 0.05 * completeness
+
+            jobs["fallback_score"] = score
+            ranked_jobs = jobs.sort_values("fallback_score", ascending=False, kind="stable")
+            return ranked_jobs.head(top_n).to_dict("records")
 
         except Exception as e:
             logger.error(f"Error getting popular jobs: {e}")

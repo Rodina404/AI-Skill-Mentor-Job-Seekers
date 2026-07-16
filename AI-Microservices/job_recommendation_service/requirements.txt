@@ -6,5 +6,7 @@ pandas
 numpy
 scikit-learn
 pytest
+httpx
 requests
 fuzzywuzzy
+sentence-transformers
