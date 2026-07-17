@@ -1,5 +1,6 @@
 const { supabaseAdmin } = require('../config/supabase');
 const axios = require('axios');
+const { persistAndConfirmJobRecommendations } = require('../repositories/jobRecommendations.repository');
 
 const SERVICES = {
   matching:  process.env.CV_MATCHING_URL  || 'http://localhost:8003',
@@ -229,7 +230,13 @@ const runMatching = async (req, res) => {
           location: profile.location || ''
         },
         job_title: job.title,
-        top_n: 5
+        top_n: 5,
+        skill_gap: {
+          matched_skills: gapResult.matched_skills || [],
+          missing_skills: gapResult.missing_skills || [],
+          required_skills: gapResult.required_skills || [],
+          readiness_score: readinessScoreVal
+        }
       };
       
       const { data: courseRes } = await axios.post(`${SERVICES.courseRec}/run`, coursePayload, { timeout: 30000 });
@@ -292,16 +299,39 @@ const runMatching = async (req, res) => {
           location: profile.location || ''
         },
         job_title: job.title,
-        top_n: 5
+        top_n: 5,
+        skill_gap: {
+          matched_skills: gapResult.matched_skills || [],
+          missing_skills: gapResult.missing_skills || [],
+          required_skills: gapResult.required_skills || [],
+          readiness_score: readinessScoreVal
+        }
       };
 
       const { data: jobRes } = await axios.post(`${SERVICES.jobRec}/run`, jobPayload, { timeout: 30000 });
       if (jobRes.success && jobRes.data?.recommendations) {
         jobRecommendations = jobRes.data.recommendations;
+      } else {
+        throw new Error(jobRes.error?.message || 'Job recommendation service returned no recommendations');
       }
+
+      const persistence = await persistAndConfirmJobRecommendations({
+        userId,
+        resumeId: resume_id,
+        jobPostingId: job_id,
+        recommendations: jobRecommendations
+      });
+      console.log(`[Pipeline] Persisted job recommendations in session ${persistence.sessionId}`);
     } catch (err) {
       console.error('[Pipeline] job_recommendation_service error:', err.message);
-      errors.push({ step: 'job_recommendation_service', message: err.message });
+      return res.status(err.statusCode || 502).json({
+        success: false,
+        error: {
+          code: err.code || 'JOB_RECOMMENDATION_PERSISTENCE_FAILED',
+          message: err.message
+        },
+        errors: [...errors, { step: 'job_recommendation_service', message: err.message }]
+      });
     }
 
     // 9 & 10. Call m5_roadmap_service and explain endpoints

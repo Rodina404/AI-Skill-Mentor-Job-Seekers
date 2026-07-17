@@ -1,4 +1,12 @@
 const { supabaseAdmin } = require('../config/supabase');
+const { persistAndConfirmJobRecommendations } = require('../repositories/jobRecommendations.repository');
+
+const recommendationError = (code, message, statusCode = 500) => {
+  const error = new Error(message);
+  error.apiCode = code;
+  error.statusCode = statusCode;
+  return error;
+};
 
 /**
  * Get all job postings
@@ -405,7 +413,12 @@ const getRecommendedJobs = async (req, res) => {
       .limit(1)
       .maybeSingle();
 
-    if (resumeError) throw resumeError;
+    if (resumeError) {
+      throw recommendationError(
+        'SUPABASE_RESUME_READ_FAILED',
+        `Supabase could not read the analyzed resume: ${resumeError.message}`
+      );
+    }
 
     if (!resume) {
       return res.status(404).json({
@@ -428,32 +441,102 @@ const getRecommendedJobs = async (req, res) => {
     const education = edu ? edu.degree || "" : "";
 
     // 3. Fetch location preference fallback
-    const { data: profile } = await supabaseAdmin
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from('job_seeker_profiles')
       .select('location')
       .eq('user_id', userId)
       .maybeSingle();
 
+    if (profileError) {
+      throw recommendationError(
+        'SUPABASE_PROFILE_READ_FAILED',
+        `Supabase could not read the job-seeker profile: ${profileError.message}`
+      );
+    }
+
     const finalLocation = location || profile?.location || "";
     const jobTitle = search || resume.extracted_data?.jobTitle || "Software Engineer";
+
+    // Reuse the latest persisted skill-gap output. Do not recalculate readiness here.
+    const [matchResult, readinessResult] = await Promise.all([
+      supabaseAdmin
+        .from('candidate_matches')
+        .select('matched_skills, missing_skills, skill_match_score')
+        .eq('user_id', userId)
+        .order('calculated_at', { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+      supabaseAdmin
+        .from('readiness_scores')
+        .select('overall_score')
+        .eq('user_id', userId)
+        .order('calculated_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+    ]);
+
+    if (matchResult.error) {
+      throw recommendationError(
+        'SUPABASE_SKILL_PROFILE_READ_FAILED',
+        `Supabase could not read the skill-gap profile: ${matchResult.error.message}`
+      );
+    }
+    if (readinessResult.error) {
+      throw recommendationError(
+        'SUPABASE_READINESS_READ_FAILED',
+        `Supabase could not read readiness data: ${readinessResult.error.message}`
+      );
+    }
+
+    const latestMatch = matchResult.data;
+    const latestReadiness = readinessResult.data;
+    if (!latestMatch) {
+      throw recommendationError(
+        'SKILL_GAP_PROFILE_NOT_FOUND',
+        'No persisted skill-gap profile was found. Run skill-gap analysis before requesting jobs.',
+        409
+      );
+    }
+    if (!latestReadiness || latestReadiness.overall_score == null) {
+      throw recommendationError(
+        'READINESS_SCORE_NOT_FOUND',
+        'No persisted readiness score was found. Run skill-gap analysis before requesting jobs.',
+        409
+      );
+    }
+
+    const persistedSkills = (latestMatch.matched_skills || []).map(s => s.name || s.skill || s.skillId || s).filter(Boolean);
+    if (persistedSkills.length === 0) {
+      throw recommendationError(
+        'SKILL_GAP_PROFILE_EMPTY',
+        'The persisted skill-gap profile contains no matched skills.',
+        409
+      );
+    }
 
     // 4. Build payload and POST to job_recommendation_service
     const jobRecUrl = process.env.JOB_REC_URL || 'http://localhost:8007';
     const payload = {
-      user_id: resume.id,
+      user_id: userId,
       user_profile: {
-        skills,
+        skills: persistedSkills,
         experience_years: experienceYears,
         education,
         location: finalLocation
       },
       job_title: jobTitle,
-      top_n: 20
+      top_n: 20,
+      skill_gap: {
+        matched_skills: latestMatch?.matched_skills || [],
+        missing_skills: latestMatch?.missing_skills || [],
+        required_skills: [],
+        readiness_score: latestReadiness?.overall_score ?? null
+      }
     };
 
     console.log(`[JobRec] POSTing to ${jobRecUrl}/run for user ${userId} with job_title="${jobTitle}"`);
     const axios = require('axios');
-    const { data: responseData } = await axios.post(`${jobRecUrl}/run`, payload, { timeout: 10000 });
+    const { data: responseData } = await axios.post(`${jobRecUrl}/run`, payload, { timeout: 120000 });
 
     if (!responseData.success) {
       return res.status(500).json({
@@ -462,15 +545,33 @@ const getRecommendedJobs = async (req, res) => {
       });
     }
 
+    const recommendations = responseData.data?.recommendations || [];
+    const persistence = await persistAndConfirmJobRecommendations({
+      userId,
+      resumeId: resume.id,
+      recommendations
+    });
+
     return res.json({
       success: true,
       data: {
-        jobs: responseData.data?.recommendations || []
+        jobs: recommendations,
+        recommendation_session_id: persistence.sessionId,
+        persisted_rows: persistence.rows
       }
     });
 
   } catch (err) {
     console.error('[getRecommendedJobs] Error:', err.message);
+    if (err.apiCode || err.name === 'JobRecommendationPersistenceError') {
+      return res.status(err.statusCode || 500).json({
+        success: false,
+        error: {
+          code: err.apiCode || err.code,
+          message: err.message
+        }
+      });
+    }
     if (err.response && err.response.data) {
       return res.status(err.response.status || 500).json(err.response.data);
     }

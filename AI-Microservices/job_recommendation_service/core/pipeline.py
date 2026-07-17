@@ -24,6 +24,8 @@ class JobPipeline:
             
             # Map request to core module inputs
             user_skills = request.user_profile.skills
+            gap_matched_skills = request.skill_gap.matched_skills if request.skill_gap else []
+            search_skills = gap_matched_skills or user_skills
             user_experience = request.user_profile.experience_years or 0
             user_education = request.user_profile.education or ""
             desired_role = request.job_title
@@ -34,11 +36,15 @@ class JobPipeline:
                 logger.info("Adzuna not configured; skipping external recommendations")
 
             recommendations = self.adzuna_provider.recommend_jobs(
-                user_skills=user_skills,
+                user_skills=search_skills,
                 desired_role=desired_role,
                 location=request.user_profile.location or "",
                 top_n=request.top_n,
+                readiness_score=request.skill_gap.readiness_score if request.skill_gap else None,
             )
+
+            recommendation_source = "adzuna" if recommendations else "local"
+            warning = None if recommendations else self.adzuna_provider.last_error
 
             if not recommendations:
                 if not self.recommender.is_initialized:
@@ -47,7 +53,8 @@ class JobPipeline:
                         initialization_reason = self.recommender.initialization_error or "unknown"
                         logger.error("Local recommender initialization failed: %s", initialization_reason)
                         raise RuntimeError(
-                            f"Local recommender unavailable and no Adzuna results were returned. Reason: {initialization_reason}"
+                            f"No job recommendations are available. Adzuna: {warning or 'no results'}. "
+                            f"Local fallback: {initialization_reason}"
                         )
 
                 recommendations = self.recommender.recommend_jobs(
@@ -72,7 +79,9 @@ class JobPipeline:
                 ),
                 meta=ResponseMeta(
                     processing_time_ms=processing_time_ms,
-                    user_id=request.user_id
+                    user_id=request.user_id,
+                    recommendation_source=recommendation_source,
+                    warning=warning,
                 )
             )
             return success_response.model_dump()

@@ -54,3 +54,38 @@ def test_hybrid_score_caps_weak_semantic_only_jobs():
     )
 
     assert score <= 0.24
+
+
+def test_final_score_uses_upstream_readiness_and_recency():
+    provider = AdzunaJobProvider()
+    provider.skill_extractor.extract = lambda description: ["Python", "Kubernetes"]
+    provider._days_since_posted = lambda created: 5
+    mapped = provider._build_recommendation(
+        {"title": "Backend Engineer", "description": "Python APIs", "created": "2026-07-17T10:00:00Z"},
+        ["Python"],
+        "Backend Engineer",
+        "Backend Engineer Python",
+        80,
+    )
+    assert mapped["readinessScore"] == 0.8
+    assert mapped["recencyScore"] == 1.0
+    assert mapped["finalScore"] == 0.86
+    assert mapped["matchedExtractedSkills"] == ["Python"]
+    assert mapped["unmatchedExtractedSkills"] == ["Kubernetes"]
+
+
+def test_recommendations_are_sorted_by_final_score(monkeypatch):
+    monkeypatch.setenv("ADZUNA_APP_ID", "test-id")
+    monkeypatch.setenv("ADZUNA_APP_KEY", "test-key")
+    provider = AdzunaJobProvider()
+    provider.skill_extractor.extract = lambda description: ["Python"]
+    provider._days_since_posted = lambda created: {"new": 3, "old": 120}[created]
+    provider._search = lambda query, location: {
+        "results": [
+            {"id": "old", "title": "Old Backend Job", "description": "Python", "created": "old"},
+            {"id": "new", "title": "New Backend Job", "description": "Python", "created": "new"},
+        ]
+    }
+    jobs = provider.recommend_jobs(["Python"], "Backend Engineer", top_n=2, readiness_score=80)
+    assert [job["id"] for job in jobs] == ["new", "old"]
+    assert jobs[0]["finalScore"] > jobs[1]["finalScore"]

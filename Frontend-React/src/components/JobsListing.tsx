@@ -51,22 +51,26 @@ export function JobsListing({ onNavigate }: JobsListingProps) {
         if (filterType !== 'all') filters.type = filterType;
 
         const res = await jobsAPI.getRecommendedJobs(filters, token);
-        const recJobs = res?.data?.jobs || [];
+        const recJobs = Array.isArray(res?.data?.jobs) ? res.data.jobs : [];
 
         const mapped = recJobs.map((j: any) => {
-          const matchScore = Math.round((j.hybrid_score ?? j.similarity_score ?? j.score ?? 0) * 100);
+          const readinessScore = Number(j.readinessScore ?? j.readiness_score ?? 0);
+          const recencyScore = Number(j.recencyScore ?? 0);
+          const finalScore = Number(j.finalScore ?? j.hybrid_score ?? j.similarity_score ?? 0);
 
           return {
-            id: j.id,
+            id: String(j.external_id || j.id || j.url),
             title: j.title,
-            company: j.company || 'Company',
-            location: j.location || 'Remote',
+            company: j.company || 'Company not provided',
+            location: j.location || 'Location not provided',
             type: j.type || (j.source === 'adzuna' ? 'External' : 'Recommendation'),
-            salary: j.salary || 'Competitive',
+            salary: j.salary || 'Not listed',
             posted: (j.posted_date || j.posted) ? new Date(j.posted_date || j.posted).toLocaleDateString() : 'Recent',
-            applicants: Math.floor(Math.random() * 30) + 5,
-            match: matchScore,
-            skills: j.matched_skills || j.breakdown?.matching_skills || [],
+            match: Math.round(finalScore * 100),
+            readinessScore,
+            recencyScore,
+            finalScore,
+            skills: j.extractedJobSkills || j.matched_skills || j.breakdown?.matching_skills || [],
             description: j.description || '',
             url: j.url || '',
             explanation: j.relevance_explanation || j.explanation || '',
@@ -330,7 +334,9 @@ export function JobsListing({ onNavigate }: JobsListingProps) {
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl shadow-lg border-2 border-green-100">
             <div className="w-12 h-12 border-4 border-green-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-            <p className="text-gray-600 font-medium">Loading jobs...</p>
+            <p className="text-gray-600 font-medium">
+              {activeTab === 'recommended' ? 'Fetching and ranking live Adzuna jobs...' : 'Loading jobs...'}
+            </p>
           </div>
         ) : (
           /* Jobs Grid */
@@ -397,8 +403,12 @@ export function JobsListing({ onNavigate }: JobsListingProps) {
 
                       <div className="flex items-center gap-4 text-sm text-gray-500">
                         <span>Posted {job.posted}</span>
-                        <span>•</span>
-                        <span>{job.applicants} applicants</span>
+                        {activeTab === 'platform' && (
+                          <>
+                            <span>•</span>
+                            <span>{job.applicants} applicants</span>
+                          </>
+                        )}
                       </div>
                     </div>
 
@@ -451,7 +461,9 @@ export function JobsListing({ onNavigate }: JobsListingProps) {
               <p className="text-gray-600 mb-6">
                 {searchTerm || locationSearch || filterType !== 'all'
                   ? 'No jobs match your search criteria. Try adjusting your filters.'
-                  : 'There are currently no job listings available.'}
+                  : activeTab === 'recommended'
+                    ? 'Adzuna returned no recommendations for your current skill profile. Try a different role or location.'
+                    : 'There are currently no job listings available.'}
               </p>
               {(searchTerm || locationSearch || filterType !== 'all') && (
                 <button

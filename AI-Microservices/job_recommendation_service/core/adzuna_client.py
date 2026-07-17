@@ -8,6 +8,7 @@ import pandas as pd
 import requests
 
 from core.semantic_ranker import SemanticRanker
+from core.skill_ner import HuggingFaceSkillExtractor
 
 logger = logging.getLogger(__name__)
 
@@ -146,6 +147,8 @@ class AdzunaJobProvider:
 
     def __init__(self) -> None:
         self.semantic_ranker = SemanticRanker()
+        self.skill_extractor = HuggingFaceSkillExtractor()
+        self.last_error: Optional[str] = None
         self._load_config()
 
     def _load_config(self) -> None:
@@ -166,14 +169,18 @@ class AdzunaJobProvider:
         desired_role: str = "",
         location: str = "",
         top_n: int = 10,
+        readiness_score: Optional[float] = None,
     ) -> List[Dict[str, Any]]:
         self._load_config()
+        self.last_error = None
 
         if not self.is_configured:
+            self.last_error = "Adzuna is not configured; ADZUNA_APP_ID and ADZUNA_APP_KEY are required"
             return []
 
         queries = self._build_queries(user_skills, desired_role)
         if not queries:
+            self.last_error = "Adzuna search needs a target role or at least one matched skill"
             return []
 
         recommendations: List[Dict[str, Any]] = []
@@ -181,7 +188,7 @@ class AdzunaJobProvider:
         for query in queries:
             payload = self._search(query, location)
             query_recommendations = [
-                self._build_recommendation(job, user_skills, desired_role, user_text)
+                self._build_recommendation(job, user_skills, desired_role, user_text, readiness_score)
                 for job in payload.get("results", [])
             ]
             query_recommendations = [job for job in query_recommendations if job is not None]
@@ -189,11 +196,13 @@ class AdzunaJobProvider:
             if len(recommendations) >= top_n * 3:
                 break
 
+        if not recommendations and self.last_error is None:
+            self.last_error = "Adzuna returned no jobs for the supplied role, skills, and location"
+
         recommendations = self._dedupe(recommendations)
-        recommendations = self._filter_quality_jobs(recommendations, top_n)
         recommendations.sort(
             key=lambda job: (
-                job.get("hybrid_score", 0),
+                job.get("finalScore", 0),
                 -(job.get("recent_days") or 9999),
             ),
             reverse=True,
@@ -235,8 +244,22 @@ class AdzunaJobProvider:
             response = requests.get(url, params=params, timeout=self.timeout_seconds)
             response.raise_for_status()
             return response.json()
-        except Exception as exc:
-            logger.error("Adzuna request failed for query '%s' (%s)", query, type(exc).__name__)
+        except requests.Timeout:
+            self.last_error = "Adzuna request timed out"
+            logger.warning("Adzuna request timed out for query '%s'", query)
+            return {}
+        except requests.HTTPError as exc:
+            status = exc.response.status_code if exc.response is not None else "unknown"
+            self.last_error = f"Adzuna returned HTTP {status}"
+            logger.warning("Adzuna returned HTTP %s for query '%s'", status, query)
+            return {}
+        except ValueError:
+            self.last_error = "Adzuna returned an invalid JSON response"
+            logger.warning("Adzuna returned invalid JSON for query '%s'", query)
+            return {}
+        except requests.RequestException as exc:
+            self.last_error = "Adzuna could not be reached"
+            logger.warning("Adzuna connection failed for query '%s' (%s)", query, type(exc).__name__)
             return {}
 
     def _build_recommendation(
@@ -245,6 +268,7 @@ class AdzunaJobProvider:
         user_skills: List[str],
         desired_role: str,
         user_text: str,
+        profile_readiness_score: Optional[float] = None,
     ) -> Optional[Dict[str, Any]]:
         title = str(job.get("title") or "").strip()
         company = str((job.get("company") or {}).get("display_name") or "Unknown")
@@ -257,10 +281,12 @@ class AdzunaJobProvider:
             return None
 
         job_text = f"{title} {description}"
-        matched_skills, inferred_skills, missing_skills, readiness_score = self._score_skills(
+        matched_skills, inferred_skills, missing_skills, skill_evidence_score = self._score_skills(
             user_skills,
             job_text,
         )
+        extracted_job_skills = self.skill_extractor.extract(description)
+        matched_extracted_skills, unmatched_extracted_skills = self._compare_extracted_skills(extracted_job_skills, user_skills)
         role_expected_skills = self._expected_skills_for_role(desired_role, title)
         role_matched_skills, role_inferred_skills, _, role_skill_score = self._score_skills(
             role_expected_skills,
@@ -270,12 +296,14 @@ class AdzunaJobProvider:
         title_score = self._score_title(title, desired_role)
         recent_days = self._days_since_posted(created)
         recency_boost = self._recency_boost(recent_days)
+        authoritative_readiness = self._normalize_readiness(profile_readiness_score)
+        final_score = round((0.70 * authoritative_readiness) + (0.30 * recency_boost), 3)
         semantic_score = self.semantic_ranker.score(
             user_text,
             f"{title}. Company: {company}. Location: {location}. Description: {description}",
         )
         hybrid_score = self._hybrid_score(
-            readiness_score=readiness_score,
+            readiness_score=skill_evidence_score,
             role_skill_score=role_skill_score,
             title_score=title_score,
             recency_boost=recency_boost,
@@ -283,7 +311,7 @@ class AdzunaJobProvider:
             has_skill_evidence=bool(matched_skills or inferred_skills or role_matched_skills or role_inferred_skills),
         )
         quality_score = self._quality_score(
-            readiness_score=readiness_score,
+            readiness_score=skill_evidence_score,
             role_skill_score=role_skill_score,
             title_score=title_score,
             semantic_score=semantic_score,
@@ -291,6 +319,7 @@ class AdzunaJobProvider:
 
         return {
             "id": str(job.get("id") or redirect_url or f"{title}:{company}"),
+            "external_id": str(job.get("id") or ""),
             "title": title,
             "company": company,
             "location": location,
@@ -300,13 +329,22 @@ class AdzunaJobProvider:
             "source": "adzuna",
             "posted_date": created,
             "recent_days": recent_days,
-            "similarity_score": hybrid_score,
+            "similarity_score": final_score,
             "semantic_score": semantic_score,
-            "readiness_score": readiness_score,
+            "readiness_score": authoritative_readiness,
             "role_skill_score": role_skill_score,
             "title_score": title_score,
             "quality_score": quality_score,
-            "hybrid_score": hybrid_score,
+            "hybrid_score": final_score,
+            "readinessScore": authoritative_readiness,
+            "recencyScore": recency_boost,
+            "finalScore": final_score,
+            "skillEvidenceScore": skill_evidence_score,
+            "extractedJobSkills": extracted_job_skills,
+            "matchedExtractedSkills": matched_extracted_skills,
+            "unmatchedExtractedSkills": unmatched_extracted_skills,
+            "nerModel": self.skill_extractor.model_name,
+            "nerError": self.skill_extractor.load_error,
             "matched_skills": matched_skills,
             "inferred_skills": inferred_skills,
             "role_expected_skills": role_expected_skills,
@@ -323,6 +361,26 @@ class AdzunaJobProvider:
             ),
             "relevance_explanation": self._explain(matched_skills, inferred_skills, missing_skills),
         }
+
+    def _normalize_readiness(self, readiness_score: Optional[float]) -> float:
+        if readiness_score is None:
+            return 0.0
+        try:
+            score = float(readiness_score)
+        except (TypeError, ValueError):
+            return 0.0
+        if score > 1.0:
+            score /= 100.0
+        return round(max(0.0, min(score, 1.0)), 3)
+
+    def _compare_extracted_skills(self, extracted_skills: List[str], user_skills: List[str]) -> tuple[List[str], List[str]]:
+        normalized_user_skills = [self._normalize_text(skill) for skill in user_skills if skill]
+        matched, unmatched = [], []
+        for extracted_skill in extracted_skills:
+            normalized = self._normalize_text(extracted_skill)
+            is_match = any(normalized == skill or normalized in skill or skill in normalized for skill in normalized_user_skills if normalized and skill)
+            (matched if is_match else unmatched).append(extracted_skill)
+        return matched, unmatched
 
     def _score_skills(self, user_skills: List[str], job_text: str) -> tuple[List[str], List[str], List[str], float]:
         cleaned_skills = [skill.strip() for skill in user_skills if skill and skill.strip()]

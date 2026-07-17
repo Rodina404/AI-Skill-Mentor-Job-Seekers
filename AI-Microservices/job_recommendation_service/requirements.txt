@@ -10,3 +10,5 @@ httpx
 requests
 fuzzywuzzy
 sentence-transformers
+torch
+transformers
