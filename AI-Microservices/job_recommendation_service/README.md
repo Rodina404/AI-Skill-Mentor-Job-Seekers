@@ -63,10 +63,43 @@ Compute recommendations for a user profile and target role.
 }
 ```
 
-## Running the Service
-```bash
-uvicorn main:app --host 0.0.0.0 --port 8007 --reload
+## Setup
+
+```powershell
+cd AI-Microservices/job_recommendation_service
+
+python -m venv .venv
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+.\.venv\Scripts\Activate.ps1
+
+python -m pip install -r requirements.txt
+Copy-Item .env.example .env
 ```
+
+Add your Adzuna credentials to the local `.env` file. Never commit `.env` or real API credentials.
+
+## Running the Service
+
+```powershell
+python -m uvicorn main:app --host 0.0.0.0 --port 8007 --reload
+```
+
+Available URLs:
+
+- Service information: `http://localhost:8007/`
+- Health check: `http://localhost:8007/health`
+- Interactive API documentation: `http://localhost:8007/docs`
+
+## Recommendation Sources
+
+The service uses the following order:
+
+1. Fetch live job listings from Adzuna when credentials are configured.
+2. Rank listings using the requested role, user skills, title relevance, and posting recency.
+3. Use the local TF-IDF recommender if Adzuna is unavailable or returns no suitable results.
+4. Return a controlled `PIPELINE_ERROR` if neither source is available.
+
+Adzuna recommendations include `source: "adzuna"` and an external application URL.
 
 ## Local data setup
 The service uses a local TF-IDF fallback when Adzuna is not configured or returns no results. That fallback depends on the local dataset at `./data` and the trained TF-IDF artifacts in `./models`.
@@ -78,7 +111,7 @@ To create sample data locally:
 python scripts/prepare_sample_data.py
 ```
 
-After creating `./data`, start the service and allow it to generate `./models` automatically.
+After creating `./data`, start the service and allow it to generate `./models` automatically. The `data/` and `models/` directories are local generated artifacts and should not be committed.
 
 ## Environment
 ```bash
@@ -89,8 +122,25 @@ MODEL_PATH=./models
 ADZUNA_APP_ID=your_adzuna_app_id
 ADZUNA_APP_KEY=your_adzuna_app_key
 ADZUNA_COUNTRY=us
+ADZUNA_TIMEOUT_SECONDS=8
 ENABLE_SEMANTIC_RANKING=true
 SEMANTIC_MODEL=sentence-transformers/all-MiniLM-L6-v2
 SEMANTIC_WEIGHT=0.40
 MIN_JOB_QUALITY_SCORE=0.28
 ```
+
+For `.env.example`, keep `ADZUNA_APP_ID` and `ADZUNA_APP_KEY` empty. Real values belong only in `.env` or deployment secrets.
+
+## Running Tests
+
+```powershell
+python -m pytest -q
+```
+
+## Security
+
+- Never commit `.env` or real API credentials.
+- Keep `.env.example` limited to empty credential placeholders.
+- Use deployment secrets for production credentials.
+- Rotate credentials immediately if they appear in logs or Git history.
+- Adzuna errors are logged without credential-bearing request URLs.
