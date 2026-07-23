@@ -600,10 +600,10 @@ The CORS configuration also always allows `http://localhost:3000` and `http://lo
 
 ## Readiness Score Formula
 
-The readiness score is the core output that tells a user how prepared they are for a given role. It is calculated as:
+The readiness score is the core output that tells a user how prepared they are for a given role. It is calculated as a weighted sum:
 
 ```
-readiness = skill_score × experience_score × education_score
+readiness = (skill_score × 0.5) + (experience_score × 0.3) + (education_score × 0.2)
 ```
 
 Where:

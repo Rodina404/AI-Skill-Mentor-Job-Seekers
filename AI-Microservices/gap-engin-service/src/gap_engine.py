@@ -4,7 +4,7 @@ gap_engine.py - Computes skill matching and readiness scoring.
 Given required skills (from Mode A or B) and user's skills,
 categorizes into matched/missing and calculates a readiness score.
 
-Readiness = skill_score × experience_score × education_score
+Readiness = (skill_score × 0.5) + (experience_score × 0.3) + (education_score × 0.2)
 Range: 0.0 (unready) → 1.0 (fully ready)
 """
 
@@ -57,10 +57,9 @@ def compute_readiness_score(
     education_score: float = 1.0,
 ) -> float:
     """
-    Compute overall readiness score using a skill-gated formula.
+    Compute overall readiness score as a weighted sum of components.
 
-    Skills are required for role readiness, while experience and education
-    scale the score.
+    Weights: skills 50%, experience 30%, education 20%.
 
     Args:
         skill_score: Fraction of required skills matched (0.0–1.0).
@@ -75,7 +74,7 @@ def compute_readiness_score(
     experience_score = min(max(experience_score, 0.0), 1.0)
     education_score = min(max(education_score, 0.0), 1.0)
 
-    readiness = skill_score * experience_score * education_score
+    readiness = (skill_score * 0.5) + (experience_score * 0.3) + (education_score * 0.2)
     return round(min(max(readiness, 0.0), 1.0), 4)
 
 
