@@ -46,13 +46,14 @@ class TestComputeReadinessScore:
         assert score == pytest.approx(1.0)
 
     def test_zero_skill_score(self):
+        # skills weighted 50%, so zero skills with full exp/edu still yields 0.5
         score = compute_readiness_score(0.0, 1.0, 1.0)
-        assert score == pytest.approx(0.0)
+        assert score == pytest.approx(0.5)
 
     def test_compound_scores(self):
-        # 0.5 * 0.8 * 0.75 = 0.30
+        # 0.5*0.5 + 0.8*0.3 + 0.75*0.2 = 0.25 + 0.24 + 0.15 = 0.64
         score = compute_readiness_score(0.5, 0.8, 0.75)
-        assert score == pytest.approx(0.30, abs=0.01)
+        assert score == pytest.approx(0.64, abs=0.01)
 
     def test_capped_at_one(self):
         score = compute_readiness_score(1.5, 1.0, 1.0)
