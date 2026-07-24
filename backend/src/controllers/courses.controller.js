@@ -297,6 +297,10 @@ const updateProgress = async (req, res) => {
 
 const addCourse = async (req, res) => {
   try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Forbidden: Admin role required' });
+    }
+
     const { data, error } = await supabaseAdmin
       .from('course_recommendations')
       .insert(req.body)
