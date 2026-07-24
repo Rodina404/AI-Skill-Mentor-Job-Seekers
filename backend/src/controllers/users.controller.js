@@ -33,6 +33,12 @@ const updateProfile = async (req, res) => {
       userUpdates.last_name = last_name;
     }
     if (email !== undefined) {
+      // Keep Supabase Auth's login email in sync with public.users — otherwise the
+      // user would see their new email in the UI but still have to log in with the
+      // old one. Update Auth first so a failure (e.g. email already in use) never
+      // leaves public.users pointing at an email the user can't actually log in with.
+      const { error: authErr } = await supabaseAdmin.auth.admin.updateUserById(userId, { email });
+      if (authErr) throw new Error(`Failed to update login email: ${authErr.message}`);
       userUpdates.email = email;
     }
 
