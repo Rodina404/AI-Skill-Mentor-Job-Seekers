@@ -46,7 +46,7 @@ const runMatching = async (req, res) => {
     if (profileErr || !profile) throw new Error(`Job seeker profile not found: ${profileErr?.message}`);
 
     const { data: resume, error: resumeErr } = await supabaseAdmin
-      .from('resumes').select('normalized_skills').eq('id', resume_id).single();
+      .from('resumes').select('normalized_skills').eq('id', resume_id).eq('user_id', userId).single();
     if (resumeErr || !resume) throw new Error(`Resume not found: ${resumeErr?.message}`);
 
     const { data: job, error: jobErr } = await supabaseAdmin
