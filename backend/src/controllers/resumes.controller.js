@@ -175,12 +175,32 @@ const _runAnalysisPipeline = async (resumeId, file, jobTitle = 'Software Enginee
   console.log(`Resume ${resumeId} analysis complete.`);
 };
 
+// If the analysis pipeline's process dies mid-run (crash/restart), the fire-and-forget
+// promise in uploadResume() never gets to set status:'failed', leaving the row stuck at
+// 'processing' forever. Self-heal it here: once polled past a generous timeout, treat it
+// as failed instead of leaving the user staring at "processing" indefinitely.
+const STUCK_PROCESSING_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes
+
 const getResumeStatus = async (req, res) => {
   const { id } = req.params;
-  const { data, error } = await supabaseAdmin
-    .from('resumes').select('id, status, original_name, analyzed_at, normalized_skills, extracted_data')
+  let { data, error } = await supabaseAdmin
+    .from('resumes').select('id, status, original_name, analyzed_at, created_at, normalized_skills, extracted_data')
     .eq('id', id).eq('user_id', req.user.id).single();
   if (error || !data) return res.status(404).json({ error: 'Resume not found' });
+
+  if (data.status === 'processing' && data.created_at) {
+    const elapsedMs = Date.now() - new Date(data.created_at).getTime();
+    if (elapsedMs > STUCK_PROCESSING_TIMEOUT_MS) {
+      const { data: updated, error: updateErr } = await supabaseAdmin
+        .from('resumes')
+        .update({ status: 'failed' })
+        .eq('id', id)
+        .select('id, status, original_name, analyzed_at, created_at, normalized_skills, extracted_data')
+        .single();
+      if (!updateErr && updated) data = updated;
+    }
+  }
+
   const gapAnalysis = data.extracted_data?.gapAnalysis || {};
   res.json({
     ...data,
