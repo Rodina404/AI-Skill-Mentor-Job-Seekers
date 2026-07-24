@@ -140,6 +140,10 @@ const _runAnalysisPipeline = async (resumeId, file, jobTitle = 'Software Enginee
     { timeout: 60000 }
   );
 
+  if (!roadmapResponse.success) {
+    throw new Error(`Roadmap generation failed: ${JSON.stringify(roadmapResponse.error)}`);
+  }
+
   console.log(`[Pipeline] Calling course recommender with jobTitle="${jobTitle}"...`);
   const { data: courseResponse } = await axios.post(
     `${SERVICES.courseRec}/run`,
@@ -156,6 +160,10 @@ const _runAnalysisPipeline = async (resumeId, file, jobTitle = 'Software Enginee
     },
     { timeout: 120000 }
   );
+
+  if (!courseResponse.success) {
+    throw new Error(`Course recommendation failed: ${JSON.stringify(courseResponse.error)}`);
+  }
 
   console.log(`[Pipeline] Enrichment complete. Saving to database...`);
 
