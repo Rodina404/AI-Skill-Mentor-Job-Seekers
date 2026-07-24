@@ -324,14 +324,7 @@ const runMatching = async (req, res) => {
       console.log(`[Pipeline] Persisted job recommendations in session ${persistence.sessionId}`);
     } catch (err) {
       console.error('[Pipeline] job_recommendation_service error:', err.message);
-      return res.status(err.statusCode || 502).json({
-        success: false,
-        error: {
-          code: err.code || 'JOB_RECOMMENDATION_PERSISTENCE_FAILED',
-          message: err.message
-        },
-        errors: [...errors, { step: 'job_recommendation_service', message: err.message }]
-      });
+      errors.push({ step: 'job_recommendation_service', message: err.message });
     }
 
     // 9 & 10. Call m5_roadmap_service and explain endpoints
