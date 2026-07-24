@@ -136,8 +136,10 @@ const runMatching = async (req, res) => {
         resume_id: resume_id,
         overall_score: matchScore / 100.0,
         skill_match_score: readinessScoreVal / 100.0,
-        experience_match_score: 0.80,
-        education_match_score: 0.80,
+        // experience_match_score / education_match_score intentionally omitted: gap-engine's
+        // /analyze-role-gap endpoint doesn't return per-component scores, only the combined
+        // readiness value above, and nothing in the backend or frontend reads these two
+        // columns — leave them at their DB default (0.0) instead of writing a fake 0.80.
         matched_skills: gapResult.matched_skills,
         missing_skills: gapResult.missing_skills,
         confidence_score: gapResult.confidence || 0.85,
@@ -177,8 +179,10 @@ const runMatching = async (req, res) => {
         job_posting_id: job_id,
         overall_score: readinessScoreVal,
         skill_score: readinessScoreVal,
-        experience_score: 80,
-        education_score: 80,
+        // experience_score / education_score intentionally omitted — see the matching
+        // comment above candidateMatchesPayload: no real per-component value exists yet,
+        // and nothing reads these columns, so they're left at their DB default (0.0)
+        // instead of a fake 80.
         score_breakdown: {},
         user_id: userId,
         calculated_at: new Date().toISOString()
