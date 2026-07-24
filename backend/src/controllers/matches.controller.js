@@ -150,20 +150,35 @@ const runMatching = async (req, res) => {
     }
 
     // 5. Save to readiness_scores
+    // No unique constraint exists on (job_seeker_profile_id, job_posting_id) yet, so a plain
+    // insert accumulates a new duplicate row every time a user re-runs matching. Update the
+    // existing row for this profile+job instead of inserting a new one when one is found.
     try {
       console.log('[Pipeline] Saving readiness_scores...');
-      const { error: readErr } = await supabaseAdmin
-        .from('readiness_scores').insert({
-          job_seeker_profile_id: profile.id,
-          job_posting_id: job_id,
-          overall_score: readinessScoreVal,
-          skill_score: readinessScoreVal,
-          experience_score: 80,
-          education_score: 80,
-          score_breakdown: {},
-          user_id: userId,
-          calculated_at: new Date().toISOString()
-        });
+      const { data: existingReadiness } = await supabaseAdmin
+        .from('readiness_scores')
+        .select('id')
+        .eq('job_seeker_profile_id', profile.id)
+        .eq('job_posting_id', job_id)
+        .order('calculated_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      const readinessPayload = {
+        job_seeker_profile_id: profile.id,
+        job_posting_id: job_id,
+        overall_score: readinessScoreVal,
+        skill_score: readinessScoreVal,
+        experience_score: 80,
+        education_score: 80,
+        score_breakdown: {},
+        user_id: userId,
+        calculated_at: new Date().toISOString()
+      };
+
+      const { error: readErr } = existingReadiness
+        ? await supabaseAdmin.from('readiness_scores').update(readinessPayload).eq('id', existingReadiness.id)
+        : await supabaseAdmin.from('readiness_scores').insert(readinessPayload);
       if (readErr) throw readErr;
     } catch (err) {
       console.error('[Pipeline] Save readiness_scores failed:', err.message);
@@ -194,19 +209,34 @@ const runMatching = async (req, res) => {
         }
 
         if (skillId) {
-          // Save to skill_gaps
-          const { data: gapRecord, error: gapErr } = await supabaseAdmin
-            .from('skill_gaps').insert({
-              job_seeker_profile_id: profile.id,
-              skill_id: skillId,
-              job_posting_id: job_id,
-              gap_level: 'critical',
-              user_id: userId,
-              calculated_at: new Date().toISOString()
-            }).select('id').single();
+          // Save to skill_gaps — update the existing gap for this (profile, skill, job) if
+          // one already exists instead of inserting a new row every run (no unique
+          // constraint exists yet, so plain inserts accumulate unbounded duplicates).
+          const { data: existingGap } = await supabaseAdmin
+            .from('skill_gaps')
+            .select('id')
+            .eq('job_seeker_profile_id', profile.id)
+            .eq('skill_id', skillId)
+            .eq('job_posting_id', job_id)
+            .order('calculated_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          const gapPayload = {
+            job_seeker_profile_id: profile.id,
+            skill_id: skillId,
+            job_posting_id: job_id,
+            gap_level: 'critical',
+            user_id: userId,
+            calculated_at: new Date().toISOString()
+          };
+
+          const { data: gapRecord, error: gapErr } = existingGap
+            ? await supabaseAdmin.from('skill_gaps').update(gapPayload).eq('id', existingGap.id).select('id').single()
+            : await supabaseAdmin.from('skill_gaps').insert(gapPayload).select('id').single();
 
           if (gapErr) {
-            console.error(`[Pipeline] Failed to insert skill_gap for skillId ${skillId}:`, gapErr.message);
+            console.error(`[Pipeline] Failed to save skill_gap for skillId ${skillId}:`, gapErr.message);
           }
 
           if (!gapErr && gapRecord) {
