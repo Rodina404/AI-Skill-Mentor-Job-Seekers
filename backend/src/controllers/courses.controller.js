@@ -164,6 +164,7 @@ const getCourseById = async (req, res) => {
       .from('course_recommendations')
       .select('*')
       .eq('id', courseId)
+      .eq('user_id', req.user.id)
       .single();
 
     if (error || !course) return res.status(404).json({ error: 'Course not found' });
