@@ -62,21 +62,27 @@ const _runAnalysisPipeline = async (resumeId, file, jobTitle = 'Software Enginee
   const extractedData = extracted.extractedData || {};
   console.log(`[Pipeline] Extraction complete. Sending to normalization service...`);
 
+  // m1_extraction_service's EducationEntry uses {degree, field, institution, start, end}
+  // (no `university`/`year` fields) — map into the shape skill_normalization_service expects.
   const edu = (extractedData.education && extractedData.education.length > 0)
     ? extractedData.education[0]
-    : { degree: "", field: "", university: "", year: 0 };
-  
+    : { degree: "", field: "", institution: "", end: "" };
+
   const educationInput = {
     degree: edu.degree || "",
     field: edu.field || "",
-    university: edu.university || "",
-    year: edu.year ? parseInt(edu.year) || 0 : 0
+    university: edu.institution || "",
+    year: edu.end ? parseInt(edu.end) || 0 : 0
   };
 
-  const exp = extractedData.experience || { titles: [], years: 0.0 };
+  // m1_extraction_service's experience is a list of {title, company, location, duration,
+  // description} entries (no `titles`/`years` fields, and no numeric total-years value at all —
+  // `duration` is a free-text date range). Derive the titles list; years stays 0.0 since there's
+  // no reliable numeric source for it.
+  const expList = Array.isArray(extractedData.experience) ? extractedData.experience : [];
   const experienceInput = {
-    titles: exp.titles || [],
-    years: parseFloat(exp.years) || 0.0
+    titles: expList.map(e => e.title).filter(Boolean),
+    years: 0.0
   };
 
   const { data: normalized } = await axios.post(
@@ -105,7 +111,7 @@ const _runAnalysisPipeline = async (resumeId, file, jobTitle = 'Software Enginee
       jobTitle,
       userProfile: {
         skills: skillIds.map(skillId => ({ skillId })),
-        experienceLevel: exp.years ? `${exp.years} years` : '',
+        experienceLevel: experienceInput.years ? `${experienceInput.years} years` : '',
         educationLevel: educationInput.degree
       }
     },
@@ -141,7 +147,7 @@ const _runAnalysisPipeline = async (resumeId, file, jobTitle = 'Software Enginee
       user_id: resumeId,
       user_profile: {
         skills: skillNames,
-        experience_years: Math.round(parseFloat(exp.years) || 0),
+        experience_years: Math.round(parseFloat(experienceInput.years) || 0),
         education: educationInput.degree,
         location: ''
       },
