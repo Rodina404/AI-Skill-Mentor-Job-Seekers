@@ -46,7 +46,7 @@ const runMatching = async (req, res) => {
     if (profileErr || !profile) return res.status(404).json({ error: 'Job seeker profile not found' });
 
     const { data: resume, error: resumeErr } = await supabaseAdmin
-      .from('resumes').select('normalized_skills').eq('id', resume_id).eq('user_id', userId).single();
+      .from('resumes').select('normalized_skills, extracted_data').eq('id', resume_id).eq('user_id', userId).single();
     if (resumeErr || !resume) return res.status(404).json({ error: 'Resume not found' });
 
     const { data: job, error: jobErr } = await supabaseAdmin
@@ -57,6 +57,7 @@ const runMatching = async (req, res) => {
     const requiredSkills = Array.isArray(job.required_skills)
       ? job.required_skills
       : (typeof job.required_skills === 'string' ? JSON.parse(job.required_skills) : []);
+    const educationLevel = resume.extracted_data?.education?.[0]?.degree || 'Not specified';
 
     // 2. Call cv_matching_service
     try {
@@ -69,7 +70,7 @@ const runMatching = async (req, res) => {
           name: `${user.first_name} ${user.last_name}`,
           skills: candidateSkills,
           experience: parseFloat(profile.years_of_experience) || 0.0,
-          education: 'Bachelor'
+          education: educationLevel
         }]
       };
       
@@ -93,7 +94,7 @@ const runMatching = async (req, res) => {
         role: job.title,
         skills: candidateSkills,
         experience: profile.years_of_experience ? `${profile.years_of_experience} years` : '0 years',
-        education: 'Bachelor'
+        education: educationLevel
       };
       
       const { data: gapResponse } = await axios.post(`${SERVICES.gapEngine}/analyze-role-gap`, gapPayload, { timeout: 30000 });
@@ -256,7 +257,7 @@ const runMatching = async (req, res) => {
         user_profile: {
           skills: candidateSkills,
           experience_years: parseInt(profile.years_of_experience) || 0,
-          education: 'Bachelor',
+          education: educationLevel,
           location: profile.location || ''
         },
         job_title: job.title,
@@ -325,7 +326,7 @@ const runMatching = async (req, res) => {
         user_profile: {
           skills: candidateSkills,
           experience_years: parseInt(profile.years_of_experience) || 0,
-          education: 'Bachelor',
+          education: educationLevel,
           location: profile.location || ''
         },
         job_title: job.title,
