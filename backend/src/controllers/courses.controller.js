@@ -186,34 +186,52 @@ const enrollInCourse = async (req, res) => {
       // Create a persistent recommendation in Supabase if enrolling in default
       const defaultCourse = DEFAULT_COURSES.find(c => c.id === courseId);
       if (defaultCourse) {
-        // Associate with one of this user's own skill gaps, if they have any.
-        let gapId = null;
-        const { data: testGap } = await supabaseAdmin
-          .from('skill_gaps')
-          .select('id')
-          .eq('job_seeker_profile_id', profileId)
-          .limit(1);
-        if (testGap && testGap.length > 0) gapId = testGap[0].id;
-
-        const { data: savedRec, error: saveErr } = await supabaseAdmin
+        // Reuse this user's existing recommendation row for this default course
+        // instead of inserting a new one every time they (re-)enroll — no unique
+        // constraint exists on (user_id, course_id) yet, so a plain insert would
+        // both accumulate duplicate rows and break the "already enrolled" check
+        // below, since it keys off course_recommendation_id.
+        const { data: existingRec } = await supabaseAdmin
           .from('course_recommendations')
-          .insert({
-            course_id: defaultCourse.course_id,
-            course_title: defaultCourse.course_title,
-            course_provider: defaultCourse.course_provider,
-            course_url: defaultCourse.course_url,
-            course_level: defaultCourse.course_level,
-            course_duration: defaultCourse.course_duration,
-            course_rating: defaultCourse.course_rating,
-            course_price: defaultCourse.course_price,
-            skill_gap_id: gapId,
-            user_id: userId
-          })
           .select('id')
-          .single();
+          .eq('user_id', userId)
+          .eq('course_id', defaultCourse.course_id)
+          .order('recommended_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
 
-        if (!saveErr && savedRec) {
-          targetCourseId = savedRec.id;
+        if (existingRec) {
+          targetCourseId = existingRec.id;
+        } else {
+          // Associate with one of this user's own skill gaps, if they have any.
+          let gapId = null;
+          const { data: testGap } = await supabaseAdmin
+            .from('skill_gaps')
+            .select('id')
+            .eq('job_seeker_profile_id', profileId)
+            .limit(1);
+          if (testGap && testGap.length > 0) gapId = testGap[0].id;
+
+          const { data: savedRec, error: saveErr } = await supabaseAdmin
+            .from('course_recommendations')
+            .insert({
+              course_id: defaultCourse.course_id,
+              course_title: defaultCourse.course_title,
+              course_provider: defaultCourse.course_provider,
+              course_url: defaultCourse.course_url,
+              course_level: defaultCourse.course_level,
+              course_duration: defaultCourse.course_duration,
+              course_rating: defaultCourse.course_rating,
+              course_price: defaultCourse.course_price,
+              skill_gap_id: gapId,
+              user_id: userId
+            })
+            .select('id')
+            .single();
+
+          if (!saveErr && savedRec) {
+            targetCourseId = savedRec.id;
+          }
         }
       }
     }
