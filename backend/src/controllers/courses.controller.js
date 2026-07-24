@@ -185,9 +185,13 @@ const enrollInCourse = async (req, res) => {
       // Create a persistent recommendation in Supabase if enrolling in default
       const defaultCourse = DEFAULT_COURSES.find(c => c.id === courseId);
       if (defaultCourse) {
-        // Find or create a generic skill gap to associate with
+        // Associate with one of this user's own skill gaps, if they have any.
         let gapId = null;
-        const { data: testGap } = await supabaseAdmin.from('skill_gaps').select('id').limit(1);
+        const { data: testGap } = await supabaseAdmin
+          .from('skill_gaps')
+          .select('id')
+          .eq('job_seeker_profile_id', profileId)
+          .limit(1);
         if (testGap && testGap.length > 0) gapId = testGap[0].id;
 
         const { data: savedRec, error: saveErr } = await supabaseAdmin
