@@ -118,6 +118,13 @@ const runMatching = async (req, res) => {
       };
     }
 
+    // Normalize matched/missing skills to a stable shape (plain skill-id strings).
+    // The real gap-engine response returns objects ({skillId, weight}); the fallback
+    // above already returns plain strings — without this, callers (and the frontend)
+    // saw a different shape depending on whether the gap-engine call succeeded.
+    gapResult.matched_skills = (gapResult.matched_skills || []).map(getSkillName);
+    gapResult.missing_skills = (gapResult.missing_skills || []).map(getSkillName);
+
     const readinessScoreVal = gapResult.readiness <= 1.0 ? Math.round(gapResult.readiness * 100) : Math.round(gapResult.readiness);
 
     // 4. Save to candidate_matches
