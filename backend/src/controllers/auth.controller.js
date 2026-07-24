@@ -1,19 +1,23 @@
 const { supabase, supabaseAdmin } = require('../config/supabase');
 
+const SELF_SIGNUP_ROLES = ['job_seeker', 'recruiter'];
+
 const signup = async (req, res) => {
   const { email, password, full_name, role } = req.body;
   if (!email || !password || !full_name)
     return res.status(400).json({ error: 'email, password, and full_name are required' });
 
+  const safeRole = SELF_SIGNUP_ROLES.includes(role) ? role : 'job_seeker';
+
   const { data, error } = await supabase.auth.signUp({
     email, password,
-    options: { data: { full_name, role: role || 'job_seeker' } }
+    options: { data: { full_name, role: safeRole } }
   });
   if (error) return res.status(400).json({ error: error.message });
 
   const responsePayload = {
     message: 'Account created. Please verify your email.',
-    user: { id: data.user.id, email: data.user.email, full_name, role: role || 'job_seeker' }
+    user: { id: data.user.id, email: data.user.email, full_name, role: safeRole }
   };
 
   if (data.session) {
