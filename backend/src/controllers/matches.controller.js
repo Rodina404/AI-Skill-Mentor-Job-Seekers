@@ -39,19 +39,19 @@ const runMatching = async (req, res) => {
     
     const { data: user, error: userErr } = await supabaseAdmin
       .from('users').select('first_name, last_name').eq('id', userId).single();
-    if (userErr || !user) throw new Error(`User not found: ${userErr?.message}`);
+    if (userErr || !user) return res.status(404).json({ error: 'User not found' });
 
     const { data: profile, error: profileErr } = await supabaseAdmin
       .from('job_seeker_profiles').select('id, years_of_experience, location').eq('user_id', userId).single();
-    if (profileErr || !profile) throw new Error(`Job seeker profile not found: ${profileErr?.message}`);
+    if (profileErr || !profile) return res.status(404).json({ error: 'Job seeker profile not found' });
 
     const { data: resume, error: resumeErr } = await supabaseAdmin
       .from('resumes').select('normalized_skills').eq('id', resume_id).eq('user_id', userId).single();
-    if (resumeErr || !resume) throw new Error(`Resume not found: ${resumeErr?.message}`);
+    if (resumeErr || !resume) return res.status(404).json({ error: 'Resume not found' });
 
     const { data: job, error: jobErr } = await supabaseAdmin
       .from('job_postings').select('*').eq('id', job_id).single();
-    if (jobErr || !job) throw new Error(`Job posting not found: ${jobErr?.message}`);
+    if (jobErr || !job) return res.status(404).json({ error: 'Job posting not found' });
 
     const candidateSkills = (resume.normalized_skills || []).map(s => getSkillName(s));
     const requiredSkills = Array.isArray(job.required_skills)
