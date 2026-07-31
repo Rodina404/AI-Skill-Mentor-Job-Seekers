@@ -52,7 +52,11 @@ const login = async (req, res) => {
 };
 
 const logout = async (req, res) => {
-  const { error } = await supabase.auth.signOut();
+  const authHeader = req.headers?.authorization;
+  const token = req.token || (authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : authHeader);
+  if (!token) return res.status(400).json({ error: 'No token provided' });
+
+  const { error } = await supabaseAdmin.auth.admin.signOut(token);
   if (error) return res.status(400).json({ error: error.message });
   return res.status(200).json({ message: 'Logged out successfully' });
 };

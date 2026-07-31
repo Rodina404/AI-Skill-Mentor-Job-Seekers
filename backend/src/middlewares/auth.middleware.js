@@ -17,6 +17,7 @@ const protect = async (req, res, next) => {
     full_name: user.user_metadata?.full_name,
     role: user.user_metadata?.role || 'job_seeker'
   };
+  req.token = token;
   next();
 };
 
