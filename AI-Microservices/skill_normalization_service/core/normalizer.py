@@ -9,7 +9,7 @@ L4: Deduplication (highest confidence)
 Pure Python module (no FastAPI imports).
 """
 
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Tuple
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 
@@ -19,7 +19,7 @@ def normalize_skills(
     skills_db: Dict[str, Any],
     rules: Dict[str, str],
     skill_embeddings: Dict[str, Any]
-) -> List[Dict[str, Any]]:
+) -> Tuple[List[Dict[str, Any]], List[str]]:
     """
     4-layer intelligent skill normalization pipeline.
     
@@ -30,10 +30,10 @@ def normalize_skills(
         skill_embeddings: Pre-computed embeddings for all canonical skills
     
     Returns:
-        List[{skillId, name, confidence}] - normalized, deduplicated skills
+        (List[{skillId, name, confidence}], List[str]) - normalized skills and unmatched unknown skills
     """
     if not skills:
-        return []
+        return [], []
     
     normalized = {}  # {skillId: {"name": str, "confidence": float}}
     unknown_skills = []
@@ -75,6 +75,7 @@ def normalize_skills(
         unknown_skills.append(skill_lower)
     
     # ==== L3: EMBEDDING MATCHING ====
+    matched_l3_indices = set()
     if unknown_skills and skill_embeddings:
         try:
             # Load sentence transformer for user input embeddings
@@ -110,6 +111,7 @@ def normalize_skills(
                                 'name': skill_name,
                                 'confidence': best_score
                             }
+                        matched_l3_indices.add(idx)
             except ImportError:
                 # sentence_transformers not available - skip L3 matching
                 pass
@@ -117,6 +119,10 @@ def normalize_skills(
         except Exception:
             # If embedding fails, skills remain unknown
             pass
+    
+    unmatched_skills = [
+        s for idx, s in enumerate(unknown_skills) if idx not in matched_l3_indices
+    ]
     
     # ==== L4: DEDUPLICATION ====
     result = []
@@ -130,4 +136,4 @@ def normalize_skills(
     # Sort by confidence descending
     result.sort(key=lambda x: x['confidence'], reverse=True)
     
-    return result
+    return result, unmatched_skills

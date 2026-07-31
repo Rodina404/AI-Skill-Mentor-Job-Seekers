@@ -10,6 +10,7 @@ from typing import List, Dict, Any
 def build_user_profile(
     user_id: str,
     normalized_skills: List[Dict[str, Any]],
+    unknown_skills: List[str],
     education: Dict[str, Any],
     experience: Dict[str, Any]
 ) -> Dict[str, Any]:
@@ -19,6 +20,7 @@ def build_user_profile(
     Args:
         user_id: User identifier
         normalized_skills: Output from normalize_skills()
+        unknown_skills: List of unmatched skill strings
         education: {degree, field, university, year}
         experience: {titles, years}
     
@@ -49,12 +51,13 @@ def build_user_profile(
         exp_years = 0.0
     
     # Calculate statistics
-    total_skills = len(normalized_skills)
-    matched_skills = len([s for s in normalized_skills if s.get('confidence', 0) > 0])
-    unknown_skills = total_skills - matched_skills
+    matched_skills = len(normalized_skills)
+    unknown_skills_list = unknown_skills or []
+    unknown_count = len(unknown_skills_list)
+    total_skills = matched_skills + unknown_count
     
     avg_confidence = 0.0
-    if total_skills > 0:
+    if matched_skills > 0:
         confidences = [s.get('confidence', 0) for s in normalized_skills]
         avg_confidence = sum(confidences) / len(confidences)
     
@@ -74,7 +77,7 @@ def build_user_profile(
         'statistics': {
             'totalInputSkills': total_skills,
             'matchedSkills': matched_skills,
-            'unknownSkills': unknown_skills,
+            'unknownSkills': unknown_count,
             'avgConfidence': round(avg_confidence, 2)
         }
     }

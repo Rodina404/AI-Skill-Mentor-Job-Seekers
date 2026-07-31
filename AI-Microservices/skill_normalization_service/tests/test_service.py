@@ -217,3 +217,16 @@ class TestSkillNormalization:
         
         # Should have 0 matched skills
         assert data['data']['statistics']['unknownSkills'] >= 0
+
+    def test_unknown_skills_reported_in_statistics(self, client):
+        """Unrecognized skill should be reported as unknown skill count in statistics."""
+        response = client.post("/run", json={
+            "userId": "test_unknown_stat",
+            "skills": ["python", "xyzunknownabcdef"]
+        })
+        data = response.json()
+        stats = data['data']['statistics']
+        assert stats['totalInputSkills'] == 2
+        assert stats['matchedSkills'] == 1
+        assert stats['unknownSkills'] == 1
+

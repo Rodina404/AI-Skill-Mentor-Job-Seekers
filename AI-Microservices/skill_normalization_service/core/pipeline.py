@@ -52,7 +52,7 @@ class SkillNormalizationPipeline:
         
         # ==== L1-L4 PIPELINE ====
         # L1: Rule mapping, L2: Decision logic, L3: Embedding matching, L4: Deduplication
-        normalized_skills = normalize_skills(
+        normalized_skills, unknown_skills = normalize_skills(
             skills,
             self.skills_db,
             self.rules,
@@ -63,6 +63,7 @@ class SkillNormalizationPipeline:
         profile = build_user_profile(
             user_id,
             normalized_skills,
+            unknown_skills,
             education,
             experience
         )
