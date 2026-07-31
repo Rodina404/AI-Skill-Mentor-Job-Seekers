@@ -19,7 +19,7 @@ class TestPipelineBasic:
     def test_result_has_required_fields(self):
         result = run_pipeline("software engineer")
         for field in ["jobTitle", "source", "requiredSkills", "matchedSkills",
-                      "missingSkills", "readinessScore", "roleConfidence", "unknownSkills"]:
+                      "missingSkills", "skillScore", "readinessScore", "roleConfidence", "unknownSkills"]:
             assert field in result, f"Missing field: {field}"
 
     def test_readiness_score_range(self):

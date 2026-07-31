@@ -31,3 +31,31 @@ def test_pipeline_mode_a_lookup(monkeypatch):
     assert any(s["skillId"] == "S_sql" for s in res["matchedSkills"]) is True
     assert any(s["skillId"] == "S_powerbi" for s in res["missingSkills"]) is True
     assert "requiredSkills" in res and isinstance(res["requiredSkills"], list)
+
+
+def test_pipeline_includes_skill_score(monkeypatch):
+    import src.pipeline as pipeline
+
+    role = {
+        "title": "Data Scientist",
+        "requiredSkills": [
+            {"skillId": "S_sql", "weight": 0.22},
+            {"skillId": "S_powerbi", "weight": 0.15},
+        ],
+    }
+
+    def fake_find_best_match(title):
+        return (role, 0.92, "exact")
+
+    monkeypatch.setattr(pipeline, "find_best_match", fake_find_best_match)
+
+    res = pipeline.run_pipeline(
+        job_title="Data Scientist",
+        user_profile={"skills": [{"skillId": "S_sql"}]},
+        experience_score=1.0,
+        education_score=1.0,
+    )
+
+    assert "skillScore" in res
+    assert res["skillScore"] == pytest.approx(0.5946, rel=1e-3)
+

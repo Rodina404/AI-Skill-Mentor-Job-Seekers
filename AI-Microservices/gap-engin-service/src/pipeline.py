@@ -56,6 +56,7 @@ def _build_response(
         "requiredSkills": required_skills,
         "matchedSkills": gap["matchedSkills"],
         "missingSkills": gap["missingSkills"],
+        "skillScore": gap["skillScore"],
         "readinessScore": gap["readinessScore"],
         "roleConfidence": round(role_confidence, 4),
         "unknownSkills": unknown_skills,
