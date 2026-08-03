@@ -11,5 +11,7 @@ router.use('/progress', require('./progress.routes'));
 router.use('/skills', require('./skills.routes'));
 router.use('/jobs', require('./jobs.routes'));
 router.use('/users', require('./users.routes'));
+router.use('/recruiter/company-profile', require('./companyProfile.routes'));
+
 
 module.exports = router;

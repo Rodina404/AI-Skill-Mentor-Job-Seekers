@@ -1,6 +1,7 @@
-import { Building2, Mail, MapPin, Briefcase, Users, TrendingUp, Plus, Edit, Phone, X, Save, Search, Eye, CheckCircle } from 'lucide-react';
+import { Building2, Mail, MapPin, Briefcase, Users, Plus, Edit, Phone, X, Save, Search, Eye, CheckCircle } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { jobsAPI } from '../api/jobs.api';
+import { recruiterProfileAPI } from '../api/recruiterProfile.api';
 import { useAuth } from '../context/AuthContext';
 
 interface RecruiterProfileProps {
@@ -17,16 +18,16 @@ interface CompanyProfile {
 
 export function RecruiterProfile({ onNavigate }: RecruiterProfileProps) {
   const { token } = useAuth();
-  const [companyProfile, setCompanyProfile] = useState<CompanyProfile>({
-    name: 'TechCorp Inc.',
-    description: 'Leading Technology Company',
-    email: 'hr@techcorp.com',
-    phone: '+1 (555) 123-4567',
-    location: 'San Francisco, CA'
-  });
+  const [companyProfile, setCompanyProfile] = useState<CompanyProfile | null>(null);
 
   const [showEditModal, setShowEditModal] = useState(false);
-  const [editedProfile, setEditedProfile] = useState<CompanyProfile>(companyProfile);
+  const [editedProfile, setEditedProfile] = useState<CompanyProfile>({
+    name: '',
+    description: '',
+    email: '',
+    phone: '',
+    location: ''
+  });
   const [isSaving, setIsSaving] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
@@ -55,34 +56,55 @@ export function RecruiterProfile({ onNavigate }: RecruiterProfileProps) {
         onNavigate('login');
         return;
       }
-      const jobsRes = await jobsAPI.getAllJobs({}, token);
-      const allJobs = jobsRes?.data?.jobs || [];
-      
-      const mappedJobs = allJobs.map((j: any) => ({
-        id: j.id,
-        title: j.title,
-        posted: j.created_at ? new Date(j.created_at).toLocaleDateString() : 'Recent',
-        status: j.status || 'Active'
-      }));
-      setActiveJobs(mappedJobs);
+      const [profileRes, jobsRes] = await Promise.allSettled([
+        recruiterProfileAPI.getCompanyProfile(token),
+        jobsAPI.getAllJobs({}, token)
+      ]);
 
-      // Load applicants count and candidate feed for the first job as top candidates
-      if (mappedJobs.length > 0) {
-        try {
-          const appRes = await jobsAPI.getJobApplicants(mappedJobs[0].id, token);
-          const cands = appRes?.data?.candidates || [];
-          setTopCandidates(cands.slice(0, 3).map((c: any) => ({
-            name: c.name,
-            email: c.email || `${c.name.toLowerCase().replace(' ', '.')}@email.com`,
-            match: c.score,
-            skills: c.matchedSkills || [],
-            readiness: c.score,
-            experience: '4 years',
-            education: 'BS Computer Science'
-          })));
-        } catch (err) {
-          console.error(err);
+      if (profileRes.status === 'fulfilled') {
+        const pData = profileRes.value?.data;
+        if (pData) {
+          setCompanyProfile({
+            name: pData.name || '',
+            description: pData.description || '',
+            email: pData.email || '',
+            phone: pData.phone || '',
+            location: pData.location || ''
+          });
+        } else {
+          setCompanyProfile(null);
         }
+      }
+
+      if (jobsRes.status === 'fulfilled') {
+        const allJobs = jobsRes.value?.data?.jobs || [];
+        const mappedJobs = allJobs.map((j: any) => ({
+          id: j.id,
+          title: j.title,
+          posted: j.created_at ? new Date(j.created_at).toLocaleDateString() : 'Recent',
+          status: j.status || 'Active'
+        }));
+        setActiveJobs(mappedJobs);
+
+        if (mappedJobs.length > 0) {
+          try {
+            const appRes = await jobsAPI.getJobApplicants(mappedJobs[0].id, token);
+            const cands = appRes?.data?.candidates || [];
+            setTopCandidates(cands.slice(0, 3).map((c: any) => ({
+              name: c.name,
+              email: c.email || `${c.name.toLowerCase().replace(' ', '.')}@email.com`,
+              match: c.score,
+              skills: c.matchedSkills || [],
+              readiness: c.score,
+              experience: '4 years',
+              education: 'BS Computer Science'
+            })));
+          } catch (err) {
+            console.error(err);
+          }
+        }
+      } else {
+        throw jobsRes.reason;
       }
 
     } catch (err: any) {
@@ -98,20 +120,45 @@ export function RecruiterProfile({ onNavigate }: RecruiterProfileProps) {
   }, []);
 
   const handleEditProfile = () => {
-    setEditedProfile(companyProfile);
+    setEditedProfile(companyProfile || {
+      name: '',
+      description: '',
+      email: '',
+      phone: '',
+      location: ''
+    });
     setShowEditModal(true);
   };
 
   const handleSaveProfile = async () => {
     setIsSaving(true);
-    setTimeout(() => {
-      setCompanyProfile(editedProfile);
-      setIsSaving(false);
+    try {
+      if (!token) {
+        alert('Session expired, please log in again');
+        onNavigate('login');
+        return;
+      }
+      const response = await recruiterProfileAPI.updateCompanyProfile(editedProfile, token);
+      const savedData = response?.data;
+      if (savedData) {
+        setCompanyProfile({
+          name: savedData.name || '',
+          description: savedData.description || '',
+          email: savedData.email || '',
+          phone: savedData.phone || '',
+          location: savedData.location || ''
+        });
+      }
       setShowEditModal(false);
       setSuccessMessage('Company profile updated successfully!');
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 3000);
-    }, 1000);
+    } catch (err: any) {
+      console.error(err);
+      alert(err.message || 'Failed to update company profile');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleViewApplicants = async (jobId: string, jobTitle: string) => {
@@ -217,34 +264,54 @@ export function RecruiterProfile({ onNavigate }: RecruiterProfileProps) {
             </div>
 
             <div className="flex-1">
-              <div className="flex items-start justify-between mb-4">
+              {companyProfile ? (
                 <div>
-                  <h2 className="text-3xl text-gray-900 mb-2">{companyProfile.name}</h2>
-                  <p className="text-gray-600 mb-4">{companyProfile.description}</p>
-                </div>
-                <button
-                  onClick={handleEditProfile}
-                  className="px-4 py-2 border-2 border-green-600 text-green-700 rounded-lg hover:bg-green-50 transition-all flex items-center gap-2 font-semibold"
-                >
-                  <Edit className="w-4 h-4" />
-                  Edit Profile
-                </button>
-              </div>
+                  <div className="flex items-start justify-between mb-4">
+                    <div>
+                      <h2 className="text-3xl text-gray-900 mb-2 font-bold">{companyProfile.name || 'Unnamed Company'}</h2>
+                      <p className="text-gray-600 mb-4">{companyProfile.description}</p>
+                    </div>
+                    <button
+                      onClick={handleEditProfile}
+                      className="px-4 py-2 border-2 border-green-600 text-green-700 rounded-lg hover:bg-green-50 transition-all flex items-center gap-2 font-semibold"
+                    >
+                      <Edit className="w-4 h-4" />
+                      Edit Profile
+                    </button>
+                  </div>
 
-              <div className="grid md:grid-cols-3 gap-4 mb-6">
-                <div className="flex items-center gap-2 text-gray-600">
-                  <Mail className="w-5 h-5 text-green-600" />
-                  <span className="text-sm">{companyProfile.email}</span>
+                  <div className="grid md:grid-cols-3 gap-4 mb-6">
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <Mail className="w-5 h-5 text-green-600" />
+                      <span className="text-sm">{companyProfile.email || 'N/A'}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <Phone className="w-5 h-5 text-green-600" />
+                      <span className="text-sm">{companyProfile.phone || 'N/A'}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <MapPin className="w-5 h-5 text-green-600" />
+                      <span className="text-sm">{companyProfile.location || 'N/A'}</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 text-gray-600">
-                  <Phone className="w-5 h-5 text-green-600" />
-                  <span className="text-sm">{companyProfile.phone}</span>
+              ) : (
+                <div className="mb-6">
+                  <div className="flex items-start justify-between mb-4">
+                    <div>
+                      <h2 className="text-2xl text-gray-900 mb-2 font-bold">No Company Profile Set Up</h2>
+                      <p className="text-gray-600 mb-4">Complete your company profile to help job seekers learn about your organization.</p>
+                    </div>
+                    <button
+                      onClick={handleEditProfile}
+                      className="px-4 py-2 bg-gradient-to-r from-green-700 to-green-600 text-white rounded-lg hover:shadow-lg transition-all flex items-center gap-2 font-semibold"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Set Up Profile
+                    </button>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 text-gray-600">
-                  <MapPin className="w-5 h-5 text-green-600" />
-                  <span className="text-sm">{companyProfile.location}</span>
-                </div>
-              </div>
+              )}
 
               <button
                 onClick={() => onNavigate('job-posting')}
