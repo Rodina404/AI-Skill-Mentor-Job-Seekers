@@ -14,6 +14,7 @@ class MatchRequest(BaseModel):
     candidates: Optional[List[CandidateInput]] = None
 
 class RankedCandidate(BaseModel):
+    candidateId: str
     name: str
     score: float
     experience: float

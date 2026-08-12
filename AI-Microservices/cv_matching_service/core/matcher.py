@@ -23,6 +23,7 @@ def match_candidates(job_text, candidates):
         candidate = doc.metadata
         score_detail = compute_score_detailed(job_text, candidate, similarity_score)
         results.append({
+            "candidateId": candidate.get("candidateId"),
             "name": candidate.get("name", "Unknown"),
             "score": score_detail["score"],
             "experience": candidate.get("experience", 0),

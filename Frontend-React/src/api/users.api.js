@@ -3,30 +3,7 @@
  * All user-related API calls
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-
-const getAuthHeaders = (token) => {
-  const finalToken = token || localStorage.getItem('token');
-  return {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${finalToken}`,
-  };
-};
-
-const createApiError = async (response, fallbackMessage) => {
-  let message = fallbackMessage;
-
-  try {
-    const body = await response.json();
-    message = body.error || body.message || fallbackMessage;
-  } catch {
-    // Keep the fallback when the server does not return JSON.
-  }
-
-  const error = new Error(message);
-  error.status = response.status;
-  return error;
-};
+import { authFetch, createApiError } from './apiClient';
 
 export const usersAPI = {
   /**
@@ -36,13 +13,12 @@ export const usersAPI = {
    * @returns {Promise<Object>} - User profile data
    */
   async getProfile(userId, token) {
-    const response = await fetch(`${API_BASE_URL}/auth/me`, {
+    const response = await authFetch('/auth/me', {
       method: 'GET',
-      headers: getAuthHeaders(token),
-    });
+    }, token);
 
     if (!response.ok) {
-      throw new Error('Failed to fetch user profile');
+      throw await createApiError(response, 'Failed to fetch user profile');
     }
 
     return response.json();
@@ -56,14 +32,13 @@ export const usersAPI = {
    * @returns {Promise<Object>} - Updated profile data
    */
   async updateProfile(userId, profileData, token) {
-    const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
+    const response = await authFetch(`/users/${userId}`, {
       method: 'PUT',
-      headers: getAuthHeaders(token),
       body: JSON.stringify(profileData),
-    });
+    }, token);
 
     if (!response.ok) {
-      throw new Error('Failed to update profile');
+      throw await createApiError(response, 'Failed to update profile');
     }
 
     return response.json();
@@ -82,14 +57,13 @@ export const usersAPI = {
       proficiency: skillData.level || skillData.proficiency || 'intermediate',
       yearsOfExperience: skillData.yearsOfExperience || 1
     };
-    const response = await fetch(`${API_BASE_URL}/skills/me`, {
+    const response = await authFetch('/skills/me', {
       method: 'POST',
-      headers: getAuthHeaders(token),
       body: JSON.stringify(payload),
-    });
+    }, token);
 
     if (!response.ok) {
-      throw new Error('Failed to add skill');
+      throw await createApiError(response, 'Failed to add skill');
     }
 
     return response.json();
@@ -103,14 +77,13 @@ export const usersAPI = {
    * @returns {Promise<Object>} - Updated goals
    */
   async updateGoals(userId, goals, token) {
-    const response = await fetch(`${API_BASE_URL}/users/${userId}/goals`, {
+    const response = await authFetch(`/users/${userId}/goals`, {
       method: 'PUT',
-      headers: getAuthHeaders(token),
       body: JSON.stringify({ goals }),
-    });
+    }, token);
 
     if (!response.ok) {
-      throw new Error('Failed to update goals');
+      throw await createApiError(response, 'Failed to update goals');
     }
 
     return response.json();
@@ -123,13 +96,12 @@ export const usersAPI = {
    * @returns {Promise<Array>} - List of saved jobs
    */
   async getSavedJobs(userId, token) {
-    const response = await fetch(`${API_BASE_URL}/users/${userId}/saved-jobs`, {
+    const response = await authFetch(`/users/${userId}/saved-jobs`, {
       method: 'GET',
-      headers: getAuthHeaders(token),
-    });
+    }, token);
 
     if (!response.ok) {
-      throw new Error('Failed to fetch saved jobs');
+      throw await createApiError(response, 'Failed to fetch saved jobs');
     }
 
     return response.json();
@@ -143,11 +115,10 @@ export const usersAPI = {
    * @returns {Promise<Object>} - Success message
    */
   async saveJob(userId, jobId, token, options = {}) {
-    const response = await fetch(`${API_BASE_URL}/users/${userId}/saved-jobs`, {
+    const response = await authFetch(`/users/${userId}/saved-jobs`, {
       method: 'POST',
-      headers: getAuthHeaders(token),
       body: JSON.stringify({ jobId, ...options }),
-    });
+    }, token);
 
     if (!response.ok) {
       throw await createApiError(response, 'Failed to save job');
@@ -164,13 +135,12 @@ export const usersAPI = {
    * @returns {Promise<Object>} - Success message
    */
   async removeSavedJob(userId, savedJobId, token) {
-    const response = await fetch(`${API_BASE_URL}/users/${userId}/saved-jobs/${savedJobId}`, {
+    const response = await authFetch(`/users/${userId}/saved-jobs/${savedJobId}`, {
       method: 'DELETE',
-      headers: getAuthHeaders(token),
-    });
+    }, token);
 
     if (!response.ok) {
-      throw new Error('Failed to remove saved job');
+      throw await createApiError(response, 'Failed to remove saved job');
     }
 
     return response.json();
@@ -182,13 +152,12 @@ export const usersAPI = {
    * @returns {Promise<Array>} - List of skills
    */
   async getSkills(token) {
-    const response = await fetch(`${API_BASE_URL}/skills/me`, {
+    const response = await authFetch('/skills/me', {
       method: 'GET',
-      headers: getAuthHeaders(token),
-    });
+    }, token);
 
     if (!response.ok) {
-      throw new Error('Failed to fetch user skills');
+      throw await createApiError(response, 'Failed to fetch user skills');
     }
 
     return response.json();

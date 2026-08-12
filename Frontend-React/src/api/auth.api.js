@@ -3,7 +3,7 @@
  * All authentication-related API calls
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+import { API_BASE_URL, createApiError } from './apiClient';
 
 export const authAPI = {
   /**
@@ -20,12 +20,11 @@ export const authAPI = {
       body: JSON.stringify(credentials),
     });
 
-    const data = await response.json();
     if (!response.ok) {
-      throw new Error(data.error || data.message || 'Sign in failed');
+      throw await createApiError(response, 'Sign in failed');
     }
 
-    return data;
+    return response.json();
   },
 
   // Alias for signin
@@ -47,12 +46,11 @@ export const authAPI = {
       body: JSON.stringify(userData),
     });
 
-    const data = await response.json();
     if (!response.ok) {
-      throw new Error(data.error || data.message || 'Sign up failed');
+      throw await createApiError(response, 'Sign up failed');
     }
 
-    return data;
+    return response.json();
   },
 
   // Alias for signup
@@ -81,6 +79,22 @@ export const authAPI = {
     return response.json();
   },
 
+  async refreshToken(refreshToken) {
+    const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ refresh_token: refreshToken }),
+    });
+
+    if (!response.ok) {
+      throw await createApiError(response, 'Session refresh failed');
+    }
+
+    return response.json();
+  },
+
   /**
    * Verify auth token
    * @param {string} token - Auth token
@@ -95,7 +109,7 @@ export const authAPI = {
     });
 
     if (!response.ok) {
-      throw new Error('Token verification failed');
+      throw await createApiError(response, 'Token verification failed');
     }
 
     return response.json();

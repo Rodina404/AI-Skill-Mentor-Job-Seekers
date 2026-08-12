@@ -175,3 +175,53 @@ class TestMatchEndpoint:
         res = client.post("/match", json=payload)
         assert res.status_code == 400
         assert "Candidates list must not be empty" in res.json()["detail"]
+
+
+class TestRecruiterScoreQuality:
+    CONTROLLED_JOB = (
+        "Job Title: Full Stack TypeScript Engineer\n\n"
+        "Required Skills: React, JavaScript, TypeScript, Node.js, Express, SQL, Git, REST APIs\n\n"
+        "Build production web applications and backend REST API services."
+    )
+
+    def test_parser_extracts_recruiter_web_required_skills(self):
+        from core.job_parser import parse_job
+
+        skills = set(parse_job(self.CONTROLLED_JOB)["skills"])
+
+        assert "React" in skills
+        assert "Javascript" in skills
+        assert "Typescript" in skills
+        assert "Node.Js" in skills
+        assert "Express" in skills
+        assert "Sql" in skills
+        assert "Git" in skills
+        assert "Rest Api" in skills
+
+    def test_near_perfect_candidate_scores_significantly_above_mismatch(self):
+        from core.scorer import compute_score_detailed
+
+        strong_candidate = {
+            "candidateId": "strong",
+            "name": "Strong Web Candidate",
+            "skills": ["React", "JavaScript", "TypeScript", "Node.js", "Express", "SQL", "Git", "REST API"],
+            "experience": 4.0,
+            "education": "BSc Computer Science",
+            "tools": [],
+        }
+        mismatched_candidate = {
+            "candidateId": "mismatch",
+            "name": "Accounting Candidate",
+            "skills": ["Accounting", "Finance", "Bookkeeping"],
+            "experience": 4.0,
+            "education": "BSc Accounting",
+            "tools": [],
+        }
+
+        strong = compute_score_detailed(self.CONTROLLED_JOB, strong_candidate, semantic_similarity=0.8)
+        mismatch = compute_score_detailed(self.CONTROLLED_JOB, mismatched_candidate, semantic_similarity=0.2)
+
+        assert 0 <= strong["score"] <= 100
+        assert 0 <= mismatch["score"] <= 100
+        assert strong["skill_match_count"] > mismatch["skill_match_count"]
+        assert strong["score"] > mismatch["score"] + 25

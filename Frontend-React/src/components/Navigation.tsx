@@ -25,7 +25,9 @@ export function Navigation({ onNavigate, currentPage, onToggleSidebar }: Navigat
 
   const handleLogout = () => {
     logout();
-    handleNavigation('home');
+    setIsOpen(false);
+    setShowUserMenu(false);
+    setShowNotifications(false);
   };
 
   const fetchNotifications = async () => {
@@ -35,7 +37,12 @@ export function Navigation({ onNavigate, currentPage, onToggleSidebar }: Navigat
       setNotifications(data || []);
       const unread = (data || []).filter((n: any) => !n.is_read);
       setUnreadCount(unread.length);
-    } catch (err) {
+    } catch (err: any) {
+      if (err?.status === 401) {
+        setNotifications([]);
+        setUnreadCount(0);
+        return;
+      }
       console.error('Failed to fetch notifications:', err);
     }
   };

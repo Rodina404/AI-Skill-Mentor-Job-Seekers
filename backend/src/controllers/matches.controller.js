@@ -75,16 +75,31 @@ const runMatching = async (req, res) => {
       };
       
       const { data: matchResponse } = await axios.post(`${SERVICES.matching}/match`, matchPayload, { timeout: 30000 });
-      if (matchResponse.success && matchResponse.data?.rankedCandidates?.length > 0) {
-        const scoreVal = matchResponse.data.rankedCandidates[0].score;
-        matchScore = scoreVal <= 1.0 ? Math.round(scoreVal * 100) : Math.round(scoreVal);
-      } else {
-        throw new Error(matchResponse.error?.message || 'Empty ranked candidates');
+      if (!matchResponse || !matchResponse.success || !Array.isArray(matchResponse.data?.rankedCandidates) || matchResponse.data.rankedCandidates.length === 0) {
+        throw new Error(matchResponse?.error?.message || 'CV Matching Service returned empty or unsuccessful response');
       }
+
+      const topCandidate = matchResponse.data.rankedCandidates[0];
+      if (!topCandidate || !topCandidate.candidateId || topCandidate.candidateId !== resume_id) {
+        throw new Error('CV Matching Service returned mismatched or missing candidateId');
+      }
+
+      if (topCandidate.score === null || topCandidate.score === undefined) {
+        throw new Error('CV Matching Service returned null or undefined score');
+      }
+
+      const scoreVal = Number(topCandidate.score);
+      if (!Number.isFinite(scoreVal) || isNaN(scoreVal) || scoreVal < 0.0 || scoreVal > 100.0) {
+        throw new Error(`CV Matching Service returned invalid score: ${topCandidate.score}`);
+      }
+
+      matchScore = Math.round(scoreVal);
     } catch (err) {
       console.error('[Pipeline] cv_matching_service error:', err.message);
-      errors.push({ step: 'cv_matching_service', message: err.message });
-      matchScore = 75; // Fallback score
+      return res.status(502).json({
+        error: 'CV Matching Service failure',
+        detail: err.message || 'CV matching service returned invalid or malformed output'
+      });
     }
 
     // 3. Call skill_gap_engine

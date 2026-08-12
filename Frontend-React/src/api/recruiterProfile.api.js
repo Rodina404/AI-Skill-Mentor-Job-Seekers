@@ -3,30 +3,7 @@
  * Company profile API calls for recruiters
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-
-const getAuthHeaders = (token) => {
-  const finalToken = token || localStorage.getItem('token');
-  return {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${finalToken}`,
-  };
-};
-
-const createApiError = async (response, fallbackMessage) => {
-  let message = fallbackMessage;
-
-  try {
-    const body = await response.json();
-    message = body.error || body.message || fallbackMessage;
-  } catch {
-    // Keep fallback when non-JSON error returned
-  }
-
-  const error = new Error(message);
-  error.status = response.status;
-  return error;
-};
+import { authFetch, createApiError } from './apiClient';
 
 export const recruiterProfileAPI = {
   /**
@@ -35,10 +12,9 @@ export const recruiterProfileAPI = {
    * @returns {Promise<Object>} - { success: true, data: companyProfile | null }
    */
   async getCompanyProfile(token) {
-    const response = await fetch(`${API_BASE_URL}/recruiter/company-profile`, {
+    const response = await authFetch('/recruiter/company-profile', {
       method: 'GET',
-      headers: getAuthHeaders(token),
-    });
+    }, token);
 
     if (!response.ok) {
       throw await createApiError(response, 'Failed to fetch company profile');
@@ -54,11 +30,10 @@ export const recruiterProfileAPI = {
    * @returns {Promise<Object>} - { success: true, data: companyProfile }
    */
   async updateCompanyProfile(data, token) {
-    const response = await fetch(`${API_BASE_URL}/recruiter/company-profile`, {
+    const response = await authFetch('/recruiter/company-profile', {
       method: 'PUT',
-      headers: getAuthHeaders(token),
       body: JSON.stringify(data),
-    });
+    }, token);
 
     if (!response.ok) {
       throw await createApiError(response, 'Failed to update company profile');

@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { authAPI } from "../api/auth.api";
+import { clearStoredSession, refreshStoredSession } from "../api/apiClient";
 
 interface User {
   id: string;
@@ -15,6 +16,7 @@ interface AuthContextType {
   setSuccessMessage: (msg: string | null) => void;
   login: (userData: any) => void;
   logout: () => void;
+  isAuthLoading: boolean;
   isAuthenticated: boolean;
   hasRole: (role: string | string[]) => boolean;
   updateUser: (updatedFields: Partial<User>) => void;
@@ -35,36 +37,90 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
   const [refreshToken, setRefreshToken] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
 
-  // Restore session from localStorage on app load (bridge for 21+ components that still read localStorage)
+  const clearAuthState = () => {
+    setUser(null);
+    setToken(null);
+    setRefreshToken(null);
+    setSuccessMessage(null);
+    clearStoredSession();
+  };
+
+  const restoreVerifiedUser = (data: any, accessToken: string, nextRefreshToken?: string | null) => {
+    const verifiedUser: User = {
+      id: data.user.id,
+      name: data.user.full_name || data.user.email,
+      email: data.user.email,
+      role: mapRole(data.user.role)
+    };
+
+    setUser(verifiedUser);
+    setToken(accessToken);
+    setRefreshToken(nextRefreshToken || localStorage.getItem('refresh_token'));
+    localStorage.setItem('token', accessToken);
+    localStorage.setItem('currentUser', JSON.stringify(verifiedUser));
+    if (nextRefreshToken) {
+      localStorage.setItem('refresh_token', nextRefreshToken);
+    }
+  };
+
   useEffect(() => {
     const savedToken = localStorage.getItem('token');
-    if (!savedToken) return;
+    const savedRefresh = localStorage.getItem('refresh_token');
+    if (!savedToken && !savedRefresh) {
+      setIsAuthLoading(false);
+      return;
+    }
 
     const tryRestoreSession = async () => {
       try {
-        const data = await authAPI.verifyToken(savedToken);
-        const verifiedUser: User = {
-          id: data.user.id,
-          name: data.user.full_name || data.user.email,
-          email: data.user.email,
-          role: mapRole(data.user.role)
-        };
-        setUser(verifiedUser);
-        setToken(savedToken);
-        const savedRefresh = localStorage.getItem('refresh_token');
-        if (savedRefresh) setRefreshToken(savedRefresh);
-      } catch (err) {
-        // Token invalid/expired — clear everything
-        localStorage.removeItem('token');
-        localStorage.removeItem('refresh_token');
-        localStorage.removeItem('currentUser');
-        setUser(null);
-        setToken(null);
-        setRefreshToken(null);
+        if (savedToken) {
+          const data = await authAPI.verifyToken(savedToken);
+          restoreVerifiedUser(data, savedToken, savedRefresh);
+          return;
+        }
+        throw new Error('No access token available');
+      } catch {
+        try {
+          const refreshed = await refreshStoredSession();
+          if (!refreshed?.access_token) throw new Error('Refresh failed');
+          const data = await authAPI.verifyToken(refreshed.access_token);
+          restoreVerifiedUser(data, refreshed.access_token, refreshed.refresh_token);
+        } catch {
+          clearAuthState();
+        }
+      } finally {
+        setIsAuthLoading(false);
       }
     };
+
     tryRestoreSession();
+  }, []);
+
+  useEffect(() => {
+    const handleTokenRefreshed = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      if (customEvent.detail?.access_token) {
+        setToken(customEvent.detail.access_token);
+      }
+      if (customEvent.detail?.refresh_token) {
+        setRefreshToken(customEvent.detail.refresh_token);
+      }
+    };
+
+    const handleSessionInvalid = () => {
+      clearAuthState();
+      window.history.pushState({}, '', '/signin');
+      window.dispatchEvent(new CustomEvent('auth-redirect', { detail: 'login' }));
+    };
+
+    window.addEventListener('auth-token-refreshed', handleTokenRefreshed);
+    window.addEventListener('auth-session-invalid', handleSessionInvalid);
+    return () => {
+      window.removeEventListener('auth-token-refreshed', handleTokenRefreshed);
+      window.removeEventListener('auth-session-invalid', handleSessionInvalid);
+    };
   }, []);
 
   const login = (userData: any) => {
@@ -79,36 +135,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       role: mapRole(userData.user.role)
     };
 
-    setUser(authenticatedUser);
-    setToken(userData.access_token);
-    setRefreshToken(userData.refresh_token || null);
-
-    // Sync to localStorage so existing components (UserProfile, JobsListing, etc.) can read the token
-    localStorage.setItem('token', userData.access_token);
-    localStorage.setItem('currentUser', JSON.stringify(authenticatedUser));
-    if (userData.refresh_token) {
-      localStorage.setItem('refresh_token', userData.refresh_token);
-    }
+    restoreVerifiedUser({ user: authenticatedUser }, userData.access_token, userData.refresh_token || null);
   };
 
   const logout = () => {
     if (token) {
       authAPI.signOut(token).catch(err => console.error('Sign out error:', err));
     }
-    setUser(null);
-    setToken(null);
-    setRefreshToken(null);
-    setSuccessMessage(null);
-
-    // Clear localStorage bridge
-    localStorage.removeItem('token');
-    localStorage.removeItem('refresh_token');
-    localStorage.removeItem('currentUser');
-
-    // Redirect to /signin using pushState for browser URL matching
+    clearAuthState();
     window.history.pushState({}, '', '/signin');
-    
-    // Dispatch a custom event to notify App component's custom router to show signin page
     window.dispatchEvent(new CustomEvent('auth-redirect', { detail: 'login' }));
   };
 
@@ -126,13 +161,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ 
-      user, 
+    <AuthContext.Provider value={{
+      user,
       token,
       successMessage,
       setSuccessMessage,
-      login, 
-      logout, 
+      login,
+      logout,
+      isAuthLoading,
       isAuthenticated: !!user,
       hasRole,
       updateUser

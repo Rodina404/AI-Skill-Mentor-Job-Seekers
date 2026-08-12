@@ -1,0 +1,33 @@
+INFO:     Started server process [10056]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8004 (Press CTRL+C to quit)
+2026-07-05 00:02:51,020 [INFO] src.pipeline: Pipeline running for 'Final QA Data Scientist 1781397042' | user_skills=16
+2026-07-05 00:02:52,626 [INFO] src.loaders: Loaded 79 roles into title index from data folder.
+2026-07-05 00:03:32,921 [INFO] sentence_transformers.SentenceTransformer: Use pytorch device_name: cpu
+2026-07-05 00:03:32,932 [INFO] sentence_transformers.SentenceTransformer: Load pretrained SentenceTransformer: all-MiniLM-L6-v2
+2026-07-05 00:03:37,353 [INFO] src.loaders: Loaded sentence transformer model: all-MiniLM-L6-v2
+2026-07-05 00:03:37,926 [INFO] src.pipeline: Mode A failed for 'Final QA Data Scientist 1781397042'. Trying Mode B...
+2026-07-05 00:03:40,022 [INFO] src.adzuna_client: Adzuna returned 0 postings for 'Final QA Data Scientist 1781397042'
+2026-07-05 00:03:42,526 [INFO] chromadb.telemetry.product.posthog: Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+2026-07-05 00:03:43,774 [INFO] src.vectorstore: Chroma client initialized at D:\Grad\Repo\AI-Skill-Mentor-Job-Seekers\AI-Microservices\gap-engin-service\chroma_db_current
+2026-07-05 00:03:43,779 [INFO] sentence_transformers.SentenceTransformer: Load pretrained SentenceTransformer: all-MiniLM-L6-v2
+2026-07-05 00:03:46,274 [INFO] src.vectorstore: Collection 'role_chunks' has 79 chunks.
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|##########| 1/1 [00:00<00:00, 30.67it/s]
+2026-07-05 00:03:46,360 [WARNING] src.retrieval_helpers: No evidence found for 'Final QA Data Scientist 1781397042' from any source.
+2026-07-05 00:03:46,361 [WARNING] src.pipeline: Mode B: No evidence for 'Final QA Data Scientist 1781397042'
+2026-07-05 00:03:46,361 [ERROR] src.pipeline: Both Mode A and Mode B failed for 'Final QA Data Scientist 1781397042'
+2026-07-05 00:03:46,361 [INFO] api.adapter: API adapter: 'Final QA Data Scientist 1781397042' \u2192 none in 55495ms
+2026-07-05 02:34:40,472 [INFO] src.pipeline: Pipeline running for 'AI Instructor' | user_skills=11
+2026-07-05 02:34:40,804 [INFO] src.pipeline: Mode A failed for 'AI Instructor'. Trying Mode B...
+2026-07-05 02:34:43,244 [INFO] src.adzuna_client: Adzuna returned 6 postings for 'AI Instructor'
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|##########| 1/1 [00:00<00:00, 17.07it/s]
+2026-07-05 02:34:43,482 [INFO] src.retrieval_helpers: Evidence gathered for 'AI Instructor': adzuna=yes, chroma=yes
+2026-07-05 02:34:46,825 [INFO] httpx: HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-07-05 02:34:46,910 [INFO] src.llm: LLM extracted 4 skills for 'AI Instructor'
+2026-07-05 02:34:46,912 [INFO] src.pipeline: Mode B success for 'AI Instructor' with 4 skills
+2026-07-05 02:34:46,913 [INFO] api.adapter: API adapter: 'AI Instructor' \u2192 mode_b in 6472ms
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [10056]

@@ -3,15 +3,7 @@
  * Interfacing with backend notifications endpoints
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-
-const getAuthHeaders = (token) => {
-  const finalToken = token || localStorage.getItem('token');
-  return {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${finalToken}`,
-  };
-};
+import { authFetch, createApiError } from './apiClient';
 
 export const notificationsAPI = {
   /**
@@ -20,13 +12,12 @@ export const notificationsAPI = {
    * @returns {Promise<Array>} - List of notifications
    */
   async getNotifications(token) {
-    const response = await fetch(`${API_BASE_URL}/notifications`, {
+    const response = await authFetch('/notifications', {
       method: 'GET',
-      headers: getAuthHeaders(token),
-    });
+    }, token);
 
     if (!response.ok) {
-      throw new Error('Failed to fetch notifications');
+      throw await createApiError(response, 'Failed to fetch notifications');
     }
 
     return response.json();

@@ -1,0 +1,17 @@
+INFO:     Started server process [3172]
+INFO:     Waiting for application startup.
+2026-07-04 23:59:50,818 [INFO] main — Initializing Course Recommendation AI modules...
+2026-07-04 23:59:50,819 [INFO] main — Course recommender fully initialized.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8006 (Press CTRL+C to quit)
+2026-07-05 00:03:21,687 [INFO] core.pipeline — Course pipeline started for user_id=cf6c6246-a489-4228-834c-b4eec7d0d0d0, job_title=Final QA Data Scientist 1781397042
+2026-07-05 00:03:21,689 [INFO] core.course_recommender — Querying FAISS with target role (as missing skills proxy): Final QA Data Scientist 1781397042
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|##########| 1/1 [00:00<00:00,  3.38it/s]Batches: 100%|##########| 1/1 [00:00<00:00,  3.35it/s]
+2026-07-05 02:35:00,368 [INFO] core.pipeline — Course pipeline started for user_id=f6ed5895-d732-4f8f-858e-7260c1d70307, job_title=AI Instructor
+2026-07-05 02:35:00,371 [INFO] core.course_recommender — Querying FAISS with target role (as missing skills proxy): AI Instructor
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|##########| 1/1 [00:00<00:00,  6.29it/s]Batches: 100%|##########| 1/1 [00:00<00:00,  6.25it/s]
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+2026-07-05 02:44:30,686 [INFO] main — Shutting down Course Recommendation Service.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [3172]

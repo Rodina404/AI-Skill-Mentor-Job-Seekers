@@ -5,6 +5,7 @@ pydantic
 langchain
 langchain_community
 faiss-cpu
+transformers<4.45.0
 sentence-transformers
 scikit-learn
 pytest

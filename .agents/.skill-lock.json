@@ -1,0 +1,53 @@
+{
+  "version": 3,
+  "skills": {
+    "supabase-postgres-best-practices": {
+      "source": "supabase/agent-skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/supabase/agent-skills.git",
+      "skillPath": "skills/supabase-postgres-best-practices/SKILL.md",
+      "skillFolderHash": "9e4dd36978eedd04efc649b4d431ab5ce4bb3896",
+      "pluginName": "postgres-best-practices",
+      "installedAt": "2026-04-14T21:31:40.343Z",
+      "updatedAt": "2026-04-14T21:31:40.343Z"
+    },
+    "supabase": {
+      "source": "supabase/agent-skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/supabase/agent-skills.git",
+      "skillPath": "skills/supabase/SKILL.md",
+      "skillFolderHash": "512c575a9b68d271682f9a39a01e4e9ea1156fa1",
+      "pluginName": "supabase",
+      "installedAt": "2026-04-14T21:31:40.466Z",
+      "updatedAt": "2026-04-14T21:31:40.466Z"
+    },
+    "find-skills": {
+      "source": "vercel-labs/skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/vercel-labs/skills.git",
+      "skillPath": "skills/find-skills/SKILL.md",
+      "skillFolderHash": "3013fdeb8a11b10b1eb795ec3ae8bfca38f7c26d",
+      "installedAt": "2026-04-14T21:31:56.636Z",
+      "updatedAt": "2026-04-14T21:31:56.636Z"
+    }
+  },
+  "dismissed": {
+    "findSkillsPrompt": true
+  },
+  "lastSelectedAgents": [
+    "amp",
+    "antigravity",
+    "cline",
+    "codex",
+    "cursor",
+    "deepagents",
+    "firebender",
+    "gemini-cli",
+    "github-copilot",
+    "kimi-cli",
+    "opencode",
+    "warp",
+    "claude-code",
+    "openclaw"
+  ]
+}

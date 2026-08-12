@@ -44,6 +44,43 @@ const getAllJobs = async (req, res) => {
 };
 
 /**
+ * Get jobs owned by the authenticated recruiter.
+ * GET /jobs/recruiter/my-jobs
+ */
+const getRecruiterJobs = async (req, res) => {
+  try {
+    if (req.user.role !== 'recruiter' && req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Forbidden: Recruiter or admin role required' });
+    }
+
+    const { status } = req.query;
+    let query = supabaseAdmin
+      .from('job_postings')
+      .select('*');
+
+    if (req.user.role !== 'admin') {
+      query = query.eq('recruiter_id', req.user.id);
+    }
+
+    if (status && status !== 'all') {
+      query = query.eq('status', status);
+    }
+
+    const { data, error } = await query.order('created_at', { ascending: false });
+    if (error) throw error;
+
+    res.json({
+      success: true,
+      data: {
+        jobs: data || []
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+/**
  * Get job posting by ID
  * GET /jobs/:jobId
  */
@@ -585,8 +622,270 @@ const getRecommendedJobs = async (req, res) => {
   }
 };
 
+/**
+ * AI Candidate Discovery for a Job Posting (Recruiter/Admin only)
+ * POST /jobs/:jobId/match-candidates
+ */
+const { runRecruiterJobMatching, RecruiterMatchingError } = require('../services/recruiterMatching.service');
+const { persistRecruiterMatches, getPersistedCandidateMatches, RecruiterMatchPersistenceError } = require('../repositories/recruiterMatches.repository');
+
+const matchCandidatesForJob = async (req, res) => {
+  try {
+    const { jobId } = req.params;
+
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ error: 'Unauthorized: Valid authentication token required' });
+    }
+
+    const result = await runRecruiterJobMatching({
+      jobId,
+      recruiterId: req.user.id,
+      userRole: req.user.role,
+    });
+
+    let persistenceResult = { persisted: false, reason: 'none' };
+    try {
+      persistenceResult = await persistRecruiterMatches({
+        jobId,
+        rankedCandidates: result.data?.rankedCandidates || [],
+        completionStatus: result.data?.completionStatus || 'complete',
+      });
+    } catch (pErr) {
+      console.error(`[JobsController] Persistence error for job ${jobId}:`, pErr.message);
+      persistenceResult = { persisted: false, error: pErr.message };
+    }
+
+    result.data.persistence = persistenceResult;
+    return res.json(result);
+  } catch (err) {
+    if (err instanceof RecruiterMatchingError || err.statusCode) {
+      return res.status(err.statusCode || 500).json({
+        success: false,
+        error: {
+          code: err.code || 'MATCHING_ERROR',
+          message: err.message,
+        },
+      });
+    }
+
+    return res.status(500).json({
+      success: false,
+      error: {
+        code: 'INTERNAL_SERVER_ERROR',
+        message: err.message || 'An unexpected error occurred during candidate matching',
+      },
+    });
+  }
+};
+
+/**
+ * Retrieves persisted candidate matches for a recruiter's job (Recruiter/Admin only)
+ * GET /jobs/:jobId/candidate-matches
+ */
+const getCandidateMatchesForJob = async (req, res) => {
+  try {
+    const { jobId } = req.params;
+
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ error: 'Unauthorized: Valid authentication token required' });
+    }
+
+    if (req.user.role !== 'recruiter' && req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Forbidden: Recruiter or Admin access required' });
+    }
+
+    const result = await getPersistedCandidateMatches({
+      jobId,
+      recruiterId: req.user.id,
+      userRole: req.user.role,
+      page: req.query.page,
+      limit: req.query.limit,
+    });
+
+    return res.json(result);
+  } catch (err) {
+    if (err instanceof RecruiterMatchPersistenceError || err.statusCode) {
+      return res.status(err.statusCode || 500).json({
+        success: false,
+        error: {
+          code: err.code || 'PERSISTENCE_ERROR',
+          message: err.message,
+        },
+      });
+    }
+
+    return res.status(500).json({
+      success: false,
+      error: {
+        code: 'INTERNAL_SERVER_ERROR',
+        message: err.message || 'An unexpected error occurred while fetching candidate matches',
+      },
+    });
+  }
+};
+
+/**
+ * Generate a short-lived temporary Supabase Storage Signed URL for a candidate's resume
+ * GET /jobs/:jobId/candidates/:candidateId/resume-url
+ */
+const getCandidateResumeUrl = async (req, res) => {
+  try {
+    const { jobId, candidateId } = req.params;
+
+    // TASK 4: Authentication check
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ error: 'Unauthorized: Valid authentication token required' });
+    }
+
+    // TASK 5: Role Authorization check
+    if (req.user.role !== 'recruiter' && req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Access denied: Recruiter or Admin role required' });
+    }
+
+    // TASK 6: Job Ownership Authorization
+    const { data: job, error: jobErr } = await supabaseAdmin
+      .from('job_postings')
+      .select('id, recruiter_id')
+      .eq('id', jobId)
+      .single();
+
+    if (jobErr || !job) {
+      return res.status(404).json({ error: 'Job posting not found' });
+    }
+
+    if (req.user.role !== 'admin' && job.recruiter_id !== req.user.id) {
+      return res.status(403).json({ error: 'Access denied: You do not own this job posting' });
+    }
+
+    // Candidate Profile Resolution
+    const { data: profile, error: profileErr } = await supabaseAdmin
+      .from('job_seeker_profiles')
+      .select('id, user_id, is_discoverable')
+      .eq('id', candidateId)
+      .single();
+
+    if (profileErr || !profile) {
+      return res.status(404).json({ error: 'Candidate profile not found' });
+    }
+
+    // TASK 7: Candidate Relationship Authorization (BOLA Prevention)
+    // Check Application Relationship (Case B)
+    const { data: appData } = await supabaseAdmin
+      .from('job_applications')
+      .select('id, resume_id, user_id')
+      .eq('job_posting_id', jobId)
+      .or(`job_seeker_profile_id.eq.${candidateId},user_id.eq.${profile.user_id}`)
+      .limit(1);
+
+    const hasApplication = Array.isArray(appData) && appData.length > 0;
+    const appResumeId = hasApplication ? appData[0].resume_id : null;
+
+    // Check AI Match Relationship (Case A)
+    const { data: matchData } = await supabaseAdmin
+      .from('candidate_matches')
+      .select('id')
+      .eq('job_posting_id', jobId)
+      .eq('job_seeker_profile_id', candidateId)
+      .limit(1);
+
+    const hasAIMatch = Array.isArray(matchData) && matchData.length > 0;
+
+    // BOLA Authorization Gate
+    if (!hasApplication && !hasAIMatch) {
+      return res.status(403).json({ error: 'Access denied: Candidate has no application or AI match relationship with this job' });
+    }
+
+    // TASK 8: Candidate Opt-Out Policy for AI-Discovery-Only Access
+    if (!hasApplication && hasAIMatch && profile.is_discoverable === false) {
+      return res.status(403).json({ error: 'Access denied: Candidate has opted out of discovery and has no active job application' });
+    }
+
+    // TASK 2, 9, 10, 19, 20: Authoritative Resume Resolution
+    let resumeRecord = null;
+
+    // For Applicants with specific appResumeId:
+    if (appResumeId) {
+      const { data: rData } = await supabaseAdmin
+        .from('resumes')
+        .select('id, user_id, file_path, original_name, status')
+        .eq('id', appResumeId)
+        .single();
+
+      if (rData && rData.user_id === profile.user_id) {
+        resumeRecord = rData;
+      }
+    }
+
+    // For AI Matches or Fallback:
+    if (!resumeRecord) {
+      const { data: resumes } = await supabaseAdmin
+        .from('resumes')
+        .select('id, user_id, file_path, original_name, status')
+        .eq('user_id', profile.user_id)
+        .eq('status', 'processed')
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (Array.isArray(resumes) && resumes.length > 0) {
+        resumeRecord = resumes[0];
+      } else {
+        // Fallback to latest uploaded resume regardless of status
+        const { data: fallbackResumes } = await supabaseAdmin
+          .from('resumes')
+          .select('id, user_id, file_path, original_name, status')
+          .eq('user_id', profile.user_id)
+          .order('created_at', { ascending: false })
+          .limit(1);
+
+        if (Array.isArray(fallbackResumes) && fallbackResumes.length > 0) {
+          resumeRecord = fallbackResumes[0];
+        }
+      }
+    }
+
+    if (!resumeRecord || !resumeRecord.file_path) {
+      return res.status(404).json({ error: 'No resume file found for candidate' });
+    }
+
+    // TASK 9: Resume Ownership Verification (resume.user_id MUST equal profile.user_id)
+    if (resumeRecord.user_id !== profile.user_id) {
+      return res.status(403).json({ error: 'Access denied: Resume ownership mismatch' });
+    }
+
+    // TASK 12: Generate Temporary Signed URL
+    const ttlSeconds = parseInt(process.env.RESUME_SIGNED_URL_TTL_SECONDS, 10) || 900; // 15 mins (900s)
+    const bucketName = 'resumes';
+
+    const { data: signedData, error: signError } = await supabaseAdmin.storage
+      .from(bucketName)
+      .createSignedUrl(resumeRecord.file_path, ttlSeconds);
+
+    if (signError || !signedData?.signedUrl) {
+      console.error('[ResumeSignedUrl] Storage signing error:', signError?.message);
+      return res.status(500).json({ error: 'Failed to generate temporary resume signed URL' });
+    }
+
+    // TASK 14: Safe Logging (never log signedUrl token or content)
+    console.log(`[ResumeSignedUrl] Signed URL created for candidate ${candidateId}, job ${jobId}, TTL ${ttlSeconds}s`);
+
+    // TASK 13: Response Contract
+    return res.json({
+      success: true,
+      data: {
+        url: signedData.signedUrl,
+        expiresIn: ttlSeconds,
+        originalName: resumeRecord.original_name || 'resume.pdf',
+      },
+    });
+  } catch (err) {
+    console.error('[ResumeSignedUrl] Error:', err.message);
+    return res.status(500).json({ error: 'Internal server error while generating resume signed URL' });
+  }
+};
+
 module.exports = {
   getAllJobs,
+  getRecruiterJobs,
   getJobById,
   createJob,
   updateJob,
@@ -594,5 +893,8 @@ module.exports = {
   applyToJob,
   getJobApplicants,
   approveJob,
-  getRecommendedJobs
+  getRecommendedJobs,
+  matchCandidatesForJob,
+  getCandidateMatchesForJob,
+  getCandidateResumeUrl,
 };

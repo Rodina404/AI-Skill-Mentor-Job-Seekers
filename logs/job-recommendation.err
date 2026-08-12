@@ -1,0 +1,15 @@
+INFO:     Started server process [12208]
+INFO:     Waiting for application startup.
+2026-07-04 23:58:56,592 [INFO] main — Initializing Job Recommendation AI modules...
+2026-07-04 23:58:56,594 [INFO] core.data_preprocessor — Preprocessed data loaded from models
+2026-07-04 23:58:56,595 [INFO] core.job_recommender — Job recommender initialized successfully
+2026-07-04 23:58:56,596 [INFO] main — Job recommender fully initialized.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8007 (Press CTRL+C to quit)
+2026-07-05 00:03:22,535 [INFO] core.pipeline — Pipeline started for user_id=cf6c6246-a489-4228-834c-b4eec7d0d0d0, job_title=Final QA Data Scientist 1781397042
+2026-07-05 00:03:22,536 [WARNING] core.pipeline — No recommendations found, falling back to popular jobs
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+2026-07-05 02:44:30,628 [INFO] main — Shutting down Job Recommendation Service.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [12208]

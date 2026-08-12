@@ -1,0 +1,4 @@
+[Pipeline] cv_matching_service error: timeout of 30000ms exceeded
+[Pipeline] skill_gap_engine error: timeout of 30000ms exceeded
+[Pipeline] m5_roadmap_service error:  
+^C^C

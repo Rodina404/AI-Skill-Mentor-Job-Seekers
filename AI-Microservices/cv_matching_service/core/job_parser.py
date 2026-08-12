@@ -8,7 +8,8 @@ SKILL_VOCABULARY = {
     # Programming Languages
     'python': ['python', 'py', 'django', 'flask', 'fastapi'],
     'java': ['java', 'spring', 'gradle', 'maven'],
-    'javascript': ['javascript', 'js', 'typescript', 'node.js', 'nodejs', 'npm'],
+    'javascript': ['javascript', 'js'],
+    'typescript': ['typescript', 'ts'],
     'c++': ['c++', 'cpp', 'c\\+\\+'],
     'c#': ['c#', 'csharp', 'c\\#'],
     'sql': ['sql', 'plsql', 'tsql', 'mysql', 'postgresql', 'postgres'],
@@ -34,8 +35,12 @@ SKILL_VOCABULARY = {
     'frontend': ['frontend', 'front-end', 'ui development'],
     'backend': ['backend', 'back-end', 'server-side'],
     'fullstack': ['fullstack', 'full-stack', 'full stack'],
+    'react': ['react', 'react.js', 'reactjs'],
+    'node.js': ['node.js', 'nodejs', r'node\.js'],
+    'express': ['express', 'express.js', 'expressjs'],
     'rest api': ['rest api', 'restful', 'api development'],
     'graphql': ['graphql'],
+    'git': ['git', 'github', 'gitlab'],
     
     # DevOps/Cloud
     'devops': ['devops', 'dev ops', 'infrastructure'],

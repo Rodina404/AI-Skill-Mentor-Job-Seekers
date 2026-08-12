@@ -80,11 +80,54 @@ const ROLE_ROUTES = {
 
 const PUBLIC_ROUTES = ["home", "login", "signup", "unauthorized"];
 
+const PAGE_TO_PATH: Record<Page, string> = {
+  home: "/",
+  login: "/signin",
+  signup: "/signup",
+  profile: "/profile",
+  "edit-profile": "/profile/edit",
+  history: "/history",
+  "saved-jobs": "/saved-jobs",
+  courses: "/courses",
+  "learning-path": "/learning-path",
+  analysis: "/analysis",
+  jobs: "/jobs",
+  "job-details": "/jobs/details",
+  "job-posting": "/recruiter/jobs/new",
+  "recruiter-profile": "/recruiter/profile",
+  admin: "/admin",
+  unauthorized: "/unauthorized",
+};
+
+const PATH_TO_PAGE: Record<string, Page> = {
+  "/": "home",
+  "/signin": "login",
+  "/login": "login",
+  "/signup": "signup",
+  "/profile": "profile",
+  "/profile/edit": "edit-profile",
+  "/history": "history",
+  "/saved-jobs": "saved-jobs",
+  "/courses": "courses",
+  "/learning-path": "learning-path",
+  "/analysis": "analysis",
+  "/jobs": "jobs",
+  "/jobs/details": "job-details",
+  "/recruiter/jobs/new": "job-posting",
+  "/job-posting": "job-posting",
+  "/recruiter/profile": "recruiter-profile",
+  "/recruiter-profile": "recruiter-profile",
+  "/admin": "admin",
+  "/unauthorized": "unauthorized",
+};
+
+const pageFromPath = (path: string): Page => PATH_TO_PAGE[path] || "home";
+
 /* ---------------- APP CONTENT ---------------- */
 
 function AppContent() {
-  const { isAuthenticated, user, hasRole } = useAuth();
-  const [currentPage, setCurrentPage] = useState<Page>("home");
+  const { isAuthenticated, isAuthLoading, user, hasRole } = useAuth();
+  const [currentPage, setCurrentPage] = useState<Page>(() => pageFromPath(window.location.pathname));
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
 
   // Custom routing event listener to handle memory-only redirect on logout/auth failures
@@ -93,10 +136,19 @@ function AppContent() {
       const customEvent = e as CustomEvent;
       if (customEvent.detail === 'login') {
         setCurrentPage('login');
+        window.history.replaceState({}, '', PAGE_TO_PATH.login);
       }
     };
     window.addEventListener('auth-redirect', handleAuthRedirect);
     return () => window.removeEventListener('auth-redirect', handleAuthRedirect);
+  }, []);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      setCurrentPage(pageFromPath(window.location.pathname));
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
   // Check route permissions
@@ -116,24 +168,46 @@ function AppContent() {
     return allowedRoutes.includes(page);
   };
 
-  const handleNavigate = (page: Page): void => {
+  const setRoute = (page: Page, replace = false) => {
+    setCurrentPage(page);
+    const path = PAGE_TO_PATH[page];
+    if (window.location.pathname !== path) {
+      const method = replace ? 'replaceState' : 'pushState';
+      window.history[method]({}, '', path);
+    }
+  };
+
+  const handleNavigate = (page: Page, replace = false): void => {
     // If not authenticated and trying to access protected route, redirect to login
     if (!isAuthenticated && !PUBLIC_ROUTES.includes(page)) {
-      setCurrentPage("login");
+      setRoute("login", true);
       window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
 
     // If authenticated but no access to route, show unauthorized
     if (isAuthenticated && !canAccessRoute(page)) {
-      setCurrentPage("unauthorized");
+      setRoute("unauthorized", true);
       window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
 
-    setCurrentPage(page);
+    setRoute(page, replace);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
+
+  useEffect(() => {
+    if (isAuthLoading) return;
+
+    if (!isAuthenticated && !PUBLIC_ROUTES.includes(currentPage)) {
+      handleNavigate("login", true);
+      return;
+    }
+
+    if (isAuthenticated && !canAccessRoute(currentPage)) {
+      handleNavigate("unauthorized", true);
+    }
+  }, [isAuthLoading, isAuthenticated, user, currentPage]);
 
   const handleSelectHistoryItem = (item: HistoryItem): void => {
     if (item.type === "analysis") {
@@ -151,14 +225,22 @@ function AppContent() {
     if (isAuthenticated && user && (currentPage === "login" || currentPage === "signup")) {
       // Redirect based on role
       if (user.role === "admin") {
-        handleNavigate("admin");
+        handleNavigate("admin", true);
       } else if (user.role === "recruiter") {
-        handleNavigate("recruiter-profile");
+        handleNavigate("recruiter-profile", true);
       } else {
-        handleNavigate("profile");
+        handleNavigate("profile", true);
       }
     }
   }, [isAuthenticated, user]);
+
+  if (isAuthLoading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center text-gray-600">
+        Restoring session...
+      </div>
+    );
+  }
 
   const renderPage = (): JSX.Element => {
     switch (currentPage) {

@@ -2,6 +2,7 @@ import { Search, MapPin, Briefcase, Clock, DollarSign, TrendingUp, Filter } from
 import { useState, useEffect } from 'react';
 import { jobsAPI } from '../api/jobs.api';
 import { usersAPI } from '../api/users.api';
+import { authFetch } from '../api/apiClient';
 import { useAuth } from '../context/AuthContext';
 
 interface JobsListingProps {
@@ -20,6 +21,10 @@ export function JobsListing({ onNavigate }: JobsListingProps) {
   const [jobs, setJobs] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [recruiterJobs, setRecruiterJobs] = useState<any[]>([]);
+  const [recruiterTab, setRecruiterTab] = useState<'posted' | 'manage' | 'matches' | 'applicants'>('posted');
+  const [isRecruiterJobsLoading, setIsRecruiterJobsLoading] = useState(false);
+  const [recruiterJobsError, setRecruiterJobsError] = useState<string | null>(null);
 
   // Debounced filter states for recommended server-side search
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -81,12 +86,8 @@ export function JobsListing({ onNavigate }: JobsListingProps) {
         setJobs(mapped);
       } else {
         // Platform jobs flow: unchanged, fetch all jobs and user matches
-        const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-
         let matches: any[] = [];
-        const matchesRes = await fetch(`${API_BASE_URL}/matches`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
+        const matchesRes = await authFetch('/matches', { method: 'GET' }, token);
         if (matchesRes.ok) {
           matches = await matchesRes.json();
         }
@@ -154,10 +155,31 @@ export function JobsListing({ onNavigate }: JobsListingProps) {
   };
 
   useEffect(() => {
-    if (token) {
+    if (token && user?.role !== 'recruiter') {
       fetchJobs();
     }
-  }, [debouncedSearch, debouncedLocation, filterType, activeTab, token]);
+  }, [debouncedSearch, debouncedLocation, filterType, activeTab, token, user?.role]);
+
+  const fetchRecruiterJobs = async () => {
+    if (!token) return;
+    setIsRecruiterJobsLoading(true);
+    setRecruiterJobsError(null);
+    try {
+      const res = await jobsAPI.getMyRecruiterJobs({ status: 'all' }, token);
+      setRecruiterJobs(res?.data?.jobs || []);
+    } catch (err: any) {
+      console.error(err);
+      setRecruiterJobsError(err.message || 'Unable to load your posted jobs. Please try again.');
+    } finally {
+      setIsRecruiterJobsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (token && user?.role === 'recruiter') {
+      fetchRecruiterJobs();
+    }
+  }, [token, user?.role]);
 
   const handleSaveJob = async (job: any) => {
     if (!token || !user?.id) {
@@ -202,6 +224,129 @@ export function JobsListing({ onNavigate }: JobsListingProps) {
     const matchesFilter = filterType === 'all' || job.type.toLowerCase().replace('-', '').includes(filterType.replace('-', ''));
     return matchesSearch && matchesFilter;
   }) : jobs;
+
+  const formatRecruiterJobType = (jobType: string | undefined) => {
+    if (!jobType) return 'Not specified';
+    return jobType.replaceAll('_', ' ').replace(/\b\w/g, (letter) => letter.toUpperCase());
+  };
+
+  const recruiterTabs = [
+    { key: 'posted', label: 'My Posted Jobs' },
+    { key: 'manage', label: 'Manage Jobs' },
+    { key: 'matches', label: 'AI Matches' },
+    { key: 'applicants', label: 'Applicants' },
+  ] as const;
+
+  if (user?.role === 'recruiter') {
+    return (
+      <div className="min-h-screen pt-20 pb-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-green-50 to-lime-50">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h2 className="text-4xl mb-4 bg-gradient-to-r from-green-700 to-green-600 bg-clip-text text-transparent">
+                Jobs / My Jobs
+              </h2>
+              <p className="text-gray-600">Manage your company job postings and candidate workflows.</p>
+            </div>
+            <button
+              onClick={() => onNavigate('job-posting')}
+              className="px-6 py-3 bg-gradient-to-r from-green-700 to-green-600 text-white rounded-lg hover:shadow-lg transition-all font-semibold"
+            >
+              Post Job
+            </button>
+          </div>
+
+          <div className="flex flex-wrap gap-3 mb-6 border-b border-green-150 pb-3">
+            {recruiterTabs.map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setRecruiterTab(tab.key)}
+                className={`px-4 py-2 rounded-lg border-2 font-semibold transition-all ${
+                  recruiterTab === tab.key
+                    ? 'bg-green-700 text-white border-green-700'
+                    : 'bg-white text-green-700 border-green-200 hover:border-green-500'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {recruiterJobsError && (
+            <div className="mb-8 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700">
+              {recruiterJobsError}
+            </div>
+          )}
+
+          {isRecruiterJobsLoading ? (
+            <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl shadow-lg border-2 border-green-100">
+              <div className="w-12 h-12 border-4 border-green-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+              <p className="text-gray-600 font-medium">Loading your posted jobs...</p>
+            </div>
+          ) : recruiterJobs.length === 0 ? (
+            <div className="text-center py-12 bg-white rounded-2xl shadow-lg border-2 border-green-100">
+              <Briefcase className="w-10 h-10 text-green-600 mx-auto mb-3" />
+              <h3 className="text-gray-900 mb-2">No posted jobs yet</h3>
+              <p className="text-gray-600 mb-6">Create your first job posting to start managing candidates.</p>
+              <button
+                onClick={() => onNavigate('job-posting')}
+                className="px-6 py-3 bg-gradient-to-r from-green-700 to-green-600 text-white rounded-lg hover:shadow-lg transition-all"
+              >
+                Post Job
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {recruiterJobs.map((job) => (
+                <div key={job.id} className="bg-white rounded-2xl shadow-lg p-6 border-2 border-green-100">
+                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
+                    <div className="flex-1">
+                      <h3 className="text-gray-900 mb-2">{job.title || 'Untitled job'}</h3>
+                      <div className="flex flex-wrap gap-4 mb-3 text-sm text-gray-600">
+                        <span className="flex items-center gap-1"><MapPin className="w-4 h-4 text-green-600" />{job.location || 'Not specified'}</span>
+                        <span className="flex items-center gap-1"><Clock className="w-4 h-4 text-green-600" />{formatRecruiterJobType(job.job_type)}</span>
+                        <span className="flex items-center gap-1"><Briefcase className="w-4 h-4 text-green-600" />{job.status || 'open'}</span>
+                      </div>
+                      <p className="text-sm text-gray-500">
+                        Posted {job.created_at ? new Date(job.created_at).toLocaleDateString() : 'recently'}
+                      </p>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        onClick={() => {
+                          localStorage.setItem('latestJobId', job.id);
+                          onNavigate('job-details');
+                        }}
+                        className="px-4 py-2 border-2 border-green-600 text-green-700 rounded-lg hover:bg-green-50 font-semibold"
+                      >
+                        View
+                      </button>
+                      {recruiterTab === 'manage' && (
+                        <button onClick={() => onNavigate('recruiter-profile')} className="px-4 py-2 bg-green-700 text-white rounded-lg hover:shadow-lg font-semibold">
+                          Manage
+                        </button>
+                      )}
+                      {recruiterTab === 'matches' && (
+                        <button onClick={() => onNavigate('recruiter-profile')} className="px-4 py-2 bg-purple-700 text-white rounded-lg hover:shadow-lg font-semibold">
+                          AI Matches
+                        </button>
+                      )}
+                      {recruiterTab === 'applicants' && (
+                        <button onClick={() => onNavigate('recruiter-profile')} className="px-4 py-2 bg-green-700 text-white rounded-lg hover:shadow-lg font-semibold">
+                          Applicants
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen pt-20 pb-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-green-50 to-lime-50">
