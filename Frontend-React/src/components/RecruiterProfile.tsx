@@ -52,6 +52,19 @@ const parseSkillsForInput = (skills: unknown): string => {
   return skills;
 };
 
+/** Safely extract a human-readable error message — never returns [object Object]. */
+const extractErrorMessage = (err: unknown, fallback: string): string => {
+  if (!err) return fallback;
+  if (err instanceof Error) return err.message || fallback;
+  if (typeof err === 'string') return err;
+  if (typeof err === 'object') {
+    const obj = err as Record<string, unknown>;
+    if (typeof obj.message === 'string') return obj.message;
+    if (typeof obj.error === 'string') return obj.error;
+  }
+  return fallback;
+};
+
 export function RecruiterProfile({ onNavigate }: RecruiterProfileProps) {
   const { token } = useAuth();
   const [companyProfile, setCompanyProfile] = useState<CompanyProfile | null>(null);
@@ -176,7 +189,7 @@ export function RecruiterProfile({ onNavigate }: RecruiterProfileProps) {
 
     } catch (err: any) {
       console.error(err);
-      setError(err.message || 'Failed to fetch recruiter dashboard data');
+      setError(extractErrorMessage(err, 'Failed to fetch recruiter dashboard data'));
     } finally {
       setIsLoading(false);
     }
@@ -222,7 +235,7 @@ export function RecruiterProfile({ onNavigate }: RecruiterProfileProps) {
       setTimeout(() => setShowSuccess(false), 3000);
     } catch (err: any) {
       console.error(err);
-      alert(err.message || 'Failed to update company profile');
+      alert(extractErrorMessage(err, 'Failed to update company profile'));
     } finally {
       setIsSaving(false);
     }
@@ -253,7 +266,7 @@ export function RecruiterProfile({ onNavigate }: RecruiterProfileProps) {
       setApplicants(mappedApps);
     } catch (err: any) {
       console.error(err);
-      alert(err.message || 'Failed to fetch applicants');
+      alert(extractErrorMessage(err, 'Failed to fetch applicants'));
     } finally {
       setIsApplicantsLoading(false);
     }
@@ -334,7 +347,7 @@ export function RecruiterProfile({ onNavigate }: RecruiterProfileProps) {
       setTimeout(() => setShowSuccess(false), 4000);
     } catch (err: any) {
       console.error('[RecruiterProfile] matchCandidates error:', err);
-      setAIMatchesError(err.message || 'Failed to run AI candidate matching. Please try again.');
+      setAIMatchesError(extractErrorMessage(err, 'Failed to run AI candidate matching. Please try again.'));
     } finally {
       setIsMatchingRunning(false);
       setMatchingStatusMessage('');
@@ -359,7 +372,7 @@ export function RecruiterProfile({ onNavigate }: RecruiterProfileProps) {
       }
     } catch (err: any) {
       console.error('[RecruiterProfile] handleViewResume error:', err);
-      alert(err.message || 'No resume file is currently available for this candidate');
+      alert(extractErrorMessage(err, 'No resume file is currently available for this candidate'));
     } finally {
       setLoadingResumeCandidateId(null);
     }
@@ -396,7 +409,7 @@ export function RecruiterProfile({ onNavigate }: RecruiterProfileProps) {
       });
     } catch (err: any) {
       console.error(err);
-      setEditJobError(err.message || 'Failed to load job details for editing');
+      setEditJobError(extractErrorMessage(err, 'Failed to load job details for editing'));
     } finally {
       setIsEditJobLoading(false);
     }
@@ -434,7 +447,7 @@ export function RecruiterProfile({ onNavigate }: RecruiterProfileProps) {
       setTimeout(() => setShowSuccess(false), 3000);
     } catch (err: any) {
       console.error(err);
-      setEditJobError(err.message || 'Failed to update job');
+      setEditJobError(extractErrorMessage(err, 'Failed to update job'));
     } finally {
       setIsEditJobSaving(false);
     }
@@ -444,7 +457,12 @@ export function RecruiterProfile({ onNavigate }: RecruiterProfileProps) {
     if (!selectedJobId) return;
     if (!confirm('Are you sure you want to delete this job posting?')) return;
     try {
-      await jobsAPI.deleteJob(selectedJobId);
+      if (!token) {
+        alert('Session expired, please log in again');
+        onNavigate('login');
+        return;
+      }
+      await jobsAPI.deleteJob(selectedJobId, token);
       setShowManageJobModal(false);
       await fetchJobsData();
       setSuccessMessage('Job deleted successfully!');
@@ -452,7 +470,7 @@ export function RecruiterProfile({ onNavigate }: RecruiterProfileProps) {
       setTimeout(() => setShowSuccess(false), 3000);
     } catch (err: any) {
       console.error(err);
-      alert(err.message || 'Failed to delete job');
+      alert(extractErrorMessage(err, 'Failed to delete job'));
     }
   };
 
@@ -465,7 +483,7 @@ export function RecruiterProfile({ onNavigate }: RecruiterProfileProps) {
     if (candidate.email && candidate.email !== 'Contact via platform') {
       window.location.href = `mailto:${candidate.email}?subject=Regarding Your Job Profile&body=Hi ${candidate.name},`;
     } else {
-      alert(`Contact request logged for candidate ${candidate.name}. Detailed contact info will be sent to your registered recruiter email.`);
+      alert(`Contact request logged successfully for candidate ${candidate.name}.`);
     }
   };
 
