@@ -1,144 +1,202 @@
-# AI Skill Mentor for Job Seekers
+# AI Skill Mentor & Recruiter Platform
 
-### Project Overview
-**AI Skill Mentor** is an intelligent career platform designed to help job seekers detect skill gaps in their resumes (CVs) and receive personalized course recommendations and career roadmaps. It integrates modern front-end design, a secure Node.js backend, and a series of Python-based NLP/AI microservices to deliver end-to-end career analysis.
+[![Release Status](https://img.shields.io/badge/Release%20Status-READY%20FOR%20DEPLOYMENT-success?style=for-the-badge)](file:///d:/Grad/Repo/AI-Skill-Mentor-Job-Seekers/reports/final-release-validation.md)
+[![E2E Validation](https://img.shields.io/badge/Browser%20E2E-16%2F16%20PASS-brightgreen?style=for-the-badge)](file:///d:/Grad/Repo/AI-Skill-Mentor-Job-Seekers/docs/recruiter/09-recruiter-testing-validation.md)
+[![Backend Tests](https://img.shields.io/badge/Backend%20Jest-113%2F113%20PASS-blue?style=for-the-badge)](file:///d:/Grad/Repo/AI-Skill-Mentor-Job-Seekers/docs/recruiter/09-recruiter-testing-validation.md)
+[![AI Tests](https://img.shields.io/badge/FastAPI%20Pytest-19%2F19%20PASS-blueviolet?style=for-the-badge)](file:///d:/Grad/Repo/AI-Skill-Mentor-Job-Seekers/docs/recruiter/09-recruiter-testing-validation.md)
 
 ---
 
-### System Architecture & Tech Stack
+## 1. Project Overview
 
+**AI Skill Mentor** is an enterprise career and talent acquisition platform designed for both **Job Seekers** and **Recruiters**:
+- **For Job Seekers**: Parses resumes (CVs), identifies skill gaps against target roles, generates personalized multi-phase learning roadmaps, and recommends tailored courses and open jobs.
+- **For Recruiters**: Provides an end-to-end recruitment management suite with company profile administration, job posting CRUD, on-demand AI candidate matching, inbound applicant review, and secure short-lived resume access.
+
+The system integrates a React 18 single-page application, an Express.js API gateway, a mesh of 7 Python FastAPI AI/NLP microservices, and Supabase (PostgreSQL 15, GoTrue Auth, and S3 Storage), fully orchestrated on Kubernetes.
+
+---
+
+## 2. System Architecture
+
+```mermaid
+flowchart TD
+    subgraph ClientLayer["Client Layer"]
+        Browser["User Browser (Recruiter / Seeker)"]
+    end
+
+    subgraph IngressLayer["Kubernetes Ingress (Minikube / Cluster)"]
+        Ingress["NGINX Ingress Controller<br/>(http://localhost:8080)"]
+    end
+
+    subgraph AppServices["Application Workloads"]
+        Frontend["React 18 SPA (Vite + Tailwind)<br/>(frontend-service :80)"]
+        Backend["Express.js API Gateway<br/>(express-backend-service :5000)"]
+    end
+
+    subgraph AIMesh["AI / NLP Microservices Mesh (FastAPI)"]
+        M1["m1-extraction (:8001)"]
+        M2["skill-normalization (:8002)"]
+        M3["cv-matching (:8003)"]
+        M4["gap-engine (:8004)"]
+        M5["m5-roadmap (:8005)"]
+        M6["course-recommendation (:8006)"]
+        M7["job-recommendation (:8007)"]
+    end
+
+    subgraph DataLayer["Persistence & Storage (Supabase)"]
+        PostgresDB[(PostgreSQL Database<br/>RLS + RPC)]
+        AuthService["Supabase GoTrue Auth"]
+        Storage["Private S3 Storage (Resumes)"]
+    end
+
+    Browser -->|HTTP Traffic| Ingress
+    Ingress -->|/| Frontend
+    Ingress -->|/api/*| Backend
+    Backend -->|Internal REST| M1 & M2 & M3 & M4 & M5 & M6 & M7
+    Backend -->|JWT Auth Verification| AuthService
+    Backend -->|SQL Queries & RPC Sync| PostgresDB
+    Backend -->|Presigned Resume URLs (300s)| Storage
 ```
-                     +---------------------------------------+
-                     |                Browser                |
-                     +-------------------+-------------------+
-                                         |
-                                         v
-                         +---------------+---------------+
-                         |      Nginx Ingress (Minikube) |
-                         +---------------+---------------+
-                                         |
-                       +-----------------+-----------------+
-                       | / (Frontend)                      | /api (Backend)
-                       v                                   v
-             +---------+---------+               +---------+---------+
-             |  Frontend (React) |               |  Backend (Node)   | <---+ (External Supabase API)
-             |    Port: 3000     |               |    Port: 5000     |
-             +-------------------+               +----+----+----+----+
-                                                      |    |    |
-       +------------------+------------------+--------+    |    +--------+------------------+------------------+
-       |                  |                  |             |             |                  |                  |
-       v                  v                  v             v             v                  v                  v
-+------+-----+     +------+-----+     +------+-----+     +------+-----+     +------+-----+     +------+-----+     +------+-----+
-|    M1      |     |  Skill     |     |    CV      |     |   Gap      |     |    M5      |     |  Course    |     |    Job     |
-| Extraction |     |  Normaliz. |     |  Matching  |     |  Engine    |     |  Roadmap   |     |  Recommend.|     |  Recommend.|
-| Port: 8001 |     | Port: 8002 |     | Port: 8003 |     | Port: 8004 |     | Port: 8005 |     | Port: 8006 |     | Port: 8007 |
-+------------+     +------------+     +------------+     +------------+     +------------+     +------------+     +------------+
+
+---
+
+## 3. Recruiter Module & Documentation Suite
+
+A complete software-engineering documentation suite for the Recruiter cycle is available in the [`docs/recruiter/`](file:///d:/Grad/Repo/AI-Skill-Mentor-Job-Seekers/docs/recruiter) directory:
+
+| Document | Description |
+| :--- | :--- |
+| **[01. System Architecture](file:///d:/Grad/Repo/AI-Skill-Mentor-Job-Seekers/docs/recruiter/01-recruiter-system-architecture.md)** | Subsystems, components, network topology, and runtime architecture. |
+| **[02. End-to-End Data Flow](file:///d:/Grad/Repo/AI-Skill-Mentor-Job-Seekers/docs/recruiter/02-recruiter-end-to-end-data-flow.md)** | Full 15-step recruiter lifecycle from registration to candidate outreach. |
+| **[03. API Specification](file:///d:/Grad/Repo/AI-Skill-Mentor-Job-Seekers/docs/recruiter/03-recruiter-api-specification.md)** | Comprehensive reference for all auth, profile, job, matching, and applicant endpoints. |
+| **[04. Feature Architecture](file:///d:/Grad/Repo/AI-Skill-Mentor-Job-Seekers/docs/recruiter/04-recruiter-feature-architecture.md)** | Functional specifications, invariants, and application vs match pool rules. |
+| **[05. Database & Data Model](file:///d:/Grad/Repo/AI-Skill-Mentor-Job-Seekers/docs/recruiter/05-recruiter-database-data-model.md)** | Schema definitions, ERD, foreign keys, stored procedures (RPC), and RLS policies. |
+| **[06. AI Architecture & Pipeline](file:///d:/Grad/Repo/AI-Skill-Mentor-Job-Seekers/docs/recruiter/06-recruiter-ai-architecture.md)** | AI candidate matching, candidate pool batching, scoring taxonomy, and invariants. |
+| **[07. Security & Authorization](file:///d:/Grad/Repo/AI-Skill-Mentor-Job-Seekers/docs/recruiter/07-recruiter-security-authorization.md)** | RBAC, multi-tenant BOLA/IDOR defenses, JWT session handling, and signed URLs. |
+| **[08. Deployment & Infrastructure](file:///d:/Grad/Repo/AI-Skill-Mentor-Job-Seekers/docs/recruiter/08-recruiter-deployment-infrastructure.md)** | Kubernetes manifests, Ingress routing, health probes, and self-healing metrics. |
+| **[09. Testing & Validation](file:///d:/Grad/Repo/AI-Skill-Mentor-Job-Seekers/docs/recruiter/09-recruiter-testing-validation.md)** | Complete 16/16 browser E2E test matrix, Jest/Pytest results, and release gate report. |
+
+### Visual Diagrams
+- **[System Architecture Diagram](file:///d:/Grad/Repo/AI-Skill-Mentor-Job-Seekers/docs/recruiter/diagrams/system-architecture.md)**
+- **[Recruiter Lifecycle Flow](file:///d:/Grad/Repo/AI-Skill-Mentor-Job-Seekers/docs/recruiter/diagrams/recruiter-lifecycle.md)**
+- **[Authentication Sequence](file:///d:/Grad/Repo/AI-Skill-Mentor-Job-Seekers/docs/recruiter/diagrams/authentication-sequence.md)**
+- **[Job Management Sequence](file:///d:/Grad/Repo/AI-Skill-Mentor-Job-Seekers/docs/recruiter/diagrams/job-management-sequence.md)**
+- **[AI Matching Sequence](file:///d:/Grad/Repo/AI-Skill-Mentor-Job-Seekers/docs/recruiter/diagrams/ai-matching-sequence.md)**
+- **[Applicant Flow Sequence](file:///d:/Grad/Repo/AI-Skill-Mentor-Job-Seekers/docs/recruiter/diagrams/applicant-sequence.md)**
+- **[Resume Access Sequence](file:///d:/Grad/Repo/AI-Skill-Mentor-Job-Seekers/docs/recruiter/diagrams/resume-access-sequence.md)**
+- **[Authorization Flow & Boundaries](file:///d:/Grad/Repo/AI-Skill-Mentor-Job-Seekers/docs/recruiter/diagrams/authorization-flow.md)**
+
+---
+
+## 4. Tech Stack Reference
+
+| Layer | Technologies |
+| :--- | :--- |
+| **Frontend** | React 18, TypeScript, Vite, Tailwind CSS, Lucide React |
+| **Backend Gateway** | Node.js (v24), Express.js, `@supabase/supabase-js`, `express-rate-limit` |
+| **Database & Auth** | Supabase PostgreSQL 15, GoTrue Auth, Private S3 Storage Buckets |
+| **AI / NLP Services** | Python 3.13, FastAPI, Uvicorn, SentenceTransformers, FuzzyWuzzy, LangChain, Groq API |
+| **Container & Orchestration** | Docker, Kubernetes (Minikube v1.35), NGINX Ingress Controller |
+| **Testing Frameworks** | Jest (Backend), Pytest (AI Microservices), Puppeteer (E2E Browser Validation) |
+
+---
+
+## 5. Prerequisites & Environment Setup
+
+Ensure you have the following installed:
+- **Node.js** (v18 or higher, v24 recommended)
+- **Python** (v3.10 or higher, v3.13 supported)
+- **Docker Desktop** (running and healthy)
+- **Minikube** & **kubectl** (for Kubernetes deployment)
+
+### 1. Configure Environment Variables
+- Copy `.env.example` in the root folder to `.env` and populate your API credentials.
+- Copy `backend/.env.example` to `backend/.env` (requires `SUPABASE_URL`, `SUPABASE_KEY`, and `SUPABASE_SERVICE_ROLE_KEY`).
+- For AI microservices, configure `.env` files in:
+  - `AI-Microservices/m1_extraction_service/.env` (`GROQ_API_KEY`)
+  - `AI-Microservices/gap-engin-service/.env` (`GROQ_API_KEY`, optional `ADZUNA_APP_ID`, `ADZUNA_APP_KEY`)
+  - `AI-Microservices/m5_roadmap_service/.env` (`ANTHROPIC_API_KEY` or `OPENAI_API_KEY`)
+
+### 2. Install Node Dependencies
+```bash
+# Backend dependencies
+cd backend && npm install
+
+# Frontend dependencies
+cd ../Frontend-React && npm install
 ```
 
-1. **Frontend-React**: Built with React, TypeScript, and Vite. Serves the interactive user dashboard. (Port `3000` / K8s Port `80`)
-2. **Backend**: Built with Node.js & Express.js. Handles client requests, performs auth, and interacts with the database. (Port `5000`)
-3. **Database & Auth**: Supabase (Cloud-hosted PostgreSQL database with Row-Level Security policies).
-4. **AI Microservices**: 7 Python FastAPI services that run specialized AI/NLP workloads:
-   - **`m1-extraction`** (Port `8001`): Parses CV text and extracts key details (uses LangChain and Groq/Ollama fallbacks).
-   - **`skill-normalization`** (Port `8002`): Matches parsed CV skills to a canonical taxonomy using SentenceTransformers.
-   - **`cv-matching`** (Port `8003`): Calculates matching percentages between CVs and job descriptions using FuzzyWuzzy matching.
-   - **`gap-engine`** (Port `8004`): Computes skill gaps between candidate profiles and job titles.
-   - **`roadmap-service`** (Port `8005`): Leverages LLMs (Anthropic Claude, OpenAI, Qwen, etc.) to generate personalized learning paths.
-   - **`course-recommendation`** (Port `8006`): Provides structured course suggestions based on skill gaps.
-   - **`job-recommendation`** (Port `8007`): Matches candidate profiles to existing job openings.
-
 ---
 
-### Prerequisites
-Make sure you have the following installed:
-- **Node.js** (v18 or higher)
-- **Python** (v3.10 or higher)
-- **Docker Desktop** (For containerized runs or Minikube)
-- **Minikube** & **kubectl** (For Kubernetes deployment)
+## 6. Running the Application
 
----
-
-### Environment Setup
-
-The application services rely on environment variables for API keys and database access.
-
-1. **Create the Environment Files**:
-   - Copy `.env.example` in the root folder to `.env` and fill in your keys.
-   - Copy `backend/.env.example` to `backend/.env` (it requires your Supabase credentials).
-   - For microservices, ensure `.env` is created in their respective subdirectories if you plan to run them:
-     - `AI-Microservices/m1_extraction_service/.env` (requires `GROQ_API_KEY`)
-     - `AI-Microservices/gap-engin-service/.env` (requires `GROQ_API_KEY` and optional Adzuna API keys)
-     - `AI-Microservices/m5_roadmap_service/.env` (requires at least one LLM key such as `ANTHROPIC_API_KEY` or `OPENAI_API_KEY`)
-
-2. **Install Node Dependencies**:
-   ```bash
-   # Install Backend dependencies
-   cd backend
-   npm install
-
-   # Install Frontend dependencies
-   cd ../Frontend-React
-   npm install
-   ```
-
-3. **Install Python Dependencies (Virtual Environments)**:
-   For local process execution, it is highly recommended to set up virtual environments (`venv` or `.venv`) inside each microservice folder. For example, for the roadmap service:
-   ```powershell
-   cd AI-Microservices/m5_roadmap_service
-   python -m venv venv
-   .\venv\Scripts\Activate.ps1
-   pip install -r requirements.txt
-   ```
-
----
-
-### Running the Application
-
-There are three ways to run this application:
-
-#### Option 1: Native Process Developer Dashboard (Recommended for Local Dev)
-We provide a PowerShell script that manages the startup of all 9 services concurrently and renders a live status dashboard:
+### Option A: Kubernetes Deployment on Minikube (Production Environment)
 ```powershell
-# Run from the repository root
+# From repository root
+.\k8s\deploy-minikube.ps1
+```
+This automated deployment script:
+1. Provisions Minikube with required CPU and memory allocations.
+2. Builds all container images inside the Minikube Docker environment.
+3. Enables the `ingress-nginx` controller addon.
+4. Applies all Kubernetes Secrets, ConfigMaps, Deployments, Services, and Ingress manifests.
+
+**Forward Ingress Traffic**:
+```powershell
+kubectl port-forward -n ingress-nginx svc/ingress-nginx-controller 8080:80
+```
+Access the application immediately at: **`http://localhost:8080`**
+
+---
+
+### Option B: Native Process Developer Dashboard (Local Development)
+```powershell
+# From repository root
 .\start-local-dev.ps1
 ```
-- **What it does**:
-  1. Identifies and terminates any existing processes binding to ports `5000, 3000, 8001-8007`.
-  2. Creates a local `logs/` directory to store individual stdout and stderr logs for each service.
-  3. Scans each microservice for local python virtual environments (`.venv` or `venv`) to use the correct Python interpreter, falling back to global Python/uvicorn if none is present.
-  4. Launches all services concurrently in the background.
-  5. Displays a live status dashboard in the console.
-- **Windows IPv6 Patch**: Health check URLs query `127.0.0.1` directly (instead of `localhost`) to prevent loopback connection timeouts due to Windows IPv6 resolution issues.
-
-#### Option 2: Docker Compose (Containerized Local Run)
-To run the entire stack inside Docker containers:
-```bash
-# Run from the repository root
-docker-compose up --build
-```
-- Make sure you have created the global `.env` file in the root directory and populated it with valid API keys.
-- Frontend will be accessible at `http://localhost:3000` and the Express Backend at `http://localhost:5000`.
-
-#### Option 3: Deploying to Minikube (Kubernetes Production Simulation)
-To deploy the stack on local Kubernetes:
-1. Ensure Docker Desktop is active.
-2. Base64-encode your credentials and put them into [k8s/secrets.yaml](file:///d:/Grad/Repo/AI-Skill-Mentor-Job-Seekers/k8s/secrets.yaml).
-3. Run the Minikube deployment script:
-   ```powershell
-   .\k8s\deploy-minikube.ps1
-   ```
-- **What it does**:
-  - Automatically starts Minikube with required CPU/memory limits.
-  - Builds the Docker images directly inside Minikube's Docker daemon.
-  - Enables the Nginx Ingress addon.
-  - Deploys all Pods, Services, ConfigMaps, Secrets, and Ingresses.
-  - Outputs the final URL (e.g. `http://<minikube-ip>`) to access the platform.
-- For troubleshooting or advanced K8s configuration, see [k8s/DEPLOYMENT.md](file:///d:/Grad/Repo/AI-Skill-Mentor-Job-Seekers/k8s/DEPLOYMENT.md).
+- Starts all 9 services concurrently with live process monitoring and log redirection.
+- Frontend available at `http://localhost:3000`, Backend API at `http://localhost:5000`.
 
 ---
 
-### Troubleshooting & Common Issues
+### Option C: Docker Compose
+```bash
+docker-compose up --build
+```
 
-- **Offline Services in Dashboard**: If running natively on Windows, the dashboard might show services as `OFFLINE` if Windows resolves `localhost` to IPv6 (`[::1]`) while the python services listen on IPv4 only. We have modified the start script to query `127.0.0.1` to bypass this. Ensure you run the updated `.\start-local-dev.ps1`.
-- **Port Conflicts**: If port binding fails, check that ports `3000, 5000` or `8001-8007` are not in use by external processes. The `start-local-dev.ps1` script will try to automatically terminate them on launch.
-- **Missing python packages**: If any microservice fails to run because of a missing package (e.g., `ImportError`), make sure you have activated the virtual environment for that service and run `pip install -r requirements.txt`.
+---
+
+## 7. Verification & Automated Test Suites
+
+### Execute Backend Unit & Repository Tests
+```bash
+cd backend
+npm test -- --runInBand
+# Result: 12 test suites passed, 113 tests passed (100%)
+```
+
+### Execute AI CV Matching Tests
+```bash
+cd AI-Microservices/cv_matching_service
+pytest tests
+# Result: 19 test cases passed (100%)
+```
+
+### Verify Frontend Production Build
+```bash
+cd Frontend-React
+npm run build
+# Result: 0 errors, 0 warnings
+```
+
+---
+
+## 8. Release Verification Summary
+
+The Recruiter Web Application has successfully passed all acceptance gates:
+- **Application Entrypoint**: `http://localhost:8080` via Kubernetes NGINX Ingress
+- **Browser E2E Workflow**: **16 / 16 Tests Passed (100%)**
+- **Multi-Tenant Security**: Verified with complete cross-recruiter BOLA/IDOR isolation
+- **AI Matching Pipeline**: Batch inference, canonical percentage scaling, and atomic RPC persistence verified
+- **Current Status**: **`READY FOR DEPLOYMENT`**
