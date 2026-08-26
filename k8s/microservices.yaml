@@ -97,7 +97,7 @@ spec:
             httpGet:
               path: /health
               port: 8002
-            initialDelaySeconds: 30   # model loading takes time
+            initialDelaySeconds: 180   # model loading takes time
             periodSeconds: 30
 ---
 apiVersion: v1
@@ -264,7 +264,7 @@ spec:
             httpGet:
               path: /health
               port: 8005
-            initialDelaySeconds: 15
+            initialDelaySeconds: 120
             periodSeconds: 30
 ---
 apiVersion: v1

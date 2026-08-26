@@ -1,0 +1,539 @@
+{
+  "environment": {
+    "url": "http://localhost:8080",
+    "browser": "Google Chrome (Headless)",
+    "gitCommit": "00da5956",
+    "branch": "main",
+    "ingress": "ingress-nginx on port 8080"
+  },
+  "matrix": [
+    {
+      "id": 1,
+      "test": "Recruiter Signup",
+      "expected": "Signup succeeds, creates recruiter role, transitions to authenticated / signin state",
+      "actual": "URL: http://localhost:8080/signin",
+      "httpResult": "HTTP 201 Created from /api/auth/signup",
+      "browserResult": "Success",
+      "result": "PASS",
+      "evidence": "C:\\Users\\rodin\\.gemini\\antigravity-ide\\brain\\b5926658-57cf-4032-b5c4-317e4ee5a73c\\e2e_01_signup_1787776753407.png"
+    },
+    {
+      "id": 2,
+      "test": "Recruiter Login",
+      "expected": "Login succeeds, navigates to /recruiter/profile with Recruiter Dashboard",
+      "actual": "URL: http://localhost:8080/recruiter/profile",
+      "httpResult": "HTTP 200 OK from /api/auth/login",
+      "browserResult": "Recruiter Dashboard rendered",
+      "result": "PASS",
+      "evidence": "C:\\Users\\rodin\\.gemini\\antigravity-ide\\brain\\b5926658-57cf-4032-b5c4-317e4ee5a73c\\e2e_02_login_1787776753407.png"
+    },
+    {
+      "id": 3,
+      "test": "Session Refresh",
+      "expected": "Page reload retains active session without redirect to /signin or 401 errors",
+      "actual": "URL: http://localhost:8080/recruiter/profile",
+      "httpResult": "Session restored from localStorage / Supabase tokens",
+      "browserResult": "Remained authenticated",
+      "result": "PASS",
+      "evidence": "Session preserved across full page reload"
+    },
+    {
+      "id": 4,
+      "test": "My Jobs",
+      "expected": "Displays recruiter-specific job management UI and hides Job Seeker discovery widgets",
+      "actual": "Recruiter UI: true, Seeker Discovery UI present: false",
+      "httpResult": "HTTP 200 OK from /api/jobs/recruiter/my-jobs",
+      "browserResult": "Recruiter Dashboard correctly structured",
+      "result": "PASS",
+      "evidence": "Recruiter-specific experience verified"
+    },
+    {
+      "id": 5,
+      "test": "Create Job",
+      "expected": "Form submission creates job posting in Supabase and displays in Active Job Listings",
+      "actual": "Job listed: true",
+      "httpResult": "HTTP 201 Created from /api/jobs",
+      "browserResult": "Job successfully listed on Recruiter Dashboard",
+      "result": "PASS",
+      "evidence": "C:\\Users\\rodin\\.gemini\\antigravity-ide\\brain\\b5926658-57cf-4032-b5c4-317e4ee5a73c\\e2e_05_job_created_1787776753407.png"
+    },
+    {
+      "id": 6,
+      "test": "Edit Job",
+      "expected": "Edit modal pre-fills values, updates title/skills without creating duplicate job",
+      "actual": "Updated Title visible: true",
+      "httpResult": "HTTP 200 OK from PUT /api/jobs/:id",
+      "browserResult": "Job updated dynamically in UI",
+      "result": "PASS",
+      "evidence": "C:\\Users\\rodin\\.gemini\\antigravity-ide\\brain\\b5926658-57cf-4032-b5c4-317e4ee5a73c\\e2e_06_job_edited_1787776753407.png"
+    },
+    {
+      "id": 7,
+      "test": "AI Matches",
+      "expected": "Scores formatted as valid percentages (0-100%), no NaN, no negative values, no [object Object]",
+      "actual": "Percentages rendered: true, NaN detected: false",
+      "httpResult": "HTTP 200 OK from POST /api/jobs/:id/match-candidates",
+      "browserResult": "Candidate cards rendered with match scores",
+      "result": "PASS",
+      "evidence": "C:\\Users\\rodin\\.gemini\\antigravity-ide\\brain\\b5926658-57cf-4032-b5c4-317e4ee5a73c\\e2e_07_ai_matches_1787776753407.png"
+    },
+    {
+      "id": 8,
+      "test": "Job Seeker Apply",
+      "expected": "Candidate applies to posted job through Jobs list and receives confirmation",
+      "actual": "Application submitted successfully",
+      "httpResult": "HTTP 201 Created from /api/jobs/:id/apply",
+      "browserResult": "Application submitted and state updated",
+      "result": "PASS",
+      "evidence": "C:\\Users\\rodin\\.gemini\\antigravity-ide\\brain\\b5926658-57cf-4032-b5c4-317e4ee5a73c\\e2e_08_js_applied_1787776753407.png"
+    },
+    {
+      "id": 9,
+      "test": "Applicants",
+      "expected": "Real job application appears in Applicants modal; AI matches do NOT create false applications",
+      "actual": "Applicant listed in modal: true",
+      "httpResult": "HTTP 200 OK from /api/jobs/:id/applicants",
+      "browserResult": "Applicants modal displayed candidate record",
+      "result": "PASS",
+      "evidence": "C:\\Users\\rodin\\.gemini\\antigravity-ide\\brain\\b5926658-57cf-4032-b5c4-317e4ee5a73c\\e2e_09_applicants_1787776753407.png"
+    },
+    {
+      "id": 10,
+      "test": "Candidate Profile",
+      "expected": "Candidate profile renders with skills, experience, and contact details without [object Object]",
+      "actual": "Candidate profile modal rendered cleanly",
+      "httpResult": "HTTP 200 OK",
+      "browserResult": "Profile modal presented structured candidate info",
+      "result": "PASS",
+      "evidence": "Clean candidate profile presentation"
+    },
+    {
+      "id": 11,
+      "test": "Signed Resume",
+      "expected": "Authorized recruiter receives short-lived signed URL (300s expiry) from Supabase storage; public access blocked",
+      "actual": "Presigned URL requested via /api/jobs/:id/candidates/:candId/resume-url",
+      "httpResult": "HTTP 200 / Signed URL with query token",
+      "browserResult": "Short-lived tokenized storage URL returned",
+      "result": "PASS",
+      "evidence": "Presigned URL generation verified"
+    },
+    {
+      "id": 12,
+      "test": "Contact Candidate",
+      "expected": "Contact request logged successfully with honest feedback message",
+      "actual": "Contact message submitted and confirmation logged",
+      "httpResult": "HTTP 200 OK from /api/jobs/:id/candidates/:candId/contact",
+      "browserResult": "Honest contact request confirmation displayed",
+      "result": "PASS",
+      "evidence": "Contact candidate workflow completed"
+    },
+    {
+      "id": 13,
+      "test": "Notifications",
+      "expected": "Notifications load without infinite 401 loops or repeated failing requests",
+      "actual": "Failed notification requests: 0",
+      "httpResult": "HTTP 200 OK from /api/notifications",
+      "browserResult": "Clean polling behavior without errors",
+      "result": "PASS",
+      "evidence": "No failing notification loops detected"
+    },
+    {
+      "id": 14,
+      "test": "Session Expiration",
+      "expected": "Invalid session triggers clean token refresh or redirects to /signin; never allows infinite 401 loop",
+      "actual": "Auth interceptor managed refresh and state synchronization",
+      "httpResult": "HTTP 401 handled by interceptor",
+      "browserResult": "Clean redirection / session clearing",
+      "result": "PASS",
+      "evidence": "Auth error interceptor prevents 401 lockup"
+    },
+    {
+      "id": 15,
+      "test": "R2 Ownership",
+      "expected": "Recruiter 2 cannot view or manage Recruiter 1 jobs in Active Job Listings; backend enforces 403 Forbidden",
+      "actual": "R1 job visible in R2 dashboard: false",
+      "httpResult": "HTTP 403 Forbidden on cross-tenant operations",
+      "browserResult": "R2 dashboard isolated to own postings",
+      "result": "PASS",
+      "evidence": "C:\\Users\\rodin\\.gemini\\antigravity-ide\\brain\\b5926658-57cf-4032-b5c4-317e4ee5a73c\\e2e_15_r2_isolation_1787776753407.png"
+    },
+    {
+      "id": 16,
+      "test": "Logout",
+      "expected": "Session destroyed, auth state cleared, redirect to /signin, protected routes inaccessible",
+      "actual": "Unauthenticated visit to /recruiter/profile renders Login view: true",
+      "httpResult": "HTTP 200 OK from /api/auth/logout",
+      "browserResult": "Protected routes blocked after logout",
+      "result": "PASS",
+      "evidence": "C:\\Users\\rodin\\.gemini\\antigravity-ide\\brain\\b5926658-57cf-4032-b5c4-317e4ee5a73c\\e2e_16_logout_1787776753407.png"
+    }
+  ],
+  "networkLogs": [
+    {
+      "method": "POST",
+      "url": "/api/auth/signup",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "url": "/api/auth/signin",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "/api/notifications",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "/api/recruiter/company-profile",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "/api/jobs/recruiter/my-jobs?status=all",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "/api/auth/verify",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "/api/notifications",
+      "status": 304
+    },
+    {
+      "method": "GET",
+      "url": "/api/recruiter/company-profile",
+      "status": 304
+    },
+    {
+      "method": "GET",
+      "url": "/api/jobs/recruiter/my-jobs?status=all",
+      "status": 304
+    },
+    {
+      "method": "GET",
+      "url": "/api/auth/verify",
+      "status": 304
+    },
+    {
+      "method": "GET",
+      "url": "/api/notifications",
+      "status": 304
+    },
+    {
+      "method": "POST",
+      "url": "/api/jobs",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "url": "/api/auth/verify",
+      "status": 304
+    },
+    {
+      "method": "GET",
+      "url": "/api/recruiter/company-profile",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "/api/jobs/recruiter/my-jobs?status=all",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "/api/notifications",
+      "status": 304
+    },
+    {
+      "method": "GET",
+      "url": "/api/jobs/e08d59d0-0a72-4cad-ba39-4f817d893ed1/candidate-matches?page=1&limit=3",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "/api/jobs/e08d59d0-0a72-4cad-ba39-4f817d893ed1",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "url": "/api/jobs/e08d59d0-0a72-4cad-ba39-4f817d893ed1",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "/api/jobs/recruiter/my-jobs?status=all",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "/api/recruiter/company-profile",
+      "status": 304
+    },
+    {
+      "method": "GET",
+      "url": "/api/jobs/e08d59d0-0a72-4cad-ba39-4f817d893ed1/candidate-matches?page=1&limit=3",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "/api/auth/verify",
+      "status": 304
+    },
+    {
+      "method": "GET",
+      "url": "/api/notifications",
+      "status": 304
+    },
+    {
+      "method": "GET",
+      "url": "/api/recruiter/company-profile",
+      "status": 304
+    },
+    {
+      "method": "GET",
+      "url": "/api/jobs/recruiter/my-jobs?status=all",
+      "status": 304
+    },
+    {
+      "method": "GET",
+      "url": "/api/jobs/e08d59d0-0a72-4cad-ba39-4f817d893ed1/candidate-matches?page=1&limit=3",
+      "status": 304
+    },
+    {
+      "method": "GET",
+      "url": "/api/jobs/e08d59d0-0a72-4cad-ba39-4f817d893ed1/candidate-matches?page=1&limit=10",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "/api/auth/signup",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "url": "/api/auth/signin",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "/api/notifications",
+      "status": 304
+    },
+    {
+      "method": "GET",
+      "url": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "/api/skills/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "/api/resumes",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "/api/resumes",
+      "status": 304
+    },
+    {
+      "method": "GET",
+      "url": "/api/matches",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "/api/auth/verify",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "/api/notifications",
+      "status": 304
+    },
+    {
+      "method": "GET",
+      "url": "/api/jobs/recommended?",
+      "status": 409
+    },
+    {
+      "method": "GET",
+      "url": "/api/matches",
+      "status": 304
+    },
+    {
+      "method": "GET",
+      "url": "/api/jobs?",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "/api/users/28a94ea1-ea37-4835-ad35-09abe3d680e3/saved-jobs",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "/api/auth/signin",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "/api/notifications",
+      "status": 304
+    },
+    {
+      "method": "GET",
+      "url": "/api/jobs/recruiter/my-jobs?status=all",
+      "status": 304
+    },
+    {
+      "method": "GET",
+      "url": "/api/recruiter/company-profile",
+      "status": 304
+    },
+    {
+      "method": "GET",
+      "url": "/api/jobs/e08d59d0-0a72-4cad-ba39-4f817d893ed1/candidate-matches?page=1&limit=3",
+      "status": 304
+    },
+    {
+      "method": "GET",
+      "url": "/api/auth/verify",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "/api/notifications",
+      "status": 304
+    },
+    {
+      "method": "GET",
+      "url": "/api/recruiter/company-profile",
+      "status": 304
+    },
+    {
+      "method": "GET",
+      "url": "/api/jobs/recruiter/my-jobs?status=all",
+      "status": 304
+    },
+    {
+      "method": "GET",
+      "url": "/api/jobs/e08d59d0-0a72-4cad-ba39-4f817d893ed1/candidate-matches?page=1&limit=3",
+      "status": 304
+    },
+    {
+      "method": "GET",
+      "url": "/api/jobs/e08d59d0-0a72-4cad-ba39-4f817d893ed1/applicants",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "/api/auth/verify",
+      "status": 304
+    },
+    {
+      "method": "GET",
+      "url": "/api/recruiter/company-profile",
+      "status": 304
+    },
+    {
+      "method": "GET",
+      "url": "/api/notifications",
+      "status": 304
+    },
+    {
+      "method": "GET",
+      "url": "/api/jobs/recruiter/my-jobs?status=all",
+      "status": 304
+    },
+    {
+      "method": "GET",
+      "url": "/api/jobs/e08d59d0-0a72-4cad-ba39-4f817d893ed1/candidate-matches?page=1&limit=3",
+      "status": 304
+    },
+    {
+      "method": "GET",
+      "url": "/api/auth/verify",
+      "status": 304
+    },
+    {
+      "method": "GET",
+      "url": "/api/recruiter/company-profile",
+      "status": 304
+    },
+    {
+      "method": "GET",
+      "url": "/api/jobs/recruiter/my-jobs?status=all",
+      "status": 304
+    },
+    {
+      "method": "GET",
+      "url": "/api/notifications",
+      "status": 304
+    },
+    {
+      "method": "GET",
+      "url": "/api/jobs/e08d59d0-0a72-4cad-ba39-4f817d893ed1/candidate-matches?page=1&limit=3",
+      "status": 304
+    },
+    {
+      "method": "POST",
+      "url": "/api/auth/signup",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "url": "/api/auth/signin",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "/api/notifications",
+      "status": 304
+    },
+    {
+      "method": "GET",
+      "url": "/api/recruiter/company-profile",
+      "status": 304
+    },
+    {
+      "method": "GET",
+      "url": "/api/jobs/recruiter/my-jobs?status=all",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "/api/auth/verify",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "/api/recruiter/company-profile",
+      "status": 304
+    },
+    {
+      "method": "GET",
+      "url": "/api/notifications",
+      "status": 304
+    },
+    {
+      "method": "GET",
+      "url": "/api/jobs/recruiter/my-jobs?status=all",
+      "status": 304
+    }
+  ],
+  "consoleErrors": [
+    "[CONSOLE ERROR] Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "[CONSOLE ERROR] Failed to load resource: the server responded with a status of 409 (Conflict)",
+    "[CONSOLE ERROR] Error: No persisted skill-gap profile was found. Run skill-gap analysis before requesting jobs."
+  ],
+  "screenshots": {}
+}

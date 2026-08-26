@@ -1,0 +1,72 @@
+{
+  "timestamp": "2026-08-26T15:36:39.177Z",
+  "health": {
+    "backend": "ONLINE (200 OK)",
+    "frontend": "ONLINE (200 OK)",
+    "M1 Extraction": "ONLINE (200 OK)",
+    "Skill Normalization": "OFFLINE / INITIALIZING (fetch failed)",
+    "CV Matching": "ONLINE (200 OK)",
+    "Gap Engine": "ONLINE (200 OK)",
+    "M5 Roadmap": "OFFLINE / INITIALIZING (fetch failed)",
+    "Course Recommendation": "OFFLINE / INITIALIZING (fetch failed)",
+    "Job Recommendation": "ONLINE (200 OK)"
+  },
+  "recruiterAuth": {
+    "status": "PASSED",
+    "email": "recruiter_verified_1787758599659@example.com",
+    "role": "recruiter",
+    "tokenReceived": true
+  },
+  "jobManagement": {
+    "create": {
+      "status": "PASSED",
+      "jobId": "24aae0c3-514b-42f2-95c3-1ca2be346f96",
+      "title": "Senior AI Full-Stack Architect - 1787758602439"
+    },
+    "myJobs": {
+      "status": "PASSED",
+      "totalRecruiterJobs": 1
+    },
+    "getById": {
+      "status": "PASSED",
+      "title": "Senior AI Full-Stack Architect - 1787758602439"
+    },
+    "update": {
+      "status": "PASSED",
+      "updatedTitle": "Principal AI Systems Architect - 1787758603744"
+    }
+  },
+  "candidatePoolAudit": {
+    "totalDiscoverable": 19,
+    "dbQueryStatus": "OK"
+  },
+  "aiMatchingPipeline": {
+    "status": "PASSED",
+    "completionStatus": "complete",
+    "rankedCandidatesCount": 19,
+    "topCandidateScore": 40,
+    "persistence": {
+      "success": true,
+      "persisted": true,
+      "persistedCount": 19,
+      "clearedObsoleteCount": 0,
+      "calculatedAt": "2026-08-26T15:36:50.100Z"
+    }
+  },
+  "databasePersistence": {
+    "status": "PASSED",
+    "persistedMatchCount": 19
+  },
+  "resumePrivacySecurity": {
+    "unauthenticatedBlocked": true,
+    "authorizedCandidateResumeAccess": "HTTP 404 (No resume file found for candidate)"
+  },
+  "summary": {
+    "allHealthChecksPassed": false,
+    "authWorkflow": "PASSED",
+    "jobManagementWorkflow": "PASSED",
+    "aiMatchingWorkflow": "PASSED",
+    "persistenceWorkflow": "PASSED",
+    "securityEnforcement": "VERIFIED"
+  }
+}

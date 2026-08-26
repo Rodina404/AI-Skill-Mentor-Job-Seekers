@@ -1,0 +1,164 @@
+{
+  "environment": {
+    "entrypoint": "http://127.0.0.1:8080",
+    "apiUrl": "http://127.0.0.1:8080/api"
+  },
+  "health": {
+    "backend": "ONLINE (200 OK)",
+    "frontend": "ONLINE (200 OK)"
+  },
+  "auth": {
+    "r1Signup": {
+      "http": 201,
+      "passed": true,
+      "hasSession": true
+    },
+    "r1Login": {
+      "http": 200,
+      "passed": true,
+      "role": "recruiter",
+      "tokenReceived": true
+    },
+    "refresh": {
+      "http": 200,
+      "passed": true,
+      "tokenRefreshed": true
+    },
+    "invalidRefresh": {
+      "http": 401,
+      "passed": true
+    },
+    "authenticatedMe": {
+      "http": 200,
+      "passed": true,
+      "userId": "1b6193a5-7dd2-403c-822b-294297f415ac"
+    },
+    "logout": {
+      "http": 200,
+      "passed": true
+    },
+    "postLogoutRejected": {
+      "http": 401,
+      "passed": true
+    }
+  },
+  "recruiterWorkflow": {
+    "profileUpdate": {
+      "http": 200,
+      "passed": true
+    },
+    "createJob": {
+      "http": 201,
+      "passed": true,
+      "jobId": "2b2dbc64-83a0-4f83-bdae-16f4af25d1a3"
+    },
+    "myJobs": {
+      "http": 200,
+      "passed": true,
+      "totalJobs": 1
+    },
+    "editJob": {
+      "http": 200,
+      "passed": true,
+      "updatedTitle": "Principal AI Platform Engineer - 1787767749766"
+    },
+    "aiMatching": {
+      "http": 200,
+      "passed": true,
+      "candidatesRanked": 27,
+      "completionStatus": "complete"
+    },
+    "persistedMatches": {
+      "http": 200,
+      "passed": true,
+      "matchCount": 20
+    },
+    "aiNotCreatingApplication": {
+      "passed": true,
+      "initialCount": 0
+    },
+    "applicants": {
+      "http": 200,
+      "passed": true,
+      "applicantCount": 1
+    },
+    "notifications": {
+      "http": 200,
+      "passed": true
+    }
+  },
+  "jobSeekerIntegration": {
+    "discovery": {
+      "http": 200,
+      "passed": true
+    },
+    "apply": {
+      "http": 201,
+      "passed": true,
+      "response": {
+        "success": true,
+        "message": "Application submitted successfully",
+        "data": {
+          "id": "d3af4dcd-5112-4f57-84af-01aa2363155c",
+          "job_posting_id": "2b2dbc64-83a0-4f83-bdae-16f4af25d1a3",
+          "job_seeker_profile_id": "e39e08a9-b906-4e16-b785-670811ce624f",
+          "resume_id": "a27ad705-9b20-47b9-bc2f-79436cfaa08d",
+          "recruiter_profile_id": null,
+          "status": "submitted",
+          "applied_at": "2026-08-26T18:09:16.843976+00:00",
+          "updated_at": "2026-08-26T18:09:16.843976+00:00",
+          "ai_match_score": null,
+          "ai_match_detail": null,
+          "relevance_score": null,
+          "interview_date": null,
+          "interview_type": null,
+          "offer_details": null,
+          "recruiter_notes": null,
+          "user_id": "86d509f3-6a6b-4877-bde9-75de0b702d8d"
+        }
+      }
+    }
+  },
+  "securityMatrix": {
+    "unauthenticatedBlocked": {
+      "expected": 401,
+      "actual": 401,
+      "passed": true
+    },
+    "jobSeekerToRecruiterBlocked": {
+      "expected": 403,
+      "actual": 403,
+      "passed": true
+    },
+    "r2EditR1Job": {
+      "expected": 403,
+      "actual": 403,
+      "passed": true
+    },
+    "r2DeleteR1Job": {
+      "expected": 403,
+      "actual": 403,
+      "passed": true
+    },
+    "r2MatchR1Job": {
+      "expected": 403,
+      "actual": 403,
+      "passed": true
+    },
+    "r2ViewMatchesR1Job": {
+      "expected": 403,
+      "actual": 403,
+      "passed": true
+    },
+    "r2ResumeR1Job": {
+      "expected": 403,
+      "actual": 403,
+      "passed": true
+    }
+  },
+  "databaseIntegrity": {},
+  "cleanup": {
+    "testJobDeleted": true
+  },
+  "bugs": []
+}
