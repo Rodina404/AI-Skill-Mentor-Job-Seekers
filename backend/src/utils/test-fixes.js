@@ -6,9 +6,9 @@
 const axios = require('axios');
 require('dotenv').config({ path: require('path').resolve(__dirname, '../../.env') });
 
-const API = 'http://localhost:5000/api';
-const EMAIL = 'flowtest@gmail.com';
-const PASSWORD = 'Test1234!';
+const API = process.env.API_URL || 'http://localhost:5000/api';
+const EMAIL = process.env.TEST_USER_EMAIL || process.env.EMAIL || '';
+const PASSWORD = process.env.TEST_USER_PASSWORD || process.env.PASSWORD || '';
 
 let passed = 0;
 let failed = 0;
@@ -19,6 +19,11 @@ function fail(label, err) { failed++; console.error(`  ❌ ${label}:`, typeof er
 async function run() {
   // ── Step 0: Login ──
   console.log('\n══ Step 0: Authentication ══');
+  if (!EMAIL || !PASSWORD) {
+    fail('Login', 'TEST_USER_EMAIL and TEST_USER_PASSWORD environment variables are required.');
+    console.error('\n🛑 Cannot proceed without auth credentials in environment. Exiting.');
+    process.exit(1);
+  }
   let token;
   try {
     const res = await axios.post(`${API}/auth/login`, { email: EMAIL, password: PASSWORD });

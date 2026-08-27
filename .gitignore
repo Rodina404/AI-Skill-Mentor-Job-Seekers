@@ -35,3 +35,10 @@ node_modules/
 # Scratch & temporary test scripts
 scratch/
 
+# Agent workflows and IDE customizations
+.agents/
+
+# Frontend builds
+Frontend-React/build/
+build/
+dist/

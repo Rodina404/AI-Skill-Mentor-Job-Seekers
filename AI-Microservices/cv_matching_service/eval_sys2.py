@@ -188,10 +188,10 @@ def main():
         "ndcg_pass": ndcg_pass, "mrr_pass": mrr_pass, "spear_pass": spear_pass,
         "pass": ndcg_pass,
     }
-    out_path = HERE.parent.parent / "eval_sys2_results.json"
+    out_path = HERE / "eval_sys2_results.json"
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(out, f, indent=2, default=str)
-    print("\n  Results -> eval_sys2_results.json")
+    print(f"\n  Results -> {out_path.name}")
     return out
 
 if __name__ == "__main__":
